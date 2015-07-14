@@ -1,0 +1,23 @@
+[filter "media"]
+	clean = git-media-clean %f
+	smudge = git-media-smudge %f
+[user]
+	name = Jonathan Lange
+	email = jml@mumak.net
+[alias]
+st = status
+ci = commit
+co = checkout
+di = diff
+unstage = reset HEAD --
+last = log -1 HEAD
+[color]
+	ui = true
+[push]
+	default = simple
+[svn]
+	rmdir = true
+[merge]
+	ff = false
+[pull]
+	ff = only
