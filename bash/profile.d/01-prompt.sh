@@ -1,18 +1,4 @@
 
-export PATH="$HOME/.cask/bin:$HOME/bin:$HOME/Library/Haskell/bin:$HOME/.cabal/bin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/bin:$PATH"
-
-if [ -e /Users/jml/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/jml/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-
-export NIX_PATH=/Users/jml/nixpkgs:nixpkgs=/Users/jml/nixpkgs
-
-export EMACS=/Applications/Emacs.app/Contents/MacOS/Emacs
-
-export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
-
-alias ls="ls --color=auto"
-alias t=hodor
-
-
 # From http://rusty.ozlabs.org/?p=359
 # Git me harder!
 __git_ps1 ()
@@ -52,8 +38,6 @@ __git_ps1 ()
 }
 
 
-
-
 if [ -n "$PS1" ]; then
   _lhs=$(dircolors --print-database)
   _term=${TERM//[^[:alnum:]]/?}
@@ -63,17 +47,3 @@ if [ -n "$PS1" ]; then
     PS1='\u@\h:\w$(__git_ps1)\n\$ '
   fi
 fi
-
-case "$TERM" in
-  "dumb")
-    PS1="> "
-    ;;
-  xterm*|rxvt*|eterm*|screen*)
-    ;;
-  *)
-    PS1="> "
-    ;;
-esac
-
-### Added by the Heroku Toolbelt
-export PATH="/usr/local/heroku/bin:$PATH"
