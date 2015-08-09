@@ -47,3 +47,16 @@ if [ -n "$PS1" ]; then
     PS1='\u@\h:\w$(__git_ps1)\n\$ '
   fi
 fi
+
+# Simplifies the prompt if the terminal is a bit stupid. Mostly useful for
+# enabling tramp.
+case "$TERM" in
+  "dumb")
+    PS1="> "
+    ;;
+  xterm*|rxvt*|eterm*|screen*)
+    ;;
+  *)
+    PS1="> "
+    ;;
+esac
