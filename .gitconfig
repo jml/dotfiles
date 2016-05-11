@@ -34,3 +34,5 @@ clean-merged = "!sh -c 'git merged | grep -v \"*\" | xargs -n 1 git branch -d'"
     insteadof = lp:
 [url "git+ssh://jml@git.launchpad.net/~jml/+git/"]
     insteadof = lpme:
+[credential]
+	helper = cache --timeout=3600
