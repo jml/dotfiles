@@ -23,3 +23,6 @@ if hash apt-get 2>/dev/null; then
     alias sagu='sudo apt-get update'
     alias sagi='sudo apt-get install'
 fi
+
+
+# nix-build -E 'with import <nixpkgs>{}; callPackage ./foo.nix {}'
