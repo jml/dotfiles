@@ -37,3 +37,5 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
     insteadof = lpme:
 [credential]
 	helper = cache --timeout=3600
+[core]
+	excludesfile = /Users/jml/.gitignore_global
