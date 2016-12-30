@@ -156,7 +156,7 @@ bar {
         tray_output primary
 }
 
-exec --no-startup-id setxkbmap -option ctrl:nocaps -option altwin:swap_lalt_lwin
+exec --no-startup-id setxkbmap -option ctrl:nocaps
 exec --no-startup-id nm-applet &
 
 bindsym $mod+l exec "gnome-screensaver-command --lock"

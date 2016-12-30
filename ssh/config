@@ -1,6 +1,2 @@
-Host ircproxy
-  HostName patience.mumak.net
-  LocalForward 7779 localhost:7779
-
 Host patience
   HostName patience.mumak.net
