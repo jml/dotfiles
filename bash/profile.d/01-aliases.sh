@@ -15,14 +15,7 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
-if hash hodor 2>/dev/null; then
-    alias t=hodor
-fi
-
 if hash apt-get 2>/dev/null; then
     alias sagu='sudo apt-get update'
     alias sagi='sudo apt-get install'
 fi
-
-
-# nix-build -E 'with import <nixpkgs>{}; callPackage ./foo.nix {}'
