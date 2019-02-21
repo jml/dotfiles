@@ -3,12 +3,33 @@
 jml's configuration, not including
 [emacs configuration](https://github.com/jml/emacs-configuration).
 
-## howto
+## Howto
 
+### macOS
+
+#### Dependencies
+
+All of these are optional, but highly recommended.
+
+- [brew](https://brew.sh/)
+- [direnv](https://direnv.net/)
+- [pyenv](https://github.com/pyenv/pyenv)
+- `coreutils` - `brew install coreutils`
+
+##### bash
+
+```console
+$ brew install bash
+$ sudo vi /etc/shells  # Add /usr/local/bin/bash to shells
+# chsh -s /usr/local/bin/bash
 ```
-VIRTUALENVWRAPPER_LOCATION=$HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
 
+#### Install shell files
+
+```console
+$ mkdir -p src
+$ cd src
+$ git clone git@github.com:jml/dotfiles.git
+$ cat > ~/.bash_profile
 . $HOME/src/dotfiles/bash/bashrc
-
-unset VIRTUALENVWRAPPER_LOCATION
 ```
