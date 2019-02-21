@@ -15,6 +15,7 @@ All of these are optional, but highly recommended.
 - [direnv](https://direnv.net/)
 - [pyenv](https://github.com/pyenv/pyenv)
 - `coreutils` - `brew install coreutils`
+- `git` - `brew install git`
 
 ##### bash
 
