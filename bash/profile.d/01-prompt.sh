@@ -41,9 +41,9 @@ __git_ps1 ()
 if [ -n "$PS1" ]; then
     _num_colors=$(tput colors)
     if [[ ${_num_colors} -ge 8 ]]; then
-        PS1='\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w$(__git_ps1)\[\e[0m\] ($?)\n\$ '
+        PS1='\[\e[1;32m\]\u@\h\[\e[0m\]:\[\e[1;34m\]\w$(__git_ps1)\[\e[0m\]\n\$ '
     else
-        PS1='\u@\h:\w$(__git_ps1) ($?)\n\$ '
+        PS1='\u@\h:\w$(__git_ps1)\n\$ '
     fi
 fi
 
