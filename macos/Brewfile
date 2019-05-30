@@ -1,0 +1,50 @@
+brew "ansible"
+brew "awscli"
+brew "bash-completion@2"
+brew "bash"
+brew "coreutils"
+brew "direnv"
+brew "git"
+brew "gnupg"
+brew "go"
+brew "graphviz"
+brew "jq"
+brew "mas"
+brew "mysql"
+brew "postgresql"
+brew "pre-commit"
+brew "pwgen"
+brew "pyenv"
+brew "pyenv-virtualenv"
+brew "shellcheck"
+brew "terraform"
+brew "the_silver_searcher"
+
+cask "1password"
+cask "dash"
+cask "datagrip"
+cask "discord"
+cask "google-chrome"
+cask "google-drive-file-stream"
+cask "iterm2"
+cask "karabiner-elements"
+cask "slack"
+cask "wireshark"
+
+cask "1password-cli"
+cask "google-backup-and-sync"
+
+tap "caskroom/fonts"
+cask "font-source-code-pro"
+
+tap "railwaycat/emacsmacport"
+brew "emacs-mac"
+brew "cask"
+
+# Memrise-specific stuff
+tap "tenzer/tap"
+brew "go2fa"
+
+cask "omnifocus"
+mas "moom", id: 419330170
+mas "Microsoft Excel", id: 462058435
