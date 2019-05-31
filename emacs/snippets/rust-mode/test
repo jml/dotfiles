@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: test
+# key: test
+# contributor: Jonathan M. Lange <jml@mumak.net>
+# --
+#[test]
+fn ${1:test_something}() {
+    $0
+}

@@ -1,0 +1,9 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: bench
+# key: bench
+# binding: direct-keybinding
+# --
+#[bench]
+fn bench_${1:something}(b: &mut Bencher) {
+    b.iter(|| &0);
+}
