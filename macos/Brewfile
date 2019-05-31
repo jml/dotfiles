@@ -22,7 +22,6 @@ brew "the_silver_searcher"
 
 cask "1password"
 cask "dash"
-cask "datagrip"
 cask "discord"
 cask "google-chrome"
 cask "google-drive-file-stream"
@@ -46,7 +45,7 @@ mas "moom", id: 419330170
 mas "Microsoft Excel", id: 462058435
 
 # Memrise-specific stuff
+cask "pritunl"
+cask "datagrip"
 tap "tenzer/tap"
 brew "go2fa"
-cask "pritunl"
-
