@@ -41,10 +41,12 @@ tap "railwaycat/emacsmacport"
 brew "emacs-mac"
 brew "cask"
 
-# Memrise-specific stuff
-tap "tenzer/tap"
-brew "go2fa"
-
 cask "omnifocus"
 mas "moom", id: 419330170
 mas "Microsoft Excel", id: 462058435
+
+# Memrise-specific stuff
+tap "tenzer/tap"
+brew "go2fa"
+cask "pritunl"
+
