@@ -43,6 +43,7 @@ brew "cask"
 cask "omnifocus"
 mas "moom", id: 419330170
 mas "Microsoft Excel", id: 462058435
+mas "Xcode", id: 497799835
 
 # Memrise-specific stuff
 cask "pritunl"

@@ -102,6 +102,9 @@ jml's configuration
   - [ ] Emacs
   - [ ] iTerm2
   - [ ] OmniFocus
+- Set up Xcode
+  - [ ] Launch Xcode (do this online)
+  - [ ] Set location of command-line tools (Preferences > Locations)
 
 Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow" button not working.
 
