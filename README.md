@@ -95,7 +95,17 @@ jml's configuration
   - [ ] Always launch
   - [ ] Not show preferences on launch
   - [ ] Run as menu bar application
-- [ ] Run Omnifocus and supply license (kept in 1Password)
+- Omnifocus
+  - [ ] Run Omnifocus and supply license (kept in 1Password)
+  - [ ] Link personal calendar to laptop
+  - [ ] Link work calendar to laptop
+  - [ ] Configure Forecast view to use `Time : Today` tag
+  - [ ] Configure Forecast view to show work & personal calendars
+  - Star commonly used perspectives
+    - [ ] Easy wins
+    - [ ] Weekly review
+    - [ ] Solo
+    - [ ] Tube
 - [ ] Set up Google Backup and Sync to get my own folders
 - [ ] Run Dash and provide license file (`~/Google Drive/Documents/Dash/dash.license`)
 - [ ] Set Chrome as default browser
