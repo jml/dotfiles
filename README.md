@@ -20,6 +20,7 @@ jml's configuration
   - [ ] Connect external displays to laptop
   - [ ] Arrange external displays
   - [ ] Set scaling on any Retina displays
+- [ ] Pair headphones with laptop
 - [ ] Configure system to automatically update
 - [ ] Install latest updates
 - [ ] Reboot
