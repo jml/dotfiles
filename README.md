@@ -81,6 +81,17 @@ jml's configuration
 
 - [ ] Change iTerm2 so that left option is Esc +
 
+- Set host name
+  - [ ] System Preferences > Sharing > Computer Name
+  - [ ] Terminal
+
+    ```console
+    sudo scutil --set <HostName>
+    ```
+
+- [ ] System Preferences > Security & Privacy > General > Require password 5 seconds after sleep
+- [ ] System Preferences > Desktop & Screen Saver > Screen Saver > Start after 5 minutes
+
 - [ ] Install Emacs configuration
 
   ```bash
