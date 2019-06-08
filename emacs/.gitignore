@@ -10,6 +10,7 @@ url/
 backups/
 private/
 tramp
+/transient/*
 /temp/*
 !/temp/README.md
 /#*
