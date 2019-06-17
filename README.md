@@ -80,6 +80,7 @@ jml's configuration
   ```
 
 - [ ] Change iTerm2 so that left option is Esc +
+- [ ] Install iTerm2 Shell Integration
 
 - Set host name
   - [ ] System Preferences > Sharing > Computer Name
