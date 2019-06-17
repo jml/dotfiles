@@ -127,6 +127,16 @@ jml's configuration
 - Set up Xcode
   - [ ] Launch Xcode (do this online)
   - [ ] Set location of command-line tools (Preferences > Locations)
+  - [ ] Install Xcode Command Line Tools
+
+    ```bash
+    xcode-select --install
+    ```
+  - [x] [Configure location of header files](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes#3035624)
+
+    ```bash
+    sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    ```
 
 Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow" button not working.
 
