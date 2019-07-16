@@ -18,13 +18,10 @@
          (add-hook 'go-mode-hook (lambda () (local-set-key (kbd "M-.") #'godef-jump)))))
 
 (req-package haskell-mode
-  :require (haskell-process ghc-nix haskell-style intero)
+  :require (haskell-process intero)
   :config (progn
             (add-hook 'haskell-mode-hook #'turn-on-haskell-indentation)
-            ;; intero-mode stupidly slow on Haskell scripts
             (add-hook 'haskell-mode-hook #'intero-mode)
-;;            (add-hook 'haskell-mode-hook #'use-nix-ghc-in-flycheck)
-;;            (global-intero-mode)
             (flycheck-add-next-checker 'intero
                                        '(warning . haskell-hlint))))
 

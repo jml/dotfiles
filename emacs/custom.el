@@ -74,7 +74,6 @@
    (quote
     (turn-on-haskell-decl-scan turn-on-haskell-doc turn-on-haskell-indentation)))
  '(haskell-program-name "ghci \"+.\"")
- '(highlight-beyond-fill-column-in-modes (quote ("python-mode")))
  '(highlight-changes-colors (quote ("#FD5FF0" "#AE81FF")))
  '(highlight-tail-colors
    (quote
