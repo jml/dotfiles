@@ -36,10 +36,14 @@
   :hook (haskell-mode . intero-mode)
   :config (flycheck-add-next-checker 'intero '(warning . haskell-hlint)))
 
+(use-package helm
+  :config
+  (helm-mode 1))
+
 (use-package helm-config
+  :after helm
   :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files))
-  :config (helm-mode 1))
+         ("C-x C-f" . helm-find-files)))
 
 (use-package lsp-mode
   :hook (prog-mode . lsp)
