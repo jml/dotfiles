@@ -3,9 +3,7 @@
 (req-package flycheck
   :config
   (progn
-    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup)
-    (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup)
-    (add-hook 'after-init-hook #'global-flycheck-mode)))
+    (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup)))
 
 (req-package flycheck-gometalinter
   :require (flycheck)
