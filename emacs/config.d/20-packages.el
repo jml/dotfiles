@@ -1,24 +1,25 @@
 
-(req-package flycheck
+(use-package flycheck
   :config
   (progn
     (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup)))
 
-(req-package flycheck-gometalinter
-  :require (flycheck)
+(use-package flycheck-gometalinter
+  :requires flycheck
   :config
   (progn
     (flycheck-gometalinter-setup)
     (setq flycheck-gometalinter-vendor t)
     (setq flycheck-gometalinter-fast t)))
 
-(req-package go-mode
+(use-package go-mode
   :config
   (progn (add-hook 'before-save-hook 'gofmt-before-save)
          (add-hook 'go-mode-hook (lambda () (local-set-key (kbd "M-.") #'godef-jump)))))
 
-(req-package haskell-mode
-  :require (haskell-process intero)
+;; TODO: This should not require intero, but rather the other way around.
+(use-package haskell-mode
+  :requires (haskell-process intero)
   :config (progn
             (add-hook 'haskell-mode-hook #'turn-on-haskell-indentation)
             (add-hook 'haskell-mode-hook #'intero-mode)
@@ -30,30 +31,30 @@
 
 ;; TODO: hindent set up
 
-(req-package helm-config
+(use-package helm-config
   :config (progn
             (helm-mode 1)
             (global-set-key (kbd "M-x") 'helm-M-x)
             (global-set-key (kbd "C-x C-f") 'helm-find-files)))
 
-(req-package lsp-mode
+(use-package lsp-mode
   :hook (prog-mode . lsp)
   :commands lsp)
 
 ;; optionally
-(req-package lsp-ui :commands lsp-ui-mode)
-(req-package company-lsp :commands company-lsp)
-(req-package helm-lsp :commands helm-lsp-workspace-symbol)
-(req-package lsp-treemacs :commands lsp-treemacs-errors-list)
+(use-package lsp-ui :commands lsp-ui-mode)
+(use-package company-lsp :commands company-lsp)
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+(use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 ;; optionally if you want to use debugger
-(req-package dap-mode)
+(use-package dap-mode)
 
-(req-package magit
+(use-package magit
   :bind (("\C-c g g" . magit-status)
          ("<f12>" . magit-status))
   :config (setq magit-last-seen-setup-instructions "1.4.0"))
 
-(req-package markdown-mode
+(use-package markdown-mode
   :config (progn
             (setq auto-mode-alist (cons '("\\.text" . markdown-mode) auto-mode-alist))
             (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
@@ -66,7 +67,7 @@
             (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.2)
             (set-face-attribute 'markdown-header-face-5 nil :inherit 'markdown-header-face :height 1.1)))
 
-(req-package org
+(use-package org
   :bind ("\C-c a" . org-agenda)
   :config (progn
             (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -75,20 +76,24 @@
             (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :foreground "#ffffff")
             (set-face-attribute 'org-level-3 nil :inherit 'outline-3 :foreground "#ffffff")))
 
-(req-package yasnippet
-  :require (yasnippet-snippets)
+;; TODO: This should be the other way around. yasnippet-snippets should
+;; require yasnippet.
+(use-package yasnippet
+  :requires (yasnippet-snippets)
   :config (yas-global-mode))
 
-(req-package diff-hl
+(use-package diff-hl
   :config (global-diff-hl-mode))
 
-(req-package popwin
+(use-package popwin
   :config (progn
             (popwin-mode 1)
             (global-set-key (kbd "C-z") popwin:keymap)))
 
-(req-package projectile
-  :require (helm-projectile helm-ag)
+;; TODO: This should probably *not* require helm-projectile, but rather the
+;; other way around.
+(use-package projectile
+  :requires (helm-projectile helm-ag)
   :bind (("C-c h" . helm-projectile)
          ("C-c p" . projectile-command-map))
   :config (progn
@@ -97,18 +102,18 @@
             (setq projectile-use-git-grep 1)))
 
 
-(req-package multiple-cursors
+(use-package multiple-cursors
 
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c C-<" . mc/mark-all-like-this)
          ("C-M-c" . mc/edit-lines)))
 
-(req-package python
-  :require (blacken isortify)
+(use-package python
+  :requires (blacken isortify)
   :config (progn
             (add-hook 'python-mode-hook 'blacken-mode)
             (add-hook `python-mode-hook 'isortify-mode)))
 
-(req-package terraform-mode
+(use-package terraform-mode
   :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))

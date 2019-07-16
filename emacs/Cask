@@ -120,7 +120,6 @@
 (depends-on "purescript-mode")
 (depends-on "pyenv-mode")
 (depends-on "python-docstring")
-(depends-on "req-package")
 (depends-on "rich-minority")
 (depends-on "rust-mode")
 (depends-on "s")

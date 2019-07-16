@@ -11,8 +11,9 @@
 (require 'cask "Cask")
 (cask-initialize)
 (pallet-mode t)
-(require 'req-package)
 
+;; This is only needed once, near the top of the file
+(eval-when-compile (require 'use-package))
 
 ;; Load manually-managed third-party plugins.
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins"))
@@ -23,11 +24,8 @@
 
 (require 'load-directory)
 
-
 ;; Configuration that's appropriate in all the places I use Emacs.
 (load-directory (expand-file-name "~/.emacs.d/config.d"))
 
 ;; Configuration that's only appropriate in this installation.
 (load-directory (expand-file-name "~/.emacs.d/local.d"))
-
-(req-package-finish)
