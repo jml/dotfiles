@@ -4,42 +4,42 @@
   :config (exec-path-from-shell-initialize))
 
 (use-package flycheck
-  :config
-  (progn
-    (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup)))
+  :ensure t)
+
+(use-package flycheck-haskell
+  :ensure t
+  :after flycheck
+  :hook (flycheck-mode . flycheck-haskell-setup))
 
 (use-package flycheck-gometalinter
-  :requires flycheck
+  :ensure t
+  :after flycheck
   :config
-  (progn
-    (flycheck-gometalinter-setup)
-    (setq flycheck-gometalinter-vendor t)
-    (setq flycheck-gometalinter-fast t)))
+  (flycheck-gometalinter-setup)
+  (setq flycheck-gometalinter-vendor t)
+  (setq flycheck-gometalinter-fast t))
 
 (use-package go-mode
-  :config
-  (progn (add-hook 'before-save-hook 'gofmt-before-save)
-         (add-hook 'go-mode-hook (lambda () (local-set-key (kbd "M-.") #'godef-jump)))))
+  :ensure t
+  :hook (before-save . gofmt-before-save)
+  :bind (:map go-mode-map ([remap xref-find-definitions] . godef-jump)))
 
-;; TODO: This should not require intero, but rather the other way around.
 (use-package haskell-mode
-  :requires (haskell-process intero)
+  :ensure t
   :hook ((haskell-mode . turn-on-haskell-indentation)
-         (haskell-mode . intero-mode)
          (haskell-mode . turn-on-haskell-doc)
-         (haskell-mode . turn-on-haskell-decl-scan))
+         (haskell-mode . turn-on-haskell-decl-scan)))
+
+(use-package intero
+  :ensure t
+  :after haskell-mode
+  :hook (haskell-mode . intero-mode)
   :config (flycheck-add-next-checker 'intero '(warning . haskell-hlint)))
 
-
-;; See also (add-hook 'haskell-mode-hook #'haskell-style) for switching on johanTibell style
-
-;; TODO: hindent set up
-
 (use-package helm-config
-  :config (progn
-            (helm-mode 1)
-            (global-set-key (kbd "M-x") 'helm-M-x)
-            (global-set-key (kbd "C-x C-f") 'helm-find-files)))
+  :bind (("M-x" . helm-M-x)
+         ("C-x C-f" . helm-find-files))
+  :config (helm-mode 1))
 
 (use-package lsp-mode
   :hook (prog-mode . lsp)
@@ -59,17 +59,16 @@
   :config (setq magit-last-seen-setup-instructions "1.4.0"))
 
 (use-package markdown-mode
-  :config (progn
-            (setq auto-mode-alist (cons '("\\.text" . markdown-mode) auto-mode-alist))
-            (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
-            (setq auto-mode-alist (cons '("\\.markdown" . markdown-mode) auto-mode-alist))
-
-            ;; Make markdown look prettier
-            (set-face-attribute 'markdown-header-face-1 nil :inherit 'markdown-header-face :height 2.0)
-            (set-face-attribute 'markdown-header-face-2 nil :inherit 'markdown-header-face :height 1.5)
-            (set-face-attribute 'markdown-header-face-3 nil :inherit 'markdown-header-face :height 1.3)
-            (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.2)
-            (set-face-attribute 'markdown-header-face-5 nil :inherit 'markdown-header-face :height 1.1)))
+  :mode (("\\.text" . markdown-mode)
+         ("\\.md" . markdown-mode)
+         ("\\.markdown" . markdown-mode))
+  :config
+  ;; Make markdown look prettier
+  (set-face-attribute 'markdown-header-face-1 nil :inherit 'markdown-header-face :height 2.0)
+  (set-face-attribute 'markdown-header-face-2 nil :inherit 'markdown-header-face :height 1.5)
+  (set-face-attribute 'markdown-header-face-3 nil :inherit 'markdown-header-face :height 1.3)
+  (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.2)
+  (set-face-attribute 'markdown-header-face-5 nil :inherit 'markdown-header-face :height 1.1))
 
 (use-package org
   :bind ("\C-c a" . org-agenda)
@@ -80,11 +79,12 @@
             (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :foreground "#ffffff")
             (set-face-attribute 'org-level-3 nil :inherit 'outline-3 :foreground "#ffffff")))
 
-;; TODO: This should be the other way around. yasnippet-snippets should
-;; require yasnippet.
 (use-package yasnippet
-  :requires (yasnippet-snippets)
+  :ensure t
   :config (yas-global-mode))
+
+(use-package yasnippet-snippets
+  :ensure t)
 
 (use-package diff-hl
   :config (global-diff-hl-mode))
@@ -94,30 +94,35 @@
             (popwin-mode 1)
             (global-set-key (kbd "C-z") popwin:keymap)))
 
-;; TODO: This should probably *not* require helm-projectile, but rather the
-;; other way around.
+;; TODO: Express that this depends on helm-projectile?
 (use-package projectile
-  :requires (helm-projectile helm-ag)
-  :bind (("C-c h" . helm-projectile)
-         ("C-c p" . projectile-command-map))
-  :config (progn
-            (projectile-global-mode)
-            (helm-projectile-on)
-            (setq projectile-use-git-grep 1)))
+  :ensure t
+  :bind ("C-c h" . helm-projectile)
+  :bind-keymap ("C-c p" . projectile-command-map)
+  :config
+  (projectile-global-mode)
+  (helm-projectile-on)
+  (setq projectile-use-git-grep 1))
 
+(use-package helm-ag
+  :ensure t)
 
 (use-package multiple-cursors
-
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c C-<" . mc/mark-all-like-this)
          ("C-M-c" . mc/edit-lines)))
 
 (use-package python
-  :requires (blacken isortify)
-  :config (progn
-            (add-hook 'python-mode-hook 'blacken-mode)
-            (add-hook `python-mode-hook 'isortify-mode)))
+  :ensure t)
+
+(use-package blacken
+  :after python
+  :hook (python-mode blacken-mode))
+
+(use-package isortify
+  :after python
+  :hook (python-mode isortify-mode))
 
 (use-package terraform-mode
-  :config (add-hook 'terraform-mode-hook #'terraform-format-on-save-mode))
+  :hook (terraform-mode . terraform-format-on-save-mode))
