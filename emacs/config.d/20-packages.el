@@ -24,11 +24,11 @@
 ;; TODO: This should not require intero, but rather the other way around.
 (use-package haskell-mode
   :requires (haskell-process intero)
-  :config (progn
-            (add-hook 'haskell-mode-hook #'turn-on-haskell-indentation)
-            (add-hook 'haskell-mode-hook #'intero-mode)
-            (flycheck-add-next-checker 'intero
-                                       '(warning . haskell-hlint))))
+  :hook ((haskell-mode . turn-on-haskell-indentation)
+         (haskell-mode . intero-mode)
+         (haskell-mode . turn-on-haskell-doc)
+         (haskell-mode . turn-on-haskell-decl-scan))
+  :config (flycheck-add-next-checker 'intero '(warning . haskell-hlint)))
 
 
 ;; See also (add-hook 'haskell-mode-hook #'haskell-style) for switching on johanTibell style

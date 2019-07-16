@@ -5,17 +5,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(Buffer-menu-use-header-line nil)
- '(TeX-shell "bash" t)
- '(TeX-view-style
-   (quote
-    (("^a4\\(?:dutch\\|paper\\|wide\\)?\\|sem-a4$" "xdvi %d -paper a4")
-     ("^a5\\(?:comb\\|paper\\)?$" "xdvi %d -paper a5")
-     ("^b5paper$" "xdvi %d -paper b5")
-     ("^letterpaper$" "xdvi %d -paper us")
-     ("^legalpaper$" "xdvi %d -paper legal")
-     ("^executivepaper$" "xdvi %d -paper 7.25x10.5in")
-     ("^landscape$" "xdvi %d -paper a4r -s 4")
-     ("." "xdvi %d -paper a4"))))
  '(ansi-color-faces-vector
    [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector
@@ -26,12 +15,8 @@
  '(background-mode dark)
  '(backup-by-copying-when-linked t)
  '(backup-directory-alist (quote ((".*" . "~/.emacs.d/backups/"))))
- '(bbdb-check-zip-codes-p nil)
- '(bbdb-default-country "UK")
- '(bbdb-north-american-phone-numbers-p nil)
  '(blink-cursor-mode nil)
  '(browse-url-browser-function (quote browse-url-default-macosx-browser))
- '(c-default-style "java")
  '(case-fold-search t)
  '(column-number-mode t)
  '(comment-auto-fill-only-comments t)
@@ -70,9 +55,6 @@
  '(gofmt-args (quote ("-s" "-w")))
  '(grep-template "grep <C> -I -nH -e <R> <F>")
  '(gutter-buffers-tab-visible-p nil)
- '(haskell-mode-hook
-   (quote
-    (turn-on-haskell-decl-scan turn-on-haskell-doc turn-on-haskell-indentation)))
  '(haskell-program-name "ghci \"+.\"")
  '(highlight-beyond-fill-column-in-modes (quote ("python-mode")))
  '(highlight-changes-colors (quote ("#FD5FF0" "#AE81FF")))
@@ -102,44 +84,6 @@
  '(markdown-indent-on-enter t)
  '(menu-bar-mode nil)
  '(message-sendmail-envelope-from (quote header))
- '(org-agenda-custom-commands
-   (quote
-    (("n" "Agenda and all TODO's"
-      ((agenda "")
-       (alltodo)))
-     ("w" "Waiting For" todo "WF")
-     ("i" "In progress" todo "INPROGRESS"))))
- '(org-agenda-dim-blocked-tasks (quote invisible))
- '(org-archive-location "%s_archive::datetree/*")
- '(org-archive-reversed-order t)
- '(org-archive-save-context-info (quote (time file category todo itags)))
- '(org-completion-use-iswitchb t)
- '(org-enforce-todo-dependencies t)
- '(org-fontify-done-headline t)
- '(org-fontify-whole-heading-line t)
- '(org-hide-leading-stars t)
- '(org-link-abbrev-alist
-   (quote
-    (("lp" . "https://bugs.launchpad.net/bugs/")
-     ("RT" . "https://rt.admin.canonical.com/Ticket/Display.html?id="))))
- '(org-link-frame-setup
-   (quote
-    ((vm . vm-visit-folder-other-frame)
-     (gnus . org-gnus-no-new-news)
-     (file . find-file)
-     (wl . wl-other-frame))))
- '(org-log-into-drawer "LOGBOOK")
- '(org-modules
-   (quote
-    (org-bbdb org-bibtex org-docview org-gnus org-info org-jsinfo org-irc org-mew org-mhe org-rmail org-vm org-wl org-w3m)))
- '(org-startup-indented t)
- '(org-stuck-projects (quote ("/-DONE" ("TODO" "AGENDA") nil "")))
- '(org-todo-keywords
-   (quote
-    ((sequence "TODO(t)" "NEXT(n!)" "INPROGRESS(i!)" "WF(w!)" "|" "DONE(d!)" "CANCELLED(c!@)")
-     (sequence))))
- '(org-use-fast-todo-selection t)
- '(org-wikinodes-scope (quote directory))
  '(package-archives
    (quote
     (("gnu" . "https://elpa.gnu.org/packages/")
@@ -159,21 +103,7 @@
  '(rst-level-face-base-light 30)
  '(safe-local-variable-values
    (quote
-    ((intero-targets "banksucker:lib" "banksucker:exe:banksucker" "banksucker:test:banksucker-test")
-     (intero-targets "terradiff:lib" "terradiff:exe:terradiff" "terradiff:test:terradiff-tests")
-     (intero-targets "compare-revisions:lib" "compare-revisions:exe:compare-revisions" "compare-revisions:test:tasty")
-     (intero-targets "mass-driver:lib" "mass-driver:exe:mass-driver" "mass-driver:test:mass-driver-tests")
-     (intero-targets "servant:lib" "servant:test:spec" "servant-client:lib" "servant-client:test:spec" "servant-client-core:lib" "servant-client-core:test:spec" "servant-server:lib" "servant-server:test:spec")
-     (intero-targets "servant:lib" "servant-server:lib" "servant-server:test:spec")
-     (intero-targets "servant:lib" "servant:test:doctests" "servant:test:spec" "servant-server:lib" "servant-server:test:doctests" "servant-server:test:spec")
-     (intero-targets ":lib" ":test:graphql-api-tests")
-     (intero-targets ":lib" ":test:graphql-api-doctests" ":test:graphql-api-tests")
-     (intero-stack-yaml . "/Users/jml/src/graphql-api/stack-8.2.yaml")
-     (intero-targets "magic-wormhole:lib" "magic-wormhole:exe:hocus-pocus" "magic-wormhole:test:tasty")
-     (intero-targets "compare-revisions:lib" "compare-revisions:exe:compare-images" "compare-revisions:exe:compare-revisions" "compare-revisions:test:tasty")
-     (flycheck-hlint-language-extensions quote
-                                         ("NoImplicitPrelude"))
-     (haskell-process-use-ghci . t)
+    ((haskell-process-use-ghci . t)
      (haskell-indent-spaces . 4)
      (whitespace-style face tabs spaces trailing lines space-before-tab::space newline indentation::space empty space-after-tab::space space-mark tab-mark newline-mark)
      (encoding . utf8)
@@ -204,7 +134,6 @@
  '(split-width-threshold nil)
  '(sql-pop-to-buffer-after-send-region t)
  '(tab-width 4)
- '(tex-shell-file-name nil)
  '(text-mode-hook (quote (text-mode-hook-identify)))
  '(tool-bar-mode nil nil (tool-bar))
  '(toolbar-visible-p nil)
@@ -238,8 +167,6 @@
  '(vc-handled-backends (quote (RCS CVS SVN SCCS Git Hg Arch)))
  '(vc-make-backup-files t)
  '(visible-bell t)
- '(weechat-color-list
-   (unspecified "#272822" "#3C3D37" "#F70057" "#F92672" "#86C30D" "#A6E22E" "#BEB244" "#E6DB74" "#40CAE4" "#66D9EF" "#FB35EA" "#FD5FF0" "#74DBCD" "#A1EFE4" "#F8F8F2" "#F8F8F0"))
  '(which-function-mode t)
  '(wiki-follow-name-action (quote find-file))
  '(wiki-name-regexp "\\<[A-Z][a-z]+\\([A-Z][a-z]+\\)+\\>"))
