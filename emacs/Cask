@@ -13,6 +13,7 @@
 (depends-on "dash")
 (depends-on "dash-at-point")
 (depends-on "diff-hl")
+(depends-on "diminish")
 (depends-on "direnv")
 (depends-on "docker")
 (depends-on "docker-tramp")

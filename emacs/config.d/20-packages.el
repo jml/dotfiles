@@ -39,6 +39,8 @@
 ;; Helm
 
 (use-package helm
+  :after diminish
+  :diminish helm-mode
   :config
   (helm-mode 1))
 
@@ -69,6 +71,8 @@
 ;; Magit
 
 (use-package magit
+  :after diminish
+  :diminish auto-revert-mode
   :bind (("\C-c g g" . magit-status)
          ("<f12>" . magit-status))
   :config (setq magit-last-seen-setup-instructions "1.4.0"))
@@ -79,6 +83,8 @@
 ;; Smart Mode Line
 ;;
 ;; A better mode line
+(use-package diminish)
+
 (use-package smart-mode-line-atom-one-dark-theme)
 
 (use-package smart-mode-line
@@ -94,6 +100,8 @@
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 (use-package smartparens
+  :after diminish
+  :diminish smartparens-mode
   :hook (prog-mode . smartparens-mode)
   :bind
   (:map smartparens-mode-map
@@ -143,12 +151,17 @@
   :hook (prog-mode . lsp)
   :commands lsp)
 
-(use-package lsp-ui :commands lsp-ui-mode)
+(use-package lsp-ui
+  :after diminish
+  :diminish eldoc-mode
+  :commands lsp-ui-mode)
 
 (use-package company-lsp
   :commands company-lsp)
 
 (use-package company-box
+  :after diminish
+  :diminish company-box-mode
   :hook (company-mode . company-box-mode))
 
 (use-package helm-lsp
@@ -159,6 +172,8 @@
 
 ;; Snippets
 (use-package yasnippet
+  :after diminish
+  :diminish yas-minor-mode
   :config (yas-global-mode))
 
 (use-package yasnippet-snippets)
