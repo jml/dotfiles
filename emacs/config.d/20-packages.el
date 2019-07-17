@@ -75,6 +75,8 @@
 
 (use-package paredit)
 (use-package smart-mode-line-powerline-theme)  ;; TODO: Do I actually use this?
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
 
 ;; Flycheck
 
@@ -217,15 +219,3 @@
 ;; Nix
 (use-package nix-mode)
 (use-package pretty-sha-path)
-
-;; Things that are "installed" but I don't know whether I want them
-(use-package ag)
-(use-package dash)
-(use-package el-get)
-(use-package epl)
-(use-package expand-region)
-(use-package f)
-(use-package helm-company)
-(use-package s)
-(use-package shut-up)
-(use-package string-inflection)
