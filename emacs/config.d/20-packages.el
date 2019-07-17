@@ -62,6 +62,10 @@
   (helm-projectile-on)
   (setq projectile-use-git-grep 1))
 
+(use-package popwin
+  :config
+  (popwin-mode 1))
+
 ;; Magit
 
 (use-package magit
@@ -78,6 +82,8 @@
 (use-package smart-mode-line-powerline-theme)  ;; TODO: Do I actually use this?
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
+(use-package smartparens
+  :hook (prog-mode . smartparens-mode))
 
 ;; Flycheck
 
