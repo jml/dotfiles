@@ -69,7 +69,8 @@
          ("<f12>" . magit-status))
   :config (setq magit-last-seen-setup-instructions "1.4.0"))
 
-(use-package magit-todos)  ;; TODO: Figure out how to turn this on by default.
+(use-package magit-todos
+  :hook (magit-mode . magit-todos-mode))
 
 ;; Editing
 
