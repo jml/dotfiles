@@ -9,15 +9,29 @@
   (setq auto-package-update-hide-results t)
   (auto-package-update-maybe))
 
+;; Environment
+
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
   :config (exec-path-from-shell-initialize))
+
+(use-package direnv)
+(use-package projectile-direnv
+  :after (direnv projectile))
+
+;; Package management
+
+(use-package paradox)
+
+;; Multiple cursors
 
 (use-package multiple-cursors
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c C-<" . mc/mark-all-like-this)
          ("C-M-c" . mc/edit-lines)))
+
+;; Diff highlighting in buffer
 
 (use-package diff-hl
   :config (global-diff-hl-mode))
@@ -35,6 +49,7 @@
          ("C-x C-f" . helm-find-files)))
 
 (use-package helm-ag)
+(use-package helm-git-grep)
 
 ;; Projectile
 
@@ -53,6 +68,13 @@
   :bind (("\C-c g g" . magit-status)
          ("<f12>" . magit-status))
   :config (setq magit-last-seen-setup-instructions "1.4.0"))
+
+(use-package magit-todos)  ;; TODO: Figure out how to turn this on by default.
+
+;; Editing
+
+(use-package paredit)
+(use-package smart-mode-line-powerline-theme)  ;; TODO: Do I actually use this?
 
 ;; Flycheck
 
@@ -84,9 +106,18 @@
 
 (use-package yasnippet-snippets)
 
+;; Dash
+
+;; TODO: Register a keyboard binding for dash-at-point
+(use-package dash-at-point)
+
 ;; LANGUAGES
 
 ;; Go
+
+(use-package go-mode
+  :hook (before-save . gofmt-before-save)
+  :bind (:map go-mode-map ([remap xref-find-definitions] . godef-jump)))
 
 (use-package flycheck-gometalinter
   :after flycheck
@@ -95,9 +126,9 @@
   (setq flycheck-gometalinter-vendor t)
   (setq flycheck-gometalinter-fast t))
 
-(use-package go-mode
-  :hook (before-save . gofmt-before-save)
-  :bind (:map go-mode-map ([remap xref-find-definitions] . godef-jump)))
+(use-package go-impl)
+(use-package go-projectile)
+(use-package go-snippets)
 
 ;; Haskell
 
@@ -114,6 +145,9 @@
   :after haskell-mode
   :hook (haskell-mode . intero-mode)
   :config (flycheck-add-next-checker 'intero '(warning . haskell-hlint)))
+
+(use-package hindent)
+(use-package haskell-snippets)
 
 ;; Markdown
 (use-package markdown-mode
@@ -142,6 +176,10 @@
 
 (use-package python)
 
+(use-package pyenv-mode)
+(use-package python-docstring)
+(use-package pipenv)
+
 (use-package blacken
   :after python
   :hook (python-mode blacken-mode))
@@ -150,7 +188,44 @@
   :after python
   :hook (python-mode isortify-mode))
 
+(use-package flycheck-pyflakes)
+
+;; Rust
+
+(use-package cargo)
+(use-package rust-mode)
+
 ;; Terraform
 
 (use-package terraform-mode
   :hook (terraform-mode . terraform-format-on-save-mode))
+
+;; Docker
+
+(use-package docker)
+(use-package dockerfile-mode)
+
+;; Other languages
+
+(use-package graphviz-dot-mode)
+(use-package groovy-mode)
+(use-package protobuf-mode)
+(use-package toml-mode)
+(use-package web-mode)
+(use-package yaml-mode)
+
+;; Nix
+(use-package nix-mode)
+(use-package pretty-sha-path)
+
+;; Things that are "installed" but I don't know whether I want them
+(use-package ag)
+(use-package dash)
+(use-package el-get)
+(use-package epl)
+(use-package expand-region)
+(use-package f)
+(use-package helm-company)
+(use-package s)
+(use-package shut-up)
+(use-package string-inflection)
