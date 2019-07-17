@@ -69,7 +69,7 @@
  '(package-load-list (quote (all paredit)))
  '(package-selected-packages
    (quote
-    (use-package popwin auto-package-update company-box helm-lsp company-lsp helm-config lsp-ui dap-mode dracula-theme groovy-mode bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode isortify pyenv-mode flycheck-gradle gradle-mode pipenv blacken cargo commander dash-at-point diff-hl direnv docker dockerfile-mode exec-path-from-shell expand-region flycheck-gometalinter flycheck-haskell flycheck-pyflakes git go-impl go-projectile go-snippets graphql-mode graphviz-dot-mode haskell-snippets helm-git-grep helm-projectile hindent intero magit-todos markdown-mode multiple-cursors nix-mode org package-build pallet paradox paredit pretty-sha-path projectile-direnv protobuf-mode psci python-docstring smartparens terraform-mode toml-mode visual-fill-column web-mode yaml-mode yasnippet-snippets)))
+    (pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck smartparens expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org pallet psci)))
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)

@@ -9,6 +9,16 @@
   (setq auto-package-update-hide-results t)
   (auto-package-update-maybe))
 
+;; Theme
+
+;; Other themes I have loved:
+;; - monokai
+;; - noctilux
+;; - spacegray
+(use-package dracula-theme
+  :config
+  (load-theme 'dracula))
+
 ;; Environment
 
 (use-package exec-path-from-shell
@@ -55,8 +65,11 @@
 
 ;; Projectile
 
+(use-package helm-projectile)
+
 ;; TODO: Express that this depends on helm-projectile?
 (use-package projectile
+  :after helm-projectile
   :bind ("C-c h" . helm-projectile)
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
