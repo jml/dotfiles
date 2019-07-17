@@ -6,6 +6,7 @@
 (depends-on "ag")
 (depends-on "anaphora")
 (depends-on "async")
+(depends-on "auto-package-update")
 (depends-on "bind-key")
 (depends-on "blacken")
 (depends-on "caml")
