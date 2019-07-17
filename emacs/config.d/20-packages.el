@@ -12,12 +12,6 @@
 (use-package diff-hl
   :config (global-diff-hl-mode))
 
-;; TODO: Update this to use bind-keymap
-(use-package popwin
-  :config (progn
-            (popwin-mode 1)
-            (global-set-key (kbd "C-z") popwin:keymap)))
-
 ;; Helm
 
 (use-package helm
