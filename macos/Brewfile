@@ -42,7 +42,6 @@ cask "font-source-code-pro"
 
 tap "railwaycat/emacsmacport"
 brew "emacs-mac"
-brew "cask"
 
 cask "omnifocus"
 mas "moom", id: 419330170
