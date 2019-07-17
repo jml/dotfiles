@@ -23,7 +23,7 @@
  '(custom-buffer-indent 4)
  '(custom-safe-themes
    (quote
-    ("274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
+    ("bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
  '(dabbrev-case-distinction nil)
  '(dabbrev-case-fold-search nil)
  '(dabbrev-case-replace nil)
@@ -69,7 +69,7 @@
  '(package-load-list (quote (all paredit)))
  '(package-selected-packages
    (quote
-    (popwin auto-package-update company-box helm-lsp company-lsp helm-config lsp-ui dap-mode dracula-theme groovy-mode bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode isortify pyenv-mode flycheck-gradle gradle-mode pipenv blacken cargo commander dash-at-point diff-hl direnv docker dockerfile-mode exec-path-from-shell expand-region flycheck-gometalinter flycheck-haskell flycheck-pyflakes git go-impl go-projectile go-snippets graphql-mode graphviz-dot-mode haskell-snippets helm-ag helm-git-grep helm-projectile hindent intero magit-todos markdown-mode multiple-cursors nix-mode org package-build pallet paradox paredit pretty-sha-path projectile-direnv protobuf-mode psci python-docstring smart-mode-line-powerline-theme smartparens terraform-mode toml-mode visual-fill-column web-mode yaml-mode yasnippet-snippets)))
+    (use-package popwin auto-package-update company-box helm-lsp company-lsp helm-config lsp-ui dap-mode dracula-theme groovy-mode bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode isortify pyenv-mode flycheck-gradle gradle-mode pipenv blacken cargo commander dash-at-point diff-hl direnv docker dockerfile-mode exec-path-from-shell expand-region flycheck-gometalinter flycheck-haskell flycheck-pyflakes git go-impl go-projectile go-snippets graphql-mode graphviz-dot-mode haskell-snippets helm-ag helm-git-grep helm-projectile hindent intero magit-todos markdown-mode multiple-cursors nix-mode org package-build pallet paradox paredit pretty-sha-path projectile-direnv protobuf-mode psci python-docstring smartparens terraform-mode toml-mode visual-fill-column web-mode yaml-mode yasnippet-snippets)))
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)

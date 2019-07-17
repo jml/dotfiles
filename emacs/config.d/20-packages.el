@@ -76,10 +76,21 @@
 (use-package magit-todos
   :hook (magit-mode . magit-todos-mode))
 
+;; Smart Mode Line
+;;
+;; A better mode line
+(use-package smart-mode-line-atom-one-dark-theme)
+
+(use-package smart-mode-line
+  :after smart-mode-line-atom-one-dark-theme
+  :config
+  (setq sml/theme 'atom-one-dark)
+  (sml/setup))
+
 ;; Editing
 
 (use-package paredit)
-(use-package smart-mode-line-powerline-theme)  ;; TODO: Do I actually use this?
+
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 (use-package smartparens
