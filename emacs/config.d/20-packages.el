@@ -67,7 +67,6 @@
 
 (use-package helm-projectile)
 
-;; TODO: Express that this depends on helm-projectile?
 (use-package projectile
   :after helm-projectile
   :bind ("C-c h" . helm-projectile)
@@ -239,23 +238,12 @@
   :mode (("\\.text" . markdown-mode)
          ("\\.md" . markdown-mode)
          ("\\.markdown" . markdown-mode))
-  :config
-  ;; TODO: Use custom-face for this
-  ;; Make markdown look prettier
-  (set-face-attribute 'markdown-header-face-1 nil :inherit 'markdown-header-face :height 2.0)
-  (set-face-attribute 'markdown-header-face-2 nil :inherit 'markdown-header-face :height 1.5)
-  (set-face-attribute 'markdown-header-face-3 nil :inherit 'markdown-header-face :height 1.3)
-  (set-face-attribute 'markdown-header-face-4 nil :inherit 'markdown-header-face :height 1.2)
-  (set-face-attribute 'markdown-header-face-5 nil :inherit 'markdown-header-face :height 1.1))
-
-(use-package org
-  :bind ("\C-c a" . org-agenda)
-  :config
-  (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-  (set-face-attribute 'org-headline-done nil :foreground "#859900")
-  (set-face-attribute 'org-level-1 nil :foreground "#ffffff" :height 1.5)
-  (set-face-attribute 'org-level-2 nil :inherit 'outline-2 :foreground "#ffffff")
-  (set-face-attribute 'org-level-3 nil :inherit 'outline-3 :foreground "#ffffff"))
+  :custom-face
+  (markdown-header-face-1 ((t (:inherit 'markdown-header-face :height 2.0))))
+  (markdown-header-face-2 ((t (:inherit 'markdown-header-face :height 1.5))))
+  (markdown-header-face-3 ((t (:inherit 'markdown-header-face :height 1.3))))
+  (markdown-header-face-4 ((t (:inherit 'markdown-header-face :height 1.2))))
+  (markdown-header-face-5 ((t (:inherit 'markdown-header-face :height 1.1)))))
 
 ;; Python
 
