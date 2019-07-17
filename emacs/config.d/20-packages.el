@@ -50,7 +50,7 @@
   :bind (("M-x" . helm-M-x)
          ("C-x C-f" . helm-find-files)))
 
-(use-package helm-ag)
+(use-package helm-rg)
 (use-package helm-git-grep)
 
 ;; Projectile
