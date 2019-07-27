@@ -79,7 +79,9 @@
  '(rst-level-face-base-light 30)
  '(safe-local-variable-values
    (quote
-    ((haskell-process-use-ghci . t)
+    ((lsp-pyls-plugins-pylint-args quote
+                                   ("--rcfile=/Users/jml/src/memflow/pylintrc"))
+     (haskell-process-use-ghci . t)
      (haskell-indent-spaces . 4)
      (whitespace-style face tabs spaces trailing lines space-before-tab::space newline indentation::space empty space-after-tab::space space-mark tab-mark newline-mark)
      (encoding . utf8)
