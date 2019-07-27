@@ -161,7 +161,25 @@
 
 (use-package lsp-mode
   :hook (prog-mode . lsp)
-  :commands lsp)
+  :commands lsp
+  :config
+  ;; Remove once https://github.com/emacs-lsp/lsp-mode/pull/928 is merged and
+  ;; released.
+  ;;
+  ;; Allows us to specify command-line arguments to pylint, which lets us
+  ;; provide a .dir-locals.el that sets `--rcfile=<project-local-config>`,
+  ;; avoiding a tonne of spurious errors while still getting pylint feedback.
+  ;;
+  ;; e.g.
+  ;;
+  ;; ((nil . ((lsp-pyls-plugins-pylint-args . '("--rcfile=/Users/jml/src/myproject/pylintrc")))))
+  (defcustom lsp-pyls-plugins-pylint-args nil
+    "Command-line arguments to pylint."
+    :risky t
+    :type '(repeat string)
+    :group 'lsp-pyls)
+  (lsp-register-custom-settings
+   '(("pyls.plugins.pylint.args" lsp-pyls-plugins-pylint-args))))
 
 (use-package lsp-ui
   :after diminish
