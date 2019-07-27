@@ -235,14 +235,6 @@
 (use-package python-docstring)
 (use-package pipenv)
 
-(use-package blacken
-  :after python
-  :hook (python-mode blacken-mode))
-
-(use-package isortify
-  :after python
-  :hook (python-mode isortify-mode))
-
 (use-package flycheck-pyflakes)
 
 ;; Rust
