@@ -92,6 +92,12 @@
 (use-package magit-todos
   :hook (magit-mode . magit-todos-mode))
 
+;; git-link
+;;
+;; Interactive Emacs functions that create URLs for files and commits in
+;; GitHub repositories.
+(use-package git-link)
+
 ;; Smart Mode Line
 ;;
 ;; A better mode line
