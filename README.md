@@ -80,6 +80,7 @@ jml's configuration
   ```
 
 - [ ] Change iTerm2 so that left option is Esc +
+- [ ] Change iTerm2 font to Source Code Pro
 - [ ] Install iTerm2 Shell Integration
 
 - Set host name
@@ -97,11 +98,8 @@ jml's configuration
 
   ```bash
   ln -s ~/src/dotfiles/emacs ~/.emacs.d
-  cd ~/.emacs.d/
-  cask install
-  ```
-
-- [ ] Set up Karabiner-Elements to swap stupid UK key (`non_us_backslash`) for tilde (`grave_accent_and_tilde`)
+  ```  
+- [ ] Launch Emacs
 - [ ] Give Moom access to the system
 - Change Moom settings
   - [ ] Always launch
@@ -133,7 +131,7 @@ jml's configuration
     ```bash
     xcode-select --install
     ```
-  - [x] [Configure location of header files](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes#3035624)
+  - [ ] [Configure location of header files](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes#3035624)
 
     ```bash
     sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
@@ -141,6 +139,9 @@ jml's configuration
 
 Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow" button not working.
 
+#### UK (ISO) keyboard layout?
+
+- [ ] Set up Karabiner-Elements to swap stupid UK key (`non_us_backslash`) for tilde (`grave_accent_and_tilde`)
 
 #### Memrise-specific stuff
 
@@ -161,3 +162,5 @@ Change your keyboard layout
 - [ ] Select the option to Show Input menu in login window.
 
 Source: https://support.apple.com/en-gb/HT202036
+
+TODO: Various language servers for Emacs
