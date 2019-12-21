@@ -120,7 +120,12 @@
 
 ;; Flycheck
 
-(use-package flycheck)
+(use-package flycheck
+  :bind (:map flycheck-mode-map
+              ("M-n" . flycheck-next-error)
+              ("M-p" . flycheck-previous-error))
+  :config (flycheck-add-next-checker 'python-flake8 'python-pylint))
+
 (use-package flymake
   :bind
   (:map flymake-mode-map
@@ -130,7 +135,7 @@
 ;; LSP
 
 (use-package lsp-mode
-  :hook (prog-mode . lsp)
+  :hook (rust-mode . lsp)
   :commands lsp)
 
 (use-package lsp-ui
@@ -166,6 +171,15 @@
 (use-package dash-at-point)
 
 ;; LANGUAGES
+
+;; Python
+(use-package elpy
+  :after flycheck
+  :init
+  (elpy-enable)
+  :config
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
 
 ;; Go
 

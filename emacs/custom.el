@@ -23,7 +23,7 @@
  '(custom-buffer-indent 4)
  '(custom-safe-themes
    (quote
-    ("bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
+    ("947190b4f17f78c39b0ab1ea95b1e6097cc9202d55c73a702395fc817f899393" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
  '(dabbrev-case-distinction nil)
  '(dabbrev-case-fold-search nil)
  '(dabbrev-case-replace nil)
@@ -69,7 +69,7 @@
  '(package-load-list (quote (all paredit)))
  '(package-selected-packages
    (quote
-    (git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
+    (elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)
