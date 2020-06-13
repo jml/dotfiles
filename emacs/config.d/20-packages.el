@@ -19,13 +19,22 @@
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
 
-;; Other themes I have loved:
-;; - monokai
-;; - noctilux
-;; - spacegray
-(use-package dracula-theme
+
+(use-package doom-themes
   :config
-  (load-theme 'dracula))
+  ;; Global settings (defaults)
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-one t)
+
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+
+  (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+  (doom-themes-treemacs-config)
+
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 
 ;; Environment
 
