@@ -356,8 +356,6 @@
   :hook (terraform-mode . terraform-format-on-save-mode))
 
 ;; Docker
-
-(use-package docker)
 (use-package dockerfile-mode)
 
 ;; Other languages
