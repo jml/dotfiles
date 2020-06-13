@@ -195,8 +195,7 @@
          ("<f12>" . magit-status))
   :config (setq magit-last-seen-setup-instructions "1.4.0"))
 
-(use-package magit-todos
-  :hook (magit-mode . magit-todos-mode))
+(use-package magit-todos)
 
 ;; git-link
 ;;
