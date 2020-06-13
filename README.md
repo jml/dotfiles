@@ -164,3 +164,5 @@ Change your keyboard layout
 Source: https://support.apple.com/en-gb/HT202036
 
 TODO: Various language servers for Emacs
+
+https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
