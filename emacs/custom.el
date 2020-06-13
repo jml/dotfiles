@@ -42,7 +42,7 @@
  '(flymake-log-level -1)
  '(flymake-run-in-place nil)
  '(global-font-lock-mode t)
- '(global-linum-mode t)
+ '(global-linum-mode nil)
  '(godef-command "/Users/jml/go/bin/godef")
  '(gofmt-args (quote ("-s" "-w")))
  '(grep-template "grep <C> -I -nH -e <R> <F>")
@@ -69,7 +69,7 @@
  '(package-load-list (quote (all paredit)))
  '(package-selected-packages
    (quote
-    (solaire-mode elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
+    (nlinum solaire-mode elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)

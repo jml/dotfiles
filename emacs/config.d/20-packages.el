@@ -50,9 +50,14 @@
          ("C-M-c" . mc/edit-lines)))
 
 ;; Diff highlighting in buffer
-
 (use-package diff-hl
   :config (global-diff-hl-mode))
+
+;; More efficient way of showing line numbers
+(use-package nlinum
+  :config
+  (global-nlinum-mode)
+  (setq nlinum-highlight-current-line t))
 
 ;; Helm
 
