@@ -1,7 +1,5 @@
 brew "ansible"
 brew "awscli"
-brew "bash-completion@2"
-brew "bash"
 brew "coreutils"
 brew "direnv"
 brew "git"
