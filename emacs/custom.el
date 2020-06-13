@@ -23,7 +23,7 @@
  '(custom-buffer-indent 4)
  '(custom-safe-themes
    (quote
-    ("855eb24c0ea67e3b64d5d07730b96908bac6f4cd1e5a5986493cbac45e9d9636" "5f1bd7f67dc1598977e69c6a0aed3c926f49581fdf395a6246f9bc1df86cb030" "947190b4f17f78c39b0ab1ea95b1e6097cc9202d55c73a702395fc817f899393" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
+    ("dcdd1471fde79899ae47152d090e3551b889edf4b46f00df36d653adc2bf550d" "d0fe9efeaf9bbb6f42ce08cd55be3f63d4dfcb87601a55e36c3421f2b5dc70f3" "13fa7a304bd53aa4c0beec4c25c4f811de499bce9deb326798265ed0015b3b78" "8e9b37a4eb68542bb3f6d76afd303fb45196f0c536863b61b9b76a64bdc421ef" "a41b81af6336bd822137d4341f7e16495a49b06c180d6a6417bf9fd1001b6d2b" "63df625509cec7b2b7deba1d48ef07ffbee99c735a95d130ad9d1fc3df8b9a34" "55c2069e99ea18e4751bd5331b245a2752a808e91e09ccec16eb25dadbe06354" "669e02142a56f63861288cc585bee81643ded48a19e36bfdf02b66d745bcc626" "855eb24c0ea67e3b64d5d07730b96908bac6f4cd1e5a5986493cbac45e9d9636" "5f1bd7f67dc1598977e69c6a0aed3c926f49581fdf395a6246f9bc1df86cb030" "947190b4f17f78c39b0ab1ea95b1e6097cc9202d55c73a702395fc817f899393" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
  '(dabbrev-case-distinction nil)
  '(dabbrev-case-fold-search nil)
  '(dabbrev-case-replace nil)
@@ -69,7 +69,7 @@
  '(package-load-list (quote (all paredit)))
  '(package-selected-packages
    (quote
-    (elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
+    (kubernetes magit-popup floobits atom-one-dark-theme elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)
