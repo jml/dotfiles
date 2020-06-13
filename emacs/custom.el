@@ -74,7 +74,6 @@
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)
- '(pop-up-windows nil)
  '(query-user-mail-address nil t)
  '(require-final-newline t)
  '(rst-level-face-base-light 30)
