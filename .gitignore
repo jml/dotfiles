@@ -2,3 +2,4 @@
 /emacs/.cache
 /emacs/.last-package-update-day
 /emacs/elpy/
+/emacs/forge-database.sqlite
