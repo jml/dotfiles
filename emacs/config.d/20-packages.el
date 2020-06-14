@@ -199,6 +199,9 @@
 
 (use-package magit-todos)
 
+(use-package forge
+  :after magit)
+
 ;; git-link
 ;;
 ;; Interactive Emacs functions that create URLs for files and commits in
