@@ -17,6 +17,7 @@ show-merge = "!sh -c 'merge=$(git find-merge $0 $1) && [ -n \"$merge\" ] && git 
 merged = "!sh -c 'git branch --merged ${1:-master} | grep -v -e \"\\<${1:-master}\\>\"'"
 clean-merged = "!sh -c 'git branch -d $(git merged | grep -v \"^*\")'"
 unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
+	new = !git init && git symbolic-ref HEAD refs/heads/trunk
 [color]
 	ui = true
 [push]
