@@ -66,19 +66,6 @@ jml's configuration
   git remote set-url origin git@github.com:jml/dotfiles.git
   ```
 
-- [ ] Change shell to later version of bash
-
-  ```bash
-  sudo vi /etc/shells  # Add /usr/local/bin/bash to shells
-  chsh -s /usr/local/bin/bash
-  ```
-
-- [ ] Install shell configuration
-
-  ```console
-  $ echo '. $HOME/src/dotfiles/bash/bashrc' > ~/.bash_profile
-  ```
-
 - [x] Change iTerm2 so that left option is Esc +
 - [x] Change iTerm2 font to Source Code Pro
 - [x] Install iTerm2 Shell Integration
@@ -166,6 +153,7 @@ Change your keyboard layout
 
 Source: https://support.apple.com/en-gb/HT202036
 
+TODO: I use oh-my-zsh now. Include those setup instructions
 TODO: Various language servers for Emacs
 
 https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
