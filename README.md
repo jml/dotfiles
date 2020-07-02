@@ -135,7 +135,6 @@ Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow"
 
 #### Memrise-specific stuff
 
-- [ ] Activate DataGrip license (in 1Password)
 - [ ] Set up Google Drive File Stream for work folders
 - [ ] Get Pritunl configured to connect to VPN
 
