@@ -6,32 +6,32 @@ jml's configuration
 
 ### macOS
 
-- [ ] Connect to the Internet
-- [ ] Get Apple ID credentials from 1Password on phone to sign in
+- [x] Connect to the Internet
+- [x] Get Apple ID credentials from 1Password on phone to sign in
 - Keyboard
-  - [ ] Set keyboard layout to Dvorak
-  - [ ] Change Caps Lock to be Control on laptop keyboard (Settings > Keyboard > Modifier Keys)
+  - [x] Set keyboard layout to Dvorak
+  - [x] Change Caps Lock to be Control on laptop keyboard (Settings > Keyboard > Modifier Keys)
   - [ ] Connect external keyboard (use physical cable to establish pairing)
   - [ ] Change Caps Lock to be Control on external keyboard (Settings > Keyboard > Modifier Keys)
 - Trackpad
   - [ ] Connect external trackpad (use physical cable to establish pairing)
-  - [ ] Set trackpad to "Tap to Click" (Settings > Trackpad)
+  - [x] Set trackpad to "Tap to Click" (Settings > Trackpad)
 - Displays
   - [ ] Connect external displays to laptop
   - [ ] Arrange external displays
   - [ ] Set scaling on any Retina displays
 - [ ] Pair headphones with laptop
-- [ ] Configure system to automatically update
-- [ ] Install latest updates
+- [x] Configure system to automatically update
+- [x] Install latest updates
 - [ ] Reboot
-- [ ] Configure Dock to auto-hide
-- [ ] Install [brew](https://brew.sh/)
+- [x] Configure Dock to auto-hide
+- [x] Install [brew](https://brew.sh/)
 
   ```bash
   /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   ```
 
-- [ ] Clone this repository
+- [x] Clone this repository
 
   ```bash
   mkdir -p src
@@ -60,7 +60,7 @@ jml's configuration
   ssh-add
   ```
 
-- [ ] Change the clone to use SSH
+- [x] Change the clone to use SSH
 
   ```bash
   git remote set-url origin git@github.com:jml/dotfiles.git
@@ -79,12 +79,12 @@ jml's configuration
   $ echo '. $HOME/src/dotfiles/bash/bashrc' > ~/.bash_profile
   ```
 
-- [ ] Change iTerm2 so that left option is Esc +
-- [ ] Change iTerm2 font to Source Code Pro
-- [ ] Install iTerm2 Shell Integration
+- [x] Change iTerm2 so that left option is Esc +
+- [x] Change iTerm2 font to Source Code Pro
+- [x] Install iTerm2 Shell Integration
 
 - Set host name
-  - [ ] System Preferences > Sharing > Computer Name
+  - [x] System Preferences > Sharing > Computer Name
   - [ ] Terminal
 
     ```console
@@ -99,12 +99,14 @@ jml's configuration
   ```bash
   ln -s ~/src/dotfiles/emacs ~/.emacs.d
   ```  
-- [ ] Launch Emacs
-- [ ] Give Moom access to the system
+- [x] Launch Emacs
+- [x] Give Moom access to the system
 - Change Moom settings
-  - [ ] Always launch
-  - [ ] Not show preferences on launch
-  - [ ] Run as menu bar application
+  - [x] Always launch
+  - [x] Not show preferences on launch
+  - [x] Run as menu bar application
+  - [x] Add Opt+Arrow to move between displays
+  - [x] Set Cmd+F4 as Moom hotkey
 - Omnifocus
   - [ ] Run Omnifocus and supply license (kept in 1Password)
   - [ ] Link personal calendar to laptop
@@ -116,13 +118,14 @@ jml's configuration
     - [ ] Weekly review
     - [ ] Solo
     - [ ] Tube
-- [ ] Set up Google Backup and Sync to get my own folders
+- Fantastical
+- [x] Set up Google Backup and Sync to get my own folders
 - [ ] Run Dash and provide license file (`~/Google Drive/Documents/Dash/dash.license`)
-- [ ] Set Chrome as default browser
-- [ ] Trim useless applications from Dock and make sure frequently used ones are there:
-  - [ ] Emacs
-  - [ ] iTerm2
-  - [ ] OmniFocus
+- [x] Set Chrome as default browser
+- [x] Trim useless applications from Dock and make sure frequently used ones are there:
+  - [x] Emacs
+  - [x] iTerm2
+  - [x] OmniFocus
 - Set up Xcode
   - [ ] Launch Xcode (do this online)
   - [ ] Set location of command-line tools (Preferences > Locations)
