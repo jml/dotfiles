@@ -114,9 +114,9 @@ jml's configuration
   - [x] iTerm2
   - [x] OmniFocus
 - Set up Xcode
-  - [ ] Launch Xcode (do this online)
-  - [ ] Set location of command-line tools (Preferences > Locations)
-  - [ ] Install Xcode Command Line Tools
+  - [x] Launch Xcode (do this online)
+  - [x] Set location of command-line tools (Preferences > Locations)
+  - [x] Install Xcode Command Line Tools
 
     ```bash
     xcode-select --install
