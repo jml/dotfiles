@@ -51,6 +51,5 @@ mas "LastPass", id: 926036361
 
 # Memrise-specific stuff
 cask "pritunl"
-cask "datagrip"
 tap "tenzer/tap"
 brew "go2fa"
