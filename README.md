@@ -68,6 +68,10 @@ jml's configuration
 
 - [x] Change iTerm2 so that left option is Esc +
 - [x] Change iTerm2 font to Source Code Pro
+- [ ] Install oh-my-zsh
+  - [ ] `sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"`
+  - [ ] Install spaceship prompt: https://github.com/denysdovhan/spaceship-prompt
+        https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
 - [x] Install iTerm2 Shell Integration
 
 - Set host name
