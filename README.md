@@ -23,7 +23,7 @@ jml's configuration
 - [ ] Pair headphones with laptop
 - [x] Configure system to automatically update
 - [x] Install latest updates
-- [ ] Reboot
+- [x] Reboot
 - [x] Configure Dock to auto-hide
 - [x] Install [brew](https://brew.sh/)
 
@@ -40,7 +40,7 @@ jml's configuration
   cd dotfiles
   ```
 
-- [ ] Install packages
+- [x] Install packages
 
   ```bash
   cd macos
@@ -72,16 +72,16 @@ jml's configuration
 
 - Set host name
   - [x] System Preferences > Sharing > Computer Name
-  - [ ] Terminal
+  - [x] Terminal
 
     ```console
     sudo scutil --set <HostName>
     ```
 
-- [ ] System Preferences > Security & Privacy > General > Require password 5 seconds after sleep
-- [ ] System Preferences > Desktop & Screen Saver > Screen Saver > Start after 5 minutes
+- [x] System Preferences > Security & Privacy > General > Require password 5 seconds after sleep
+- [x] System Preferences > Desktop & Screen Saver > Screen Saver > Start after 5 minutes
 
-- [ ] Install Emacs configuration
+- [x] Install Emacs configuration
 
   ```bash
   ln -s ~/src/dotfiles/emacs ~/.emacs.d
@@ -95,19 +95,19 @@ jml's configuration
   - [x] Add Opt+Arrow to move between displays
   - [x] Set Cmd+F4 as Moom hotkey
 - Omnifocus
-  - [ ] Run Omnifocus and supply license (kept in 1Password)
-  - [ ] Link personal calendar to laptop
-  - [ ] Link work calendar to laptop
-  - [ ] Configure Forecast view to use `Time : Today` tag
-  - [ ] Configure Forecast view to show work & personal calendars
+  - [x] Run Omnifocus and supply license (kept in 1Password)
+  - [x] Link personal calendar to laptop
+  - [x] Link work calendar to laptop
+  - [x] Configure Forecast view to use `Time : Today` tag
+  - [x] Configure Forecast view to show work & personal calendars
   - Star commonly used perspectives
-    - [ ] Easy wins
-    - [ ] Weekly review
-    - [ ] Solo
-    - [ ] Tube
+    - [x] Easy wins
+    - [x] Weekly review
+    - [x] Solo
+    - [x] Tube
 - Fantastical
 - [x] Set up Google Backup and Sync to get my own folders
-- [ ] Run Dash and provide license file (`~/Google Drive/Documents/Dash/dash.license`)
+- [x] Run Dash and provide license file (`~/Google Drive/Documents/Dash/dash.license`)
 - [x] Set Chrome as default browser
 - [x] Trim useless applications from Dock and make sure frequently used ones are there:
   - [x] Emacs
@@ -126,11 +126,11 @@ Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow"
 
 #### UK (ISO) keyboard layout?
 
-- [ ] Set up Karabiner-Elements to swap stupid UK key (`non_us_backslash`) for tilde (`grave_accent_and_tilde`)
+- [x] Set up Karabiner-Elements to swap stupid UK key (`non_us_backslash`) for tilde (`grave_accent_and_tilde`)
 
 #### Memrise-specific stuff
 
-- [ ] Set up Google Drive File Stream for work folders
+- [x] Set up Google Drive File Stream for work folders
 - [ ] Get Pritunl configured to connect to VPN
 
 
@@ -138,16 +138,14 @@ Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow"
 
 Change your keyboard layout
 
-- [ ] Log in.
-- [ ] From the Apple menu, choose System Preferences.
-- [ ] Click the Users & Groups icon.
-- [ ] Click the lock icon. Enter an admin user name and password.
-- [ ] Click Login Options.
-- [ ] Select the option to Show Input menu in login window.
+- [x] Log in.
+- [x] From the Apple menu, choose System Preferences.
+- [x] Click the Users & Groups icon.
+- [x] Click the lock icon. Enter an admin user name and password.
+- [x] Click Login Options.
+- [x] Select the option to Show Input menu in login window.
 
 Source: https://support.apple.com/en-gb/HT202036
 
-TODO: I use oh-my-zsh now. Include those setup instructions
 TODO: Various language servers for Emacs
 
-https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
