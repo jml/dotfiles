@@ -97,7 +97,6 @@
  '(send-mail-function (quote smtpmail-send-it))
  '(sendmail-program "/usr/bin/msmtp")
  '(sentence-end-double-space nil)
- '(shell-file-name "/bin/bash")
  '(show-paren-mode t)
  '(show-paren-style (quote expression))
  '(show-trailing-whitespace t)

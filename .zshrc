@@ -74,6 +74,8 @@ source $ZSH/oh-my-zsh.sh
 
 eval "$(direnv hook zsh)"
 
+export PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin:$PATH
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
