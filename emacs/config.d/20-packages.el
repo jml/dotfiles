@@ -266,9 +266,6 @@
 (use-package helm-lsp
   :commands helm-lsp-workspace-symbol)
 
-;; TODO: Investigate DAP mode
-(use-package dap-mode)
-
 ;; Snippets
 (use-package yasnippet
   :after diminish
