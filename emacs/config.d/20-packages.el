@@ -19,8 +19,10 @@
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
 
+(use-package all-the-icons)
 
 (use-package doom-themes
+  :after all-the-icons
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
