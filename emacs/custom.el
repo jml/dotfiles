@@ -70,7 +70,7 @@
  '(package-load-list (quote (all paredit)))
  '(package-selected-packages
    (quote
-    (forge treemacs-magit treemacs-icons-dired all-the-icons all-the-icons-dired treemacs-projectile nlinum solaire-mode elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
+    (plantuml-mode lsp-haskell forge treemacs-magit treemacs-icons-dired all-the-icons all-the-icons-dired treemacs-projectile nlinum solaire-mode elpy git-link pretty-sha-path nix-mode yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-box company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci)))
  '(paradox-github-token t)
  '(paren-mode (quote paren) nil (paren))
  '(php-mode-speedbar-open nil)
@@ -97,7 +97,6 @@
  '(send-mail-function (quote smtpmail-send-it))
  '(sendmail-program "/usr/bin/msmtp")
  '(sentence-end-double-space nil)
- '(shell-file-name "/bin/bash")
  '(show-paren-mode t)
  '(show-paren-style (quote expression))
  '(show-trailing-whitespace t)
