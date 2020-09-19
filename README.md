@@ -28,7 +28,7 @@ jml's configuration
 - [ ] Install [brew](https://brew.sh/)
 
   ```bash
-  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
   ```
 
 - [ ] Clone this repository
@@ -66,21 +66,12 @@ jml's configuration
   git remote set-url origin git@github.com:jml/dotfiles.git
   ```
 
-- [ ] Change shell to later version of bash
-
-  ```bash
-  sudo vi /etc/shells  # Add /usr/local/bin/bash to shells
-  chsh -s /usr/local/bin/bash
-  ```
-
-- [ ] Install shell configuration
-
-  ```console
-  $ echo '. $HOME/src/dotfiles/bash/bashrc' > ~/.bash_profile
-  ```
-
 - [ ] Change iTerm2 so that left option is Esc +
 - [ ] Change iTerm2 font to Source Code Pro
+- [ ] Install oh-my-zsh
+  - [ ] `sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"`
+  - [ ] Install spaceship prompt: https://github.com/denysdovhan/spaceship-prompt
+        https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
 - [ ] Install iTerm2 Shell Integration
 
 - Set host name
@@ -105,6 +96,8 @@ jml's configuration
   - [ ] Always launch
   - [ ] Not show preferences on launch
   - [ ] Run as menu bar application
+  - [ ] Add Opt+Arrow to move between displays
+  - [ ] Set Cmd+F4 as Moom hotkey
 - Omnifocus
   - [ ] Run Omnifocus and supply license (kept in 1Password)
   - [ ] Link personal calendar to laptop
@@ -116,6 +109,7 @@ jml's configuration
     - [ ] Weekly review
     - [ ] Solo
     - [ ] Tube
+- Fantastical
 - [ ] Set up Google Backup and Sync to get my own folders
 - [ ] Run Dash and provide license file (`~/Google Drive/Documents/Dash/dash.license`)
 - [ ] Set Chrome as default browser
@@ -131,11 +125,6 @@ jml's configuration
     ```bash
     xcode-select --install
     ```
-  - [ ] [Configure location of header files](https://developer.apple.com/documentation/xcode_release_notes/xcode_10_release_notes#3035624)
-
-    ```bash
-    sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-    ```
 
 Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow" button not working.
 
@@ -145,7 +134,6 @@ Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow"
 
 #### Memrise-specific stuff
 
-- [ ] Activate DataGrip license (in 1Password)
 - [ ] Set up Google Drive File Stream for work folders
 - [ ] Get Pritunl configured to connect to VPN
 
@@ -165,4 +153,3 @@ Source: https://support.apple.com/en-gb/HT202036
 
 TODO: Various language servers for Emacs
 
-https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh

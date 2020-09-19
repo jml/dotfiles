@@ -19,8 +19,10 @@
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
 
+(use-package all-the-icons)
 
 (use-package doom-themes
+  :after all-the-icons
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -249,11 +251,23 @@
   :commands lsp)
 
 (use-package lsp-ui
-  :after diminish
+  :after (diminish flycheck lsp-mode)
   :diminish eldoc-mode
-  :commands lsp-ui-mode)
+  :config
+  (setq lsp-ui-doc-use-webkit t)
+  :commands lsp-ui-mode
+  :custom
+  (lsp-ui-doc-header nil)
+  (lsp-ui-doc-include-signature nil)
+  (lsp-ui-doc-position (quote at-point))
+  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-doc-use-webkit nil)
+  (lsp-ui-flycheck-enable t)
+  (lsp-ui-sideline-ignore-duplicate t)
+  (lsp-ui-sideline-show-hover t))
 
 (use-package company-lsp
+  :after company
   :commands company-lsp)
 
 (use-package company-box
@@ -263,9 +277,6 @@
 
 (use-package helm-lsp
   :commands helm-lsp-workspace-symbol)
-
-;; TODO: Investigate DAP mode
-(use-package dap-mode)
 
 ;; Snippets
 (use-package yasnippet
@@ -311,21 +322,19 @@
 ;; Haskell
 
 (use-package haskell-mode
-  :hook ((haskell-mode . turn-on-haskell-indentation)
-         (haskell-mode . turn-on-haskell-doc)
-         (haskell-mode . turn-on-haskell-decl-scan)))
+  :mode "\\.l?hs\\'"
+  :custom
+  (haskell-font-lock-symbols t)
+  (haskell-indentation-show-indentations-after-eol nil))
 
-(use-package flycheck-haskell
-  :after flycheck
-  :hook (flycheck-mode . flycheck-haskell-setup))
+(use-package lsp-haskell
+  :hook (haskell-mode . lsp)
+  :config
+  (setq lsp-haskell-process-path-hie "haskell-language-server")
+  (setq lsp-haskell-process-args-hie '()))
+  ;; Comment/uncomment this line to see interactions between lsp client/server.
+  ;;(setq lsp-log-io t)
 
-(use-package intero
-  :after haskell-mode
-  :hook (haskell-mode . intero-mode)
-  :config (flycheck-add-next-checker 'intero '(warning . haskell-hlint)))
-
-(use-package hindent)
-(use-package haskell-snippets)
 
 ;; Markdown
 (use-package markdown-mode
@@ -347,7 +356,7 @@
 (use-package python-docstring)
 (use-package pipenv)
 
-(use-package flycheck-pyflakes)
+;; (use-package flycheck-pyflakes)
 
 ;; Rust
 
