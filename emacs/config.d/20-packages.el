@@ -232,8 +232,7 @@
   :demand t
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error)
-              ("M-p" . flycheck-previous-error))
-  :config (flycheck-add-next-checker 'python-flake8 'python-pylint))
+              ("M-p" . flycheck-previous-error)))
 
 (use-package flymake
   :bind
