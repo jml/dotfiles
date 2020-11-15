@@ -3,3 +3,8 @@
 /emacs/.last-package-update-day
 /emacs/elpy/
 /emacs/forge-database.sqlite
+/emacs/projectile.cache
+/emacs/package.json
+/emacs/package-lock.json
+/emacs/node_modules/
+/emacs/.dap-breakpoints
