@@ -229,6 +229,7 @@
 ;; Flycheck
 
 (use-package flycheck
+  :demand t
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error)
               ("M-p" . flycheck-previous-error))
@@ -291,12 +292,14 @@
 
 ;; Python
 (use-package elpy
+  :demand t
   :after flycheck
   :init
   (elpy-enable)
+  :hook
+  ((elpy-mode . flycheck-mode))
   :config
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-  (add-hook 'elpy-mode-hook 'flycheck-mode))
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
 
 ;; Go
 
