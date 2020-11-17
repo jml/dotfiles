@@ -230,6 +230,9 @@
 
 (use-package flycheck
   :demand t
+  :config
+  (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+  (setq flycheck-check-syntax-automatically '(save mode-enable new-line))
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error)
               ("M-p" . flycheck-previous-error)))
@@ -243,8 +246,9 @@
 ;; LSP
 
 (use-package lsp-mode
-  :hook (rust-mode . lsp)
-  :commands lsp)
+  :hook
+  ((rust-mode . lsp))
+  :commands (lsp lsp-deferred))
 
 (use-package lsp-ui
   :after (diminish flycheck lsp-mode)
@@ -261,6 +265,10 @@
   (lsp-ui-flycheck-enable t)
   (lsp-ui-sideline-ignore-duplicate t)
   (lsp-ui-sideline-show-hover t))
+
+;; TODO: try this once python is working
+;;(use-package lsp-treemacs
+;;  :commands lsp-treemacs-errors-list)
 
 (use-package company-lsp
   :after company
@@ -350,11 +358,16 @@
 
 (use-package python)
 
-(use-package pyenv-mode)
-(use-package python-docstring)
-(use-package pipenv)
+;; (use-package blacken
+;;   :delight
+;;   :hook (python-mode . blacken-mode)
+;;   :custom (blacken-only-if-project-is-blackened t))
 
-;; (use-package flycheck-pyflakes)
+;; (use-package pyvenv)
+
+;; (use-package py-isort)
+
+;; (use-package python-docstring)
 
 ;; Rust
 
