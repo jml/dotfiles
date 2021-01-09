@@ -232,7 +232,6 @@
   :demand t
   :config
   (add-to-list 'flycheck-disabled-checkers 'python-pylint)
-  (setq flycheck-check-syntax-automatically '(save mode-enable new-line))
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error)
               ("M-p" . flycheck-previous-error)))
@@ -247,7 +246,8 @@
 
 (use-package lsp-mode
   :hook
-  ((rust-mode . lsp))
+  ((rust-mode . lsp)
+   (python-mode . lsp))
   :commands (lsp lsp-deferred))
 
 (use-package lsp-ui
@@ -298,15 +298,11 @@
 ;; LANGUAGES
 
 ;; Python
-(use-package elpy
-  :demand t
-  :after flycheck
-  :init
-  (elpy-enable)
-  :hook
-  ((elpy-mode . flycheck-mode))
-  :config
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules)))
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp-deferred))))
 
 ;; Go
 
