@@ -74,14 +74,7 @@ jml's configuration
         https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
 - [ ] Install iTerm2 Shell Integration
 
-- Set host name
-  - [ ] System Preferences > Sharing > Computer Name
-  - [ ] Terminal
-
-    ```console
-    sudo scutil --set <HostName>
-    ```
-
+- [ ] Set host name with System Preferences > Sharing > Computer Name
 - [ ] System Preferences > Security & Privacy > General > Require password 5 seconds after sleep
 - [ ] System Preferences > Desktop & Screen Saver > Screen Saver > Start after 5 minutes
 
