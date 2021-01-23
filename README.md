@@ -82,7 +82,7 @@ jml's configuration
 
   ```bash
   ln -s ~/src/dotfiles/emacs ~/.emacs.d
-  ```  
+  ```
 - [ ] Launch Emacs
 - [ ] Give Moom access to the system
 - Change Moom settings
