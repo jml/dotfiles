@@ -84,13 +84,6 @@ jml's configuration
   ln -s ~/src/dotfiles/emacs ~/.emacs.d
   ```
 - [ ] Launch Emacs
-- [ ] Give Moom access to the system
-- Change Moom settings
-  - [ ] Always launch
-  - [ ] Not show preferences on launch
-  - [ ] Run as menu bar application
-  - [ ] Add Opt+Arrow to move between displays
-  - [ ] Set Cmd+F4 as Moom hotkey
 - Omnifocus
   - [ ] Run Omnifocus and supply license (kept in 1Password)
   - [ ] Link personal calendar to laptop
