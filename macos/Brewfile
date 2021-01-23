@@ -47,7 +47,6 @@ tap "railwaycat/emacsmacport"
 brew "emacs-mac"
 
 cask "omnifocus"
-mas "Microsoft Excel", id: 462058435
 mas "Xcode", id: 497799835
 
 # Memrise-specific stuff
