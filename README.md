@@ -74,14 +74,7 @@ jml's configuration
         https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
 - [ ] Install iTerm2 Shell Integration
 
-- Set host name
-  - [ ] System Preferences > Sharing > Computer Name
-  - [ ] Terminal
-
-    ```console
-    sudo scutil --set <HostName>
-    ```
-
+- [ ] Set host name with System Preferences > Sharing > Computer Name
 - [ ] System Preferences > Security & Privacy > General > Require password 5 seconds after sleep
 - [ ] System Preferences > Desktop & Screen Saver > Screen Saver > Start after 5 minutes
 
@@ -89,15 +82,8 @@ jml's configuration
 
   ```bash
   ln -s ~/src/dotfiles/emacs ~/.emacs.d
-  ```  
+  ```
 - [ ] Launch Emacs
-- [ ] Give Moom access to the system
-- Change Moom settings
-  - [ ] Always launch
-  - [ ] Not show preferences on launch
-  - [ ] Run as menu bar application
-  - [ ] Add Opt+Arrow to move between displays
-  - [ ] Set Cmd+F4 as Moom hotkey
 - Omnifocus
   - [ ] Run Omnifocus and supply license (kept in 1Password)
   - [ ] Link personal calendar to laptop
