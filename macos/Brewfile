@@ -25,12 +25,13 @@ cask "1password"
 cask "dash"
 cask "discord"
 cask "docker"
-cask "google-chrome"
+cask "fantastical"
 cask "google-cloud-sdk"
 cask "google-drive-file-stream"
 cask "irccloud"
 cask "iterm2"
 cask "keybase"
+cask "rectangle"
 cask "slack"
 cask "spotify"
 cask "whatsapp"
@@ -46,10 +47,7 @@ tap "railwaycat/emacsmacport"
 brew "emacs-mac"
 
 cask "omnifocus"
-mas "moom", id: 419330170
-mas "Microsoft Excel", id: 462058435
 mas "Xcode", id: 497799835
-mas "LastPass", id: 926036361
 
 # Memrise-specific stuff
 cask "pritunl"
