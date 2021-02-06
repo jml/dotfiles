@@ -232,6 +232,7 @@
   :demand t
   :config
   (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+  :init (global-flycheck-mode)
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error)
               ("M-p" . flycheck-previous-error)))
@@ -317,6 +318,17 @@
 ;;
 ;; Let's get virtualenvs working first.
 ;; I'm pretty committed to pyenv on the command line so maybe we can start with that.
+
+;; Next up is flycheck
+;; I don't think there's a compelling reason to use flymake instead.
+;; For almost all projects, I'll want flake8 & mypy.
+;; I need to make sure:
+;;
+;; - memrise/webapp doesn't have stupid column length warnings
+;; - memrise/webapp code uses memrise/webapp/mypy.ini for mypy config
+;; - flycheck is enabled by default
+;;
+;; All we need to do is enable flycheck mode globally.
 
 ;; Go
 
