@@ -246,8 +246,7 @@
 
 (use-package lsp-mode
   :hook
-  ((rust-mode . lsp)
-   (python-mode . lsp))
+  ((rust-mode . lsp))
   :commands (lsp lsp-deferred))
 
 (use-package lsp-ui
