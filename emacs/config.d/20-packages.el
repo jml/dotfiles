@@ -298,11 +298,26 @@
 ;; LANGUAGES
 
 ;; Python
-(use-package lsp-pyright
-  :ensure t
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp-deferred))))
+
+;; Okay kiddywinks.
+;; pyright doesn't support attrs: https://github.com/microsoft/pyright/issues/146
+;; Other Python language servers give a confusing mess of virtualenv hell.
+;;
+;; I'm going to start building things myself, one at a time.
+;; Here's what I need:
+;;
+;; - syntax highlighting
+;; - flycheck/make running flake8 & mypy with the config for the project
+;; - go to definition (Jedi?)
+;;
+;; First thing I'll try is "naked" Python mode, and then see what we're missing.
+;;
+;; Eldoc is running and I get prompted about LSP but nothing actually runs.
+;; No inline code checks and no jump to definition.
+;; Python interpreter has no idea about virtualenvs.
+;;
+;; Let's get virtualenvs working first.
+;; I'm pretty committed to pyenv on the command line so maybe we can start with that.
 
 ;; Go
 
