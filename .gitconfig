@@ -43,3 +43,18 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
     pager = "delta --dark"
 [github]
 	user = jml
+
+
+# https://mobile.twitter.com/glyph/status/1359955841810530304
+[protocol "http"]
+    allow = never
+
+[protocol "git"]
+    allow = never
+
+[fetch]
+        fsckObjects = true
+[transfer]
+        fsckObjects = true
+[receive]
+        fsckObjects = true
