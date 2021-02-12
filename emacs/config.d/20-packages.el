@@ -330,6 +330,20 @@
 ;;
 ;; All we need to do is enable flycheck mode globally.
 
+;; Getting go to definition is a bit trickier.
+;; I tried jedi-lsp, but it clashes with the previous flycheck work and I don't know how to get lsp to stop overriding flycheck.
+;; I have installed `jedi` and run `jedi:install-server`.
+;; It seems to do the trick.
+
+(use-package python)
+
+(use-package jedi
+  :hook (python-mode . jedi:setup)
+  :config
+  (setq jedi:complete-on-dot t)
+  (setq jedi:use-shortcuts t))
+
+
 ;; Go
 
 (use-package go-mode
@@ -377,19 +391,6 @@
   (markdown-header-face-5 ((t (:inherit 'markdown-header-face :height 1.1)))))
 
 ;; Python
-
-(use-package python)
-
-;; (use-package blacken
-;;   :delight
-;;   :hook (python-mode . blacken-mode)
-;;   :custom (blacken-only-if-project-is-blackened t))
-
-;; (use-package pyvenv)
-
-;; (use-package py-isort)
-
-;; (use-package python-docstring)
 
 ;; Rust
 
