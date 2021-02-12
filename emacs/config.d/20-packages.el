@@ -232,6 +232,7 @@
   :demand t
   :config
   (add-to-list 'flycheck-disabled-checkers 'python-pylint)
+  :init (global-flycheck-mode)
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error)
               ("M-p" . flycheck-previous-error)))
@@ -246,8 +247,7 @@
 
 (use-package lsp-mode
   :hook
-  ((rust-mode . lsp)
-   (python-mode . lsp))
+  ((rust-mode . lsp))
   :commands (lsp lsp-deferred))
 
 (use-package lsp-ui
@@ -298,11 +298,51 @@
 ;; LANGUAGES
 
 ;; Python
-(use-package lsp-pyright
-  :ensure t
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp-deferred))))
+
+;; Okay kiddywinks.
+;; pyright doesn't support attrs: https://github.com/microsoft/pyright/issues/146
+;; Other Python language servers give a confusing mess of virtualenv hell.
+;;
+;; I'm going to start building things myself, one at a time.
+;; Here's what I need:
+;;
+;; - syntax highlighting
+;; - flycheck/make running flake8 & mypy with the config for the project
+;; - go to definition (Jedi?)
+;;
+;; First thing I'll try is "naked" Python mode, and then see what we're missing.
+;;
+;; Eldoc is running and I get prompted about LSP but nothing actually runs.
+;; No inline code checks and no jump to definition.
+;; Python interpreter has no idea about virtualenvs.
+;;
+;; Let's get virtualenvs working first.
+;; I'm pretty committed to pyenv on the command line so maybe we can start with that.
+
+;; Next up is flycheck
+;; I don't think there's a compelling reason to use flymake instead.
+;; For almost all projects, I'll want flake8 & mypy.
+;; I need to make sure:
+;;
+;; - memrise/webapp doesn't have stupid column length warnings
+;; - memrise/webapp code uses memrise/webapp/mypy.ini for mypy config
+;; - flycheck is enabled by default
+;;
+;; All we need to do is enable flycheck mode globally.
+
+;; Getting go to definition is a bit trickier.
+;; I tried jedi-lsp, but it clashes with the previous flycheck work and I don't know how to get lsp to stop overriding flycheck.
+;; I have installed `jedi` and run `jedi:install-server`.
+;; It seems to do the trick.
+
+(use-package python)
+
+(use-package jedi
+  :hook (python-mode . jedi:setup)
+  :config
+  (setq jedi:complete-on-dot t)
+  (setq jedi:use-shortcuts t))
+
 
 ;; Go
 
@@ -351,19 +391,6 @@
   (markdown-header-face-5 ((t (:inherit 'markdown-header-face :height 1.1)))))
 
 ;; Python
-
-(use-package python)
-
-;; (use-package blacken
-;;   :delight
-;;   :hook (python-mode . blacken-mode)
-;;   :custom (blacken-only-if-project-is-blackened t))
-
-;; (use-package pyvenv)
-
-;; (use-package py-isort)
-
-;; (use-package python-docstring)
 
 ;; Rust
 
