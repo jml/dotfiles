@@ -58,3 +58,7 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
         fsckObjects = true
 [receive]
         fsckObjects = true
+
+[fetch "fsck"]
+        zeroPaddedFilemode = ignore
+        badTimezone = ignore
