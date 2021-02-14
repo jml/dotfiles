@@ -62,3 +62,5 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
 [fetch "fsck"]
         zeroPaddedFilemode = ignore
         badTimezone = ignore
+[init]
+	defaultBranch = main
