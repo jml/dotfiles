@@ -161,7 +161,6 @@
          ("C-x C-f" . helm-find-files)))
 
 (use-package helm-rg)
-(use-package helm-git-grep)
 
 ;; Projectile
 
