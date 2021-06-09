@@ -265,10 +265,6 @@
 ;;(use-package lsp-treemacs
 ;;  :commands lsp-treemacs-errors-list)
 
-(use-package company-lsp
-  :after company
-  :commands company-lsp)
-
 (use-package company-box
   :after diminish
   :diminish company-box-mode
