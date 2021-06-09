@@ -123,8 +123,6 @@
   :config (exec-path-from-shell-initialize))
 
 (use-package direnv)
-(use-package projectile-direnv
-  :after (direnv projectile))
 
 ;; Package management
 
