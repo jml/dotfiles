@@ -371,8 +371,7 @@
 
 ;; Markdown
 (use-package markdown-mode
-  :mode (("\\.text" . markdown-mode)
-         ("\\.md" . markdown-mode)
+  :mode (("\\.md" . markdown-mode)
          ("\\.markdown" . markdown-mode))
   :custom-face
   (markdown-header-face-1 ((t (:inherit 'markdown-header-face :height 2.0))))
