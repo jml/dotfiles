@@ -382,6 +382,8 @@
   (markdown-header-face-5 ((t (:inherit 'markdown-header-face :height 1.1)))))
 
 (use-package org
+  :hook (org-mode . org-indent-mode)
+
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
   (org-level-2 ((t (:inherit 'outline-2 :height 1.5))))
