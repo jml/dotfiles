@@ -22,3 +22,7 @@
 
 ;; Disable the damn bell
 (setq ring-bell-function 'ignore)
+
+;; If we don't know what mode to use, use text-mode.
+;; fundamental-mode isn't very useful.
+(setq-default major-mode 'text-mode)

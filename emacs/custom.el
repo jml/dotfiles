@@ -103,7 +103,7 @@
  '(split-width-threshold nil)
  '(sql-pop-to-buffer-after-send-region t)
  '(tab-width 4)
- '(text-mode-hook '(text-mode-hook-identify))
+ '(text-mode-hook '(text-mode-hook-identify visual-line-mode))
  '(tool-bar-mode nil nil (tool-bar))
  '(toolbar-visible-p nil)
  '(track-eol t)
