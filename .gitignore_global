@@ -8,3 +8,5 @@
 ehthumbs.db
 Thumbs.db
 /.ipynb_checkpoints/
+/__pycache__/
+/.python-version
