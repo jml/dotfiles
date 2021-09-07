@@ -43,8 +43,8 @@ cask "google-backup-and-sync"
 tap "homebrew/cask-fonts"
 cask "font-source-code-pro"
 
-tap "railwaycat/emacsmacport"
-brew "emacs-mac"
+tap d12frosted/emacs-plus
+install emacs-plus
 
 cask "omnifocus"
 mas "Xcode", id: 497799835
