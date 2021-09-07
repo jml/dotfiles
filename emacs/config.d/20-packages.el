@@ -190,8 +190,6 @@
   (setq magit-last-seen-setup-instructions "1.4.0")
   (setq magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1))
 
-(use-package magit-todos)
-
 (use-package forge
   :after magit)
 
