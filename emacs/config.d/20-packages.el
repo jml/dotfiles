@@ -392,6 +392,14 @@
   (org-level-4 ((t (:inherit 'outline-4 :height 1.2))))
   (org-level-5 ((t (:inherit 'outline-5 :height 1.1)))))
 
+
+(use-package org-inlinetask
+  :ensure nil
+  :bind (:map org-mode-map
+              ("C-c C-x t" . org-inlinetask-insert-task))
+  :after (org)
+  :commands (org-inlinetask-insert-task))
+
 ;; Python
 
 ;; Rust
