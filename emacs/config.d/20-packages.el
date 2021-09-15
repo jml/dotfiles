@@ -383,12 +383,15 @@
 (use-package org
   :hook (org-mode . org-indent-mode)
 
-  :bind (("C-c l" . org-store-link)
-         ("C-c c" . org-capture)
+  :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda))
 
   :config
+  (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww org-habit))
+  (setq org-habit-show-habits-only-for-today t)
   (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "INPROGRESS(i!)" "WAITING(w@/!)" "|" "DONE(d!)" "DROPPED(x)")))
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
