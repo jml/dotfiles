@@ -387,11 +387,7 @@
          ("C-c a" . org-agenda))
 
   :config
-  (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww org-habit))
-  (setq org-habit-show-habits-only-for-today t)
-  (setq org-refile-targets '((org-agenda-files :maxlevel . 1)))
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "INPROGRESS(i!)" "WAITING(w@/!)" "|" "DONE(d!)" "DROPPED(x)")))
+  (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww))
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
@@ -401,12 +397,6 @@
   (org-level-5 ((t (:inherit 'outline-5 :height 1.1)))))
 
 
-(use-package org-inlinetask
-  :ensure nil
-  :bind (:map org-mode-map
-              ("C-c C-x t" . org-inlinetask-insert-task))
-  :after (org)
-  :commands (org-inlinetask-insert-task))
 
 ;; Python
 
