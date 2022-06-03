@@ -9,3 +9,5 @@
 /emacs/node_modules/
 /emacs/.dap-breakpoints
 /emacs/org-roam.db
+/emacs/eshell/
+/emacs/ac-comphist.dat
