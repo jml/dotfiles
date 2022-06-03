@@ -8,3 +8,4 @@
 /emacs/package-lock.json
 /emacs/node_modules/
 /emacs/.dap-breakpoints
+/emacs/org-roam.db
