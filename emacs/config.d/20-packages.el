@@ -381,8 +381,6 @@
   (markdown-header-face-5 ((t (:inherit 'markdown-header-face :height 1.1)))))
 
 (use-package org
-  :hook (org-mode . org-indent-mode)
-
   :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda))
 
