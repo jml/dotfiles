@@ -384,16 +384,34 @@
   :bind (("C-c c" . org-capture)
          ("C-c a" . org-agenda))
 
+  :hook (org-mode . variable-pitch-mode)
+  :hook (org-mode . (lambda () (setq line-spacing 2)))
+
   :config
   (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww))
+  (setq org-agenda-files '("/Users/jml/src/exobrain"))
+  (setq org-hide-emphasis-markers t)
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
   (org-level-2 ((t (:inherit 'outline-2 :height 1.5))))
   (org-level-3 ((t (:inherit 'outline-3 :height 1.3))))
   (org-level-4 ((t (:inherit 'outline-4 :height 1.2))))
-  (org-level-5 ((t (:inherit 'outline-5 :height 1.1)))))
+  (org-level-5 ((t (:inherit 'outline-5 :height 1.1))))
+  (org-block ((t (:inherit fixed-pitch))))
+  (org-code ((t (:inherit (shadow fixed-pitch)))))
+  (org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+  (org-indent ((t (:inherit (org-hide fixed-pitch)))))
+  (org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+  (org-property-value ((t (:inherit fixed-pitch))))
+  (org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+  (org-table ((t (:inherit fixed-pitch))))
+  (org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.9))))
+  (org-verbatim ((t (:inherit (shadow fixed-pitch))))))
 
+ (use-package org-bullets
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package org-roam
   :ensure t
