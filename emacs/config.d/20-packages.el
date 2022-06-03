@@ -401,6 +401,7 @@
   :ensure t
   :custom
   (org-roam-directory (file-truename "/Users/jml/src/exobrain/"))
+  (org-roam-file-exclude-regexp '("data/" ".trash/"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
