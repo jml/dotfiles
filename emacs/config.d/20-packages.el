@@ -391,6 +391,7 @@
   (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww))
   (setq org-agenda-files '("/Users/jml/src/exobrain"))
   (setq org-hide-emphasis-markers t)
+  (setq org-adapt-indentation nil)
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
