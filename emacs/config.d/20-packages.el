@@ -385,7 +385,6 @@
          ("C-c a" . org-agenda))
 
   :hook (org-mode . variable-pitch-mode)
-  :hook (org-mode . (lambda () (setq line-spacing 2)))
 
   :config
   (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww))
