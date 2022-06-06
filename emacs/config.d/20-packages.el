@@ -373,6 +373,9 @@
 (use-package markdown-mode
   :mode (("\\.md" . markdown-mode)
          ("\\.markdown" . markdown-mode))
+
+  :hook (markdown-mode . variable-pitch-mode)
+
   :custom-face
   (markdown-header-face-1 ((t (:inherit 'markdown-header-face :height 2.0))))
   (markdown-header-face-2 ((t (:inherit 'markdown-header-face :height 1.5))))
