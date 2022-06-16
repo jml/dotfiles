@@ -42,6 +42,7 @@ cask "google-backup-and-sync"
 
 tap "homebrew/cask-fonts"
 cask "font-source-code-pro"
+cask "font-source-sans-pro"
 
 tap d12frosted/emacs-plus
 install emacs-plus

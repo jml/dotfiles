@@ -391,7 +391,6 @@
 
   :config
   (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww))
-  (setq org-agenda-files '("/Users/jml/src/exobrain"))
   (setq org-hide-emphasis-markers t)
   (setq org-adapt-indentation nil)
 
@@ -419,7 +418,6 @@
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (file-truename "/Users/jml/src/exobrain/"))
   (org-roam-file-exclude-regexp '("data/" ".trash/"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
