@@ -41,7 +41,6 @@
  '(flymake-log-level -1)
  '(flymake-run-in-place nil)
  '(global-font-lock-mode t)
- '(global-hl-line-mode t)
  '(global-linum-mode nil)
  '(godef-command "/Users/jml/go/bin/godef")
  '(gofmt-args '("-s" "-w"))
