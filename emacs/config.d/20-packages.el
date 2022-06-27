@@ -390,6 +390,7 @@
   (setq org-modules '(ol-w3m ol-bbdb ol-bibtex ol-docview ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-eww))
   (setq org-hide-emphasis-markers t)
   (setq org-adapt-indentation nil)
+  (setq org-fontify-quote-and-verse-blocks t)
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
@@ -403,6 +404,7 @@
   (org-indent ((t (:inherit (org-hide fixed-pitch)))))
   (org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
   (org-property-value ((t (:inherit fixed-pitch))))
+  (org-quote ((t (:inherit variable-pitch))))
   (org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
   (org-table ((t (:inherit fixed-pitch))))
   (org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.9))))
