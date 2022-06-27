@@ -31,10 +31,7 @@
   (doom-themes-visual-bell-config)
 
   (setq doom-themes-treemacs-theme "doom-atom") ; use the colorful treemacs theme
-  (doom-themes-treemacs-config)
-
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
+  (doom-themes-treemacs-config))
 
 (use-package treemacs
   :defer t
