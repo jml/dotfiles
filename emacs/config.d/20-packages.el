@@ -391,6 +391,7 @@
   (setq org-hide-emphasis-markers t)
   (setq org-adapt-indentation nil)
   (setq org-fontify-quote-and-verse-blocks t)
+  (setq org-hidden-keywords '(title))
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))
@@ -401,6 +402,7 @@
   (org-block ((t (:inherit fixed-pitch))))
   (org-code ((t (:inherit (shadow fixed-pitch)))))
   (org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+  (org-document-title ((t (:height 2.5))))
   (org-indent ((t (:inherit (org-hide fixed-pitch)))))
   (org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
   (org-property-value ((t (:inherit fixed-pitch))))
