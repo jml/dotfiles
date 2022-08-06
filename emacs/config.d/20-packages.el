@@ -262,6 +262,13 @@
 ;;(use-package lsp-treemacs
 ;;  :commands lsp-treemacs-errors-list)
 
+(use-package company)
+;; Tide documentation (https://github.com/ananthakumaran/tide)
+;; recommends this, to align annotation to the right hand side.
+;; Not sure if it matters given we use company-box.
+;; TODO: Do an experiment.
+;; (setq company-tooltip-align-annotations t)
+
 (use-package company-box
   :after diminish
   :diminish company-box-mode
@@ -470,3 +477,22 @@
 ;; Nix
 (use-package nix-mode)
 (use-package pretty-sha-path)
+
+;; TypeScript
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  ;; company is an optional dependency. You have to
+  ;; install it separately via package-install
+  ;; `M-x package-install [ret] company`
+  (company-mode +1))
+
+(use-package tide
+  :after typescript-mode
+  :config
+  (add-hook 'before-save-hook 'tide-format-before-save)
+  (add-hook 'typescript-mode-hook #'setup-tide-mode))
