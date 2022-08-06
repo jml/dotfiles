@@ -1,4 +1,3 @@
-brew "ansible"
 brew "awscli"
 brew "coreutils"
 brew "direnv"
@@ -19,13 +18,11 @@ brew "pyenv-virtualenv"
 brew "ripgrep"
 brew "shellcheck"
 brew "terraform"
-brew "the_silver_searcher"
 
 cask "1password"
 cask "dash"
 cask "discord"
 cask "docker"
-cask "fantastical"
 cask "google-cloud-sdk"
 cask "google-drive-file-stream"
 cask "irccloud"
@@ -44,13 +41,9 @@ tap "homebrew/cask-fonts"
 cask "font-source-code-pro"
 cask "font-source-sans-pro"
 
-tap d12frosted/emacs-plus
-install emacs-plus
+tap "d12frosted/emacs-plus"
+brew "emacs-plus"
 
 cask "omnifocus"
 mas "Xcode", id: 497799835
 
-# Memrise-specific stuff
-cask "pritunl"
-tap "tenzer/tap"
-brew "go2fa"
