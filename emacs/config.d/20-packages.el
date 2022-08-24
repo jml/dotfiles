@@ -478,6 +478,7 @@
 (use-package nix-mode)
 (use-package pretty-sha-path)
 
+
 ;; TypeScript
 (defun setup-tide-mode ()
   (interactive)
@@ -496,3 +497,12 @@
   :config
   (add-hook 'before-save-hook 'tide-format-before-save)
   (add-hook 'typescript-mode-hook #'setup-tide-mode))
+
+
+;; vterm
+;;
+;; https://github.com/akermu/emacs-libvterm
+;;
+;; Make sure you do https://github.com/akermu/emacs-libvterm#shell-side-configuration also
+(use-package vterm)
+
