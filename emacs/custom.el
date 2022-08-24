@@ -77,8 +77,8 @@
  '(require-final-newline t)
  '(rst-level-face-base-light 30)
  '(safe-local-variable-values
-   '((lsp-pyls-plugins-pylint-args quote
-                                   ("--rcfile=/Users/jml/src/memflow/pylintrc"))
+   '((flycheck-disabled-checkers quote
+                                 (python-mypy))
      (haskell-process-use-ghci . t)
      (haskell-indent-spaces . 4)
      (whitespace-style face tabs spaces trailing lines space-before-tab::space newline indentation::space empty space-after-tab::space space-mark tab-mark newline-mark)
