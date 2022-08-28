@@ -104,3 +104,6 @@ export PATH=/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin:$PA
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
+
+# Created by `pipx` on 2022-08-19 05:58:49
+export PATH="$PATH:/Users/jml/.local/bin"
