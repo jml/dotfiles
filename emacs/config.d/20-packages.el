@@ -450,8 +450,29 @@
          ("C-c n j" . org-roam-dailies-capture-today)
          ("C-c n t" . org-roam-dailies-goto-today))
   :config
+
+  (setq org-roam-capture-templates
+        '(("d" "default" plain "%?"
+           :target (file+head "Inbox/${slug}.org" "#+title: ${title}\n")
+           :unnarrowed t)))
+
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                              "#+filetags: :incomplete:\n#+title: %<%Y-%m-%d %A>\n"))))
+
+  (cl-defmethod org-roam-node-type ((node org-roam-node))
+    "Return the TYPE of NODE."
+    (condition-case nil
+        (file-name-nondirectory
+         (directory-file-name
+          (file-name-directory
+           (file-relative-name (org-roam-node-file node) org-roam-directory))))
+      (error "")))
+
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
-  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-node-display-template (concat "${type:20} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
 
 
