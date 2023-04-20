@@ -435,6 +435,8 @@
     :config
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
+(use-package emacsql-sqlite-module)
+
 (use-package org-roam
   :ensure t
   :custom
