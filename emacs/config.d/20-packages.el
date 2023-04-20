@@ -419,7 +419,18 @@
   (org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.9))))
   (org-verbatim ((t (:inherit (shadow fixed-pitch))))))
 
- (use-package org-bullets
+(use-package rst
+  :hook (rst-mode . variable-pitch-mode)
+
+  :custom-face
+  (rst-level-1 ((t :height 2.0)))
+  (rst-level-2 ((t :height 1.5)))
+  (rst-level-3 ((t :height 1.3)))
+  (rst-level-4 ((t :height 1.2)))
+  (rst-level-5 ((t :height 1.1))))
+
+
+(use-package org-bullets
     :config
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
