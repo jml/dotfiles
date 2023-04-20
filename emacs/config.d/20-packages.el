@@ -390,7 +390,9 @@
 
 (use-package org
   :bind (("C-c c" . org-capture)
-         ("C-c a" . org-agenda))
+         ("C-c a" . org-agenda)
+         :map org-mode-map
+         ("RET" . org-return-and-maybe-indent))
 
   :hook (org-mode . variable-pitch-mode)
 
