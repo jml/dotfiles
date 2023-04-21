@@ -462,7 +462,7 @@
         '(("d" "default" entry
            "* %?"
            :target (file+head "%<%Y-%m-%d>.org"
-                              "#+filetags: :incomplete:\n#+title: %<%Y-%m-%d %A>\n"))))
+                              "#+title: %<%Y-%m-%d %A>\n"))))
 
   (cl-defmethod org-roam-node-type ((node org-roam-node))
     "Return the TYPE of NODE."
