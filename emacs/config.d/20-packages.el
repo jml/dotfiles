@@ -447,10 +447,8 @@
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
-         ("C-c n c" . org-roam-capture)
-         ;; Dailies
-         ("C-c n j" . org-roam-dailies-capture-today)
-         ("C-c n t" . org-roam-dailies-goto-today))
+         ("C-c n c" . org-roam-capture))
+  :bind-keymap ("C-c n d" . org-roam-dailies-map)
   :config
 
   (setq org-roam-capture-templates
