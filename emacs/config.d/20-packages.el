@@ -529,7 +529,6 @@
 (use-package tide
   :after typescript-mode
   :config
-  (add-hook 'before-save-hook 'tide-format-before-save)
   (add-hook 'typescript-mode-hook #'setup-tide-mode))
 
 
