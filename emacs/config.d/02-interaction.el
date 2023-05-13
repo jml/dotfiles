@@ -1,3 +1,8 @@
+;;; package --- Summary
+;;; Commentary:
+
+;;; Code:
+
 ;; Make all "yes or no" prompts "y or n"
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -26,3 +31,5 @@
 ;; If we don't know what mode to use, use text-mode.
 ;; fundamental-mode isn't very useful.
 (setq-default major-mode 'text-mode)
+
+;;; 02-interaction.el ends here
