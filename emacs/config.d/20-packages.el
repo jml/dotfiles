@@ -448,18 +448,12 @@
          ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
          ("C-c n c" . org-roam-capture))
-  :bind-keymap ("C-c n d" . org-roam-dailies-map)
   :config
 
   (setq org-roam-capture-templates
         '(("d" "default" plain "%?"
            :target (file+head "Inbox/${slug}.org" "#+title: ${title}\n")
            :unnarrowed t)))
-
-  (setq org-roam-dailies-capture-templates
-        '(("d" "default" plain "%?"
-           :target (file+head "%<%Y-%m-%d>.org"
-                              "#+title: %<%Y-%m-%d %A>\n"))))
 
   (cl-defmethod org-roam-node-type ((node org-roam-node))
     "Return the TYPE of NODE."
@@ -473,6 +467,18 @@
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${type:20} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
+
+
+(use-package org-roam-dailies
+  :after org-roam
+  :ensure t
+  :bind-keymap ("C-c n d" . org-roam-dailies-map)
+  :config
+
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" plain "%?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d %A>\n")))))
 
 
 (use-package org-roam-ui
