@@ -10,4 +10,5 @@
 
 (when (eq system-type 'darwin)
   (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'option))
+  (setq mac-option-modifier 'option)
+  (global-unset-key (kbd "M-`")))
