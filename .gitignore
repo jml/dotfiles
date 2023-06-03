@@ -13,3 +13,5 @@
 /emacs/ac-comphist.dat
 /emacs/.org-id-locations
 /emacs/async-bytecomp.log
+/emacs/speed-type/
+/emacs/forge-database-*.sql
