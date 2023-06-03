@@ -26,5 +26,30 @@ because that gives them an easy way to undo their decision."
               (message "Deleted file %s" filename)
               (kill-buffer)))))))
 
-;;; jml-utils.el ends here
 
+(defun jml/move-buffer-file (dir)
+  "Move both current buffer and file it's visiting to DIR.
+
+If START-DIRECTORY is supplied, use that as the directory to start with."
+  (interactive
+   (list
+    (read-directory-name
+     "Target directory: "
+     nil nil t nil)))
+  (let* ((name (buffer-name))
+         (filename (buffer-file-name))
+         (dir
+          (if (string-match dir "\\(?:/\\|\\\\)$")
+              (substring dir 0 -1) dir))
+         (newname (concat dir "/" name)))
+
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (progn
+        (copy-file filename newname 1)
+        (delete-file filename)
+        (set-visited-file-name newname)
+        (set-buffer-modified-p nil)
+        t))))
+
+;;; jml-utils.el ends here
