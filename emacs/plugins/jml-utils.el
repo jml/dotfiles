@@ -1,11 +1,13 @@
-;;; package --- Summary
+;;; Package -- Summary
 ;;; Commentary:
 ;;;
-;;; General purpose Emacs functions.
+;;; General purpose Emacs functions, centered around filesystem operations on open buffers.
 ;;;
 ;;; Code:
 
-(defun jml-delete-file-and-buffer ()
+(provide 'jml-utils)
+
+(defun jml/delete-file-and-buffer ()
   "Kill the current buffer and delete the file it is visiting.
 
 If the file is in version control, delete it using 'vc-delete-file'.
@@ -24,4 +26,5 @@ because that gives them an easy way to undo their decision."
               (message "Deleted file %s" filename)
               (kill-buffer)))))))
 
-;;; 07-utilities.el ends here
+;;; jml-utils.el ends here
+
