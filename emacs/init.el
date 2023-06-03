@@ -22,6 +22,7 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins"))
 
 (require 'load-directory)
+(require 'jml-utils)
 
 ;; Configuration that's appropriate in all the places I use Emacs.
 (load-directory (expand-file-name "~/.emacs.d/config.d"))
