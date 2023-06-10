@@ -46,10 +46,40 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
     (if (not filename)
         (message "Buffer '%s' is not visiting a file!" name)
       (progn
-        (copy-file filename newname 1)
-        (delete-file filename)
+        (rename-file filename newname 1)
         (set-visited-file-name newname)
         (set-buffer-modified-p nil)
         t))))
+
+
+(defun jml/org-roam-move-buffer-file (dir)
+  "Move both current buffer and file it's visiting to DIR.
+
+If START-DIRECTORY is supplied, use that as the directory to start with."
+  (interactive
+   (list
+    (read-directory-name
+     "Target directory: "
+     (or org-roam-directory nil) nil t nil)))
+  (let* ((name (buffer-name))
+         (filename (buffer-file-name))
+         (dir
+          (if (string-match dir "\\(?:/\\|\\\\)$")
+              (substring dir 0 -1) dir))
+         (newname (concat dir "/" name)))
+
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (progn
+        (rename-file filename newname 1)
+        (set-visited-file-name newname)
+        (set-buffer-modified-p nil)
+        t))))
+
+
+(defun jml/org-roam-inbox ()
+  (interactive)
+  (dired (concat org-roam-directory "/Inbox")))
+
 
 ;;; jml-utils.el ends here
