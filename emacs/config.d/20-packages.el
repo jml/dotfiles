@@ -386,7 +386,9 @@
   (markdown-header-face-3 ((t (:inherit 'markdown-header-face :height 1.3))))
   (markdown-header-face-4 ((t (:inherit 'markdown-header-face :height 1.2))))
   (markdown-header-face-5 ((t (:inherit 'markdown-header-face :height 1.1))))
-  (markdown-table-face ((t (:inherit (shadow fixed-pitch))))))
+  (markdown-table-face ((t (:inherit (shadow fixed-pitch)))))
+  (markdown-code-face ((t (:inherit (shadow fixed-pitch)))))
+  (markdown-pre-face ((t (:inherit (shadow fixed-pitch))))))
 
 (use-package org
   :bind (("C-c c" . org-capture)
