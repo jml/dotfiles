@@ -82,4 +82,16 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
   (dired (concat org-roam-directory "/Inbox")))
 
 
+(defun jml/org-roam-archive-buffer-file ()
+  "Move the current file to the Archive."
+  (interactive)
+
+  (let*
+      ((archive-dir (concat org-roam-directory "/Archive"))
+       (filename (buffer-file-name)))
+    (jml/org-roam-move-buffer-file archive-dir)
+    (message "Moved %s to %s" filename archive-dir)
+    (kill-buffer)))
+
+
 ;;; jml-utils.el ends here
