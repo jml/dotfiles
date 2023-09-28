@@ -480,6 +480,9 @@
   (setq org-roam-dailies-capture-templates
         '(("d" "default" plain "%?"
            :target (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d %A>\n"))
+          ("x" "check in" entry (file "/Users/jml/Documents/exobrain/Templates/daily_check_in.org")
+           :target (file+head "%<%Y-%m-%d>.org"
                               "#+title: %<%Y-%m-%d %A>\n")))))
 
 
