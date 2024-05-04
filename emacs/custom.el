@@ -22,7 +22,7 @@
  '(current-language-environment "English")
  '(custom-buffer-indent 4)
  '(custom-safe-themes
-   '("4b287bfbd581ea819e5d7abe139db1fb5ba71ab945cec438c48722bea3ed6689" "ed68393e901a88b9feefea1abfa9a9c5983e166e4378c71bb92e636423bd94fd" "e29a6c66d4c383dbda21f48effe83a1c2a1058a17ac506d60889aba36685ed94" "60940e1f2fa3f4e61e7a7ed9bab9c22676aa25f927d5915c8f0fa3a8bf529821" "dcdd1471fde79899ae47152d090e3551b889edf4b46f00df36d653adc2bf550d" "855eb24c0ea67e3b64d5d07730b96908bac6f4cd1e5a5986493cbac45e9d9636" "5f1bd7f67dc1598977e69c6a0aed3c926f49581fdf395a6246f9bc1df86cb030" "947190b4f17f78c39b0ab1ea95b1e6097cc9202d55c73a702395fc817f899393" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default))
+   '("063c278e83aa631e230535f1be093fa57d0df4a2f5b7e781c6952e6145532976" "4b287bfbd581ea819e5d7abe139db1fb5ba71ab945cec438c48722bea3ed6689" "ed68393e901a88b9feefea1abfa9a9c5983e166e4378c71bb92e636423bd94fd" "e29a6c66d4c383dbda21f48effe83a1c2a1058a17ac506d60889aba36685ed94" "60940e1f2fa3f4e61e7a7ed9bab9c22676aa25f927d5915c8f0fa3a8bf529821" "dcdd1471fde79899ae47152d090e3551b889edf4b46f00df36d653adc2bf550d" "855eb24c0ea67e3b64d5d07730b96908bac6f4cd1e5a5986493cbac45e9d9636" "5f1bd7f67dc1598977e69c6a0aed3c926f49581fdf395a6246f9bc1df86cb030" "947190b4f17f78c39b0ab1ea95b1e6097cc9202d55c73a702395fc817f899393" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "bc75dfb513af404a26260b3420d1f3e4131df752c19ab2984a7c85def9a2917e" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default))
  '(dabbrev-case-distinction nil)
  '(dabbrev-case-fold-search nil)
  '(dabbrev-case-replace nil)
@@ -63,13 +63,6 @@
  '(message-sendmail-envelope-from 'header)
  '(org-agenda-todo-ignore-scheduled 'future)
  '(org-export-backends '(ascii html icalendar latex md odt))
- '(package-archives
-   '(("gnu" . "https://elpa.gnu.org/packages/")
-     ("melpa" . "https://melpa.org/packages/")))
- '(package-load-list '(all paredit))
- '(package-selected-packages
-   '(org-roam-dailies emacsql-sqlite-module emacs-sqlite-module speed-type vterm typescript-mode tide org-roam-ui org-roam nix-mode just-mode taskpaper-mode org-inlinetask org-bullets pyenv-auto pyenv jedi pyenv-mode-auto py-isort company-box plantuml-mode lsp-haskell treemacs-icons-dired all-the-icons all-the-icons-dired treemacs-projectile nlinum solaire-mode elpy git-link pretty-sha-path yaml-mode web-mode toml-mode protobuf-mode groovy-mode graphviz-dot-mode dockerfile-mode docker terraform-mode cargo flycheck-pyflakes isortify blacken pipenv python-docstring pyenv-mode haskell-snippets hindent intero flycheck-haskell haskell-mode go-snippets go-projectile go-impl flycheck-gometalinter go-mode dash-at-point yasnippet-snippets yasnippet dap-mode helm-lsp company-lsp lsp-ui lsp-mode flycheck expand-region paredit use-package helm-config bubbleberry-theme flycheck-kotlin kotlin-mode ansible-vault jinja2-mode flycheck-gradle gradle-mode commander git graphql-mode org psci))
- '(paradox-github-token t)
  '(paren-mode 'paren nil (paren))
  '(php-mode-speedbar-open nil)
  '(prog-mode-hook '((lambda nil (setq show-trailing-whitespace t))))

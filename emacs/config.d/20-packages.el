@@ -121,10 +121,6 @@
 
 (use-package direnv)
 
-;; Package management
-
-(use-package paradox)
-
 ;; Multiple cursors
 
 (use-package multiple-cursors
@@ -148,16 +144,10 @@
 (use-package helm
   :after diminish
   :diminish helm-mode
-  :config
-  (helm-mode 1))
-
-(use-package helm-config
-  :ensure nil
-  :after helm
   :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)))
-
-(use-package helm-rg)
+         ("C-x C-f" . helm-find-files)
+         ("C-x C-b" . helm-buffers-list))
+  :config (helm-mode 1))
 
 ;; Projectile
 
@@ -273,9 +263,6 @@
   :after diminish
   :diminish company-box-mode
   :hook (company-mode . company-box-mode))
-
-(use-package helm-lsp
-  :commands helm-lsp-workspace-symbol)
 
 ;; Snippets
 (use-package yasnippet
@@ -469,21 +456,6 @@
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${type:20} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
-
-
-(use-package org-roam-dailies
-  :after org-roam
-  :ensure t
-  :bind-keymap ("C-c n d" . org-roam-dailies-map)
-  :config
-
-  (setq org-roam-dailies-capture-templates
-        '(("d" "default" plain "%?"
-           :target (file+head "%<%Y-%m-%d>.org"
-                              "#+title: %<%Y-%m-%d %A>\n"))
-          ("x" "check in" entry (file "/Users/jml/Documents/exobrain/Templates/daily_check_in.org")
-           :target (file+head "%<%Y-%m-%d>.org"
-                              "#+title: %<%Y-%m-%d %A>\n")))))
 
 
 (use-package org-roam-ui
