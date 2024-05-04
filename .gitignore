@@ -15,3 +15,6 @@
 /emacs/async-bytecomp.log
 /emacs/speed-type/
 /emacs/forge-database-*.sql
+/emacs/*.sqlite
+/emacs/projects
+/emacs/straight/
