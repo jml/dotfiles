@@ -437,6 +437,7 @@
          ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
          ("C-c n c" . org-roam-capture))
+  :bind-keymap ("C-c n d" . org-roam-dailies-map)
   :config
 
   (setq org-roam-capture-templates
