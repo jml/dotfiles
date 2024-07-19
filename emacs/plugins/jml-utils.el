@@ -94,4 +94,38 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
     (kill-buffer)))
 
 
+;; Experimental code for getting the whole week of daily captures
+;; (require 'org-roam-dailies)
+
+;; (defun jml/org-roam-dailies-last-calendar-week ()
+;;   "Gather org-roam daily captures for the last calendar week and insert them into a new buffer."
+;;   (interactive)
+;;   (let* ((org-roam-directory (expand-file-name org-roam-directory))
+;;          (daily-directory (expand-file-name "daily" org-roam-directory))
+;;          (current-date (current-time))
+;;          (last-sunday (time-subtract current-date (days-to-time (mod (1+ (calendar-day-of-week current-date)) 7))))
+;;          (last-monday (time-subtract last-sunday (days-to-time 6)))
+;;          (date-list (cl-loop for days from 0 to 6
+;;                              collect (format-time-string "%Y-%m-%d" (time-add last-monday (days-to-time days)))))
+;;          (file-list (mapcar (lambda (date)
+;;                               (expand-file-name (format "%s.org" date) daily-directory))
+;;                             date-list))
+;;          (content ""))
+;;     (dolist (file file-list)
+;;       (when (file-exists-p file)
+;;         (setq content (concat content "\n" (with-temp-buffer
+;;                                              (insert-file-contents file)
+;;                                              (buffer-string))))))
+;;     (with-current-buffer (get-buffer-create "*Org-roam Weekly Summary*")
+;;       (erase-buffer)
+;;       (insert content)
+;;       (org-mode)
+;;       (goto-char (point-min))
+;;       (display-buffer (current-buffer)))))
+
+;; ;; Bind the function to a key for convenience
+;; (global-set-key (kbd "C-c n w") 'my/org-roam-dailies-last-calendar-week)
+
+
+
 ;;; jml-utils.el ends here
