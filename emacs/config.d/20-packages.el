@@ -418,7 +418,6 @@
 (use-package emacsql-sqlite-module)
 
 (use-package org-roam
-  :ensure t
   :custom
   (org-roam-file-exclude-regexp '("data/" ".trash/" "Archive/"))
   :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -426,7 +425,6 @@
          ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
          ("C-c n c" . org-roam-capture))
-  :bind-keymap ("C-c n d" . org-roam-dailies-map)
   :config
 
   (setq org-roam-capture-templates
@@ -447,6 +445,16 @@
   (setq org-roam-node-display-template (concat "${type:20} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
 
+(use-package org-roam-dailies
+  :straight nil
+  :bind-keymap ("C-c n d" . org-roam-dailies-map)
+  :config
+
+  (setq org-roam-dailies-directory "daily/")
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" plain "%?"
+           :target (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d %A>\n")))))
 
 (use-package org-roam-ui
   :after org-roam
