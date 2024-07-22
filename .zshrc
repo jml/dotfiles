@@ -107,3 +107,5 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 
 # Created by `pipx` on 2022-08-19 05:58:49
 export PATH="$PATH:/Users/jml/.local/bin"
+
+alias terraform=tofu
