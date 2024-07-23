@@ -295,8 +295,6 @@
 ;; For almost all projects, I'll want flake8 & mypy.
 ;; I need to make sure:
 ;;
-;; - memrise/webapp doesn't have stupid column length warnings
-;; - memrise/webapp code uses memrise/webapp/mypy.ini for mypy config
 ;; - flycheck is enabled by default
 ;;
 ;; All we need to do is enable flycheck mode globally.
