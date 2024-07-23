@@ -465,6 +465,17 @@
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 
+;; Make my custom utilities avaliable
+(use-package jml-utils
+  :straight nil)
+
+;; Make my org-roam extensions available
+(use-package jml-org-roam-utils
+  :commands (jml/org-roam-archive-buffer-file
+             jml/org-roam-go-to-inbox
+             jml/org-roam-move-buffer-file)
+  :straight nil)
+
 ;; Python
 
 ;; Rust
