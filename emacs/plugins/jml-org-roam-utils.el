@@ -38,6 +38,9 @@
 
 (defvar jml/org-roam-inbox-dir "Inbox")
 
+(defvar jml/org-roam-weekly-summary-start-day-of-week 6)
+
+
 (defun jml/org-roam-move-buffer-file (dir)
   "Move both current buffer and file it's visiting to DIR.
 
@@ -120,7 +123,11 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
 (defun jml/org-roam-dailies-summary (start-date end-date)
   "Gather org-roam daily captures between START-DATE and END-DATE and insert them into a new, temporary buffer."
   (interactive
-   (list (org-read-date nil nil nil "Start date")
+   (list (org-read-date nil nil nil "Start date"
+                        (jml/time-from-gregorian
+                         (jml/gregorian-last-day-before
+                          (calendar-current-date)
+                          jml/org-roam-weekly-summary-start-day-of-week)))
          (org-read-date nil nil nil "End date")))
   (let ((calendar-start-date (jml/parse-org-time-string start-date))
         (calendar-end-date (jml/parse-org-time-string end-date)))

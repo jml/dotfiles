@@ -5,7 +5,7 @@
 ;;;
 ;;; Code:
 
-(provide 'jml-utils)
+(require 'calendar)
 
 (defun jml/delete-file-and-buffer ()
   "Kill the current buffer and delete the file it is visiting.
@@ -56,5 +56,35 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
   "Format DATE (a list of (MONTH DAY YEAR)) into a string 'YYYY-MM-DD'."
   (cl-destructuring-bind (month day year) date
     (format "%04d-%02d-%02d" year month day)))
+
+
+(defun jml/absolute-last-day-before (date daynum)
+  "Return the last occurrence of DAYNUM strictly before DATE.
+
+DATE is an absolute date from `calendar`.
+DAYNUM is the day of the week."
+  (let ((last-day (calendar-dayname-on-or-before daynum date)))
+    (if (equal last-day date)
+        (- last-day 7)
+      last-day)))
+
+
+(defun jml/gregorian-last-day-before (date daynum)
+  "Return the last occurrence of DAYNUM strictly before DATE.
+
+Like `jml/absolute-last-day-before`, except this accepts and returns a Gregorian
+date in the form (MONTH DAY YEAR)."
+  (calendar-gregorian-from-absolute
+   (jml/absolute-last-day-before
+    (calendar-absolute-from-gregorian date)
+    daynum)))
+
+
+(defun jml/time-from-gregorian (date)
+  (cl-destructuring-bind (month day year) date
+    (encode-time (list 0 0 0 day month year 0 0 0))))
+
+
+(provide 'jml-utils)
 
 ;;; jml-utils.el ends here
