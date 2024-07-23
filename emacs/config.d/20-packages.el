@@ -471,8 +471,12 @@
 (use-package jml-org-roam-utils
   :commands (jml/org-roam-archive-buffer-file
              jml/org-roam-go-to-inbox
-             jml/org-roam-move-buffer-file)
-  :straight nil)
+             jml/org-roam-move-buffer-file
+             jml/org-roam-dailies-summary)
+  :straight nil
+  :config
+  (add-to-list 'popwin:special-display-config
+               '("*org-roam dailies summary*" :position left :width 80)))
 
 ;; Python
 
