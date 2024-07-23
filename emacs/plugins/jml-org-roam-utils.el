@@ -33,6 +33,7 @@
 (require 'jml-utils)
 (require 'org-roam)
 (require 'org-roam-dailies)
+(require 'seq)
 
 (defvar jml/org-roam-archive-dir "Archive")
 
@@ -132,6 +133,16 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
   (let ((calendar-start-date (jml/parse-org-time-string start-date))
         (calendar-end-date (jml/parse-org-time-string end-date)))
     (jml/generate-org-roam-dailies-summary calendar-start-date calendar-end-date)))
+
+
+(defun jml/org-roam-open-random-inbox-note ()
+  "Open a random note from the Org-roam Inbox directory."
+  (interactive)
+  (let* ((inbox-dir (expand-file-name jml/org-roam-inbox-dir org-roam-directory))
+         (files (directory-files-recursively inbox-dir "\\.org$")))
+    (if (null files)
+        (message "No notes found in Inbox directory.")
+      (find-file (seq-random-elt files)))))
 
 
 (provide 'jml-org-roam-utils)
