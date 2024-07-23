@@ -531,5 +531,7 @@
 ;; https://github.com/akermu/emacs-libvterm
 ;;
 ;; Make sure you do https://github.com/akermu/emacs-libvterm#shell-side-configuration also
-(use-package vterm)
+(use-package vterm
+  :config
+  (setq vterm-always-compile-module t))
 
