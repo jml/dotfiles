@@ -145,6 +145,17 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
       (find-file (seq-random-elt files)))))
 
 
+(defvar jml/org-roam-utils-map (make-sparse-keymap)
+  "Keymap for `jml-org-roam-utils`.")
+
+(define-prefix-command 'jml/org-roam-utils-map)
+
+(define-key jml/org-roam-utils-map (kbd "i") #'jml/org-roam-go-to-inbox)
+(define-key jml/org-roam-utils-map (kbd "s") #'jml/org-roam-dailies-summary)
+(define-key jml/org-roam-utils-map (kbd ".") #'jml/org-roam-open-random-inbox-note)
+(define-key jml/org-roam-utils-map (kbd "y") #'jml/org-roam-archive-buffer-file)
+
+
 (provide 'jml-org-roam-utils)
 
 ;;; jml-org-roam-utils.el ends here
