@@ -51,4 +51,10 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
         (set-buffer-modified-p nil)
         t))))
 
+
+(defun jml/format-date-iso (date)
+  "Format DATE (a list of (MONTH DAY YEAR)) into a string 'YYYY-MM-DD'."
+  (cl-destructuring-bind (month day year) date
+    (format "%04d-%02d-%02d" year month day)))
+
 ;;; jml-utils.el ends here
