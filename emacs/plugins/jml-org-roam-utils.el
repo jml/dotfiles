@@ -69,7 +69,7 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
 (defun jml/org-roam-go-to-inbox ()
   "Browse the inbox folder with Dired."
   (interactive)
-  (dired (concat (file-name-as-directory org-roam-directory) jml/org-roam-inbox-dir)))
+  (dired (expand-file-name jml/org-roam-inbox-dir org-roam-directory)))
 
 
 (defun jml/org-roam-archive-buffer-file ()
@@ -77,7 +77,7 @@ If START-DIRECTORY is supplied, use that as the directory to start with."
   (interactive)
 
   (let*
-      ((archive-dir (concat (file-name-as-directory org-roam-directory) jml/org-roam-archive-dir))
+      ((archive-dir (expand-file-name jml/org-roam-archive-dir org-roam-directory))
        (filename (buffer-file-name)))
     (jml/org-roam-move-buffer-file archive-dir)
     (message "Moved %s to %s" filename archive-dir)
