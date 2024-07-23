@@ -469,10 +469,7 @@
 
 ;; Make my org-roam extensions available
 (use-package jml-org-roam-utils
-  :commands (jml/org-roam-archive-buffer-file
-             jml/org-roam-go-to-inbox
-             jml/org-roam-move-buffer-file
-             jml/org-roam-dailies-summary)
+  :bind-keymap ("C-c n j" . jml/org-roam-utils-map)
   :straight nil
   :config
   (add-to-list 'popwin:special-display-config
