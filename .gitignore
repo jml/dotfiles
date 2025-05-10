@@ -18,3 +18,4 @@
 /emacs/*.sqlite
 /emacs/projects
 /emacs/straight/
+.aider*
