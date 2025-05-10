@@ -141,53 +141,6 @@
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 
-;; Flycheck
-
-(use-package flycheck
-  :demand t
-  :config
-  (add-to-list 'flycheck-disabled-checkers 'python-pylint)
-  :init (global-flycheck-mode)
-  :bind (:map flycheck-mode-map
-              ("M-n" . flycheck-next-error)
-              ("M-p" . flycheck-previous-error)))
-
-(use-package flymake
-  :bind
-  (:map flymake-mode-map
-        ("M-n" . flymake-goto-next-error)
-        ("M-p" . flymake-goto-prev-error)))
-
-;; LSP
-
-(use-package lsp-mode
-  :hook
-  ((rust-mode . lsp))
-  :commands (lsp lsp-deferred))
-
-(use-package lsp-ui
-  :after (diminish flycheck lsp-mode)
-  :diminish eldoc-mode
-  :config
-  (setq lsp-ui-doc-use-webkit t)
-  :commands lsp-ui-mode
-  :custom
-  (lsp-ui-doc-header nil)
-  (lsp-ui-doc-include-signature nil)
-  (lsp-ui-doc-position (quote at-point))
-  (lsp-ui-doc-use-childframe t)
-  (lsp-ui-doc-use-webkit nil)
-  (lsp-ui-flycheck-enable t)
-  (lsp-ui-sideline-ignore-duplicate t)
-  (lsp-ui-sideline-show-hover t))
-
-(use-package company)
-
-(use-package company-box
-  :after diminish
-  :diminish company-box-mode
-  :hook (company-mode . company-box-mode))
-
 ;; Snippets
 (use-package yasnippet
   :after diminish
@@ -195,8 +148,6 @@
   :config (yas-global-mode))
 
 (use-package yasnippet-snippets)
-
-;; LANGUAGES
 
 ;; Go
 
@@ -280,26 +231,6 @@
 ;; Nix
 (use-package nix-mode)
 (use-package pretty-sha-path)
-
-
-;; TypeScript
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  ;; company is an optional dependency. You have to
-  ;; install it separately via package-install
-  ;; `M-x package-install [ret] company`
-  (company-mode +1))
-
-(use-package tide
-  :after typescript-mode
-  :config
-  (add-hook 'typescript-mode-hook #'setup-tide-mode))
-
 
 ;; vterm
 ;;
