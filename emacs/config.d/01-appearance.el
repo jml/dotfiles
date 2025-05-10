@@ -33,3 +33,16 @@
 
   (setq doom-themes-treemacs-theme "doom-atom") ; use the colorful treemacs theme
   (doom-themes-treemacs-config))
+
+;; Smart Mode Line
+;;
+;; A better mode line
+(use-package diminish)
+
+(use-package smart-mode-line-atom-one-dark-theme)
+
+(use-package smart-mode-line
+  :after smart-mode-line-atom-one-dark-theme
+  :config
+  (setq sml/theme 'atom-one-dark)
+  (sml/setup))

@@ -80,7 +80,6 @@
 
 
 ;; Environment
-
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
   :config (exec-path-from-shell-initialize))
@@ -88,7 +87,6 @@
 (use-package direnv)
 
 ;; Multiple cursors
-
 (use-package multiple-cursors
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
@@ -134,38 +132,7 @@
 
 ;; Magit
 
-(use-package magit
-  :after (diminish transient magit-section)
-  :diminish auto-revert-mode
-  :bind (("\C-c g g" . magit-status)
-         ("<f12>" . magit-status))
-  :config
-  (setq magit-last-seen-setup-instructions "1.4.0")
-  (setq magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1))
-
 (use-package transient)
-
-(use-package forge
-  :after magit)
-
-;; git-link
-;;
-;; Interactive Emacs functions that create URLs for files and commits in
-;; GitHub repositories.
-(use-package git-link)
-
-;; Smart Mode Line
-;;
-;; A better mode line
-(use-package diminish)
-
-(use-package smart-mode-line-atom-one-dark-theme)
-
-(use-package smart-mode-line
-  :after smart-mode-line-atom-one-dark-theme
-  :config
-  (setq sml/theme 'atom-one-dark)
-  (sml/setup))
 
 ;; Editing
 
