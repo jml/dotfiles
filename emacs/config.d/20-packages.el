@@ -181,16 +181,7 @@
   (lsp-ui-sideline-ignore-duplicate t)
   (lsp-ui-sideline-show-hover t))
 
-;; TODO: try this once python is working
-;;(use-package lsp-treemacs
-;;  :commands lsp-treemacs-errors-list)
-
 (use-package company)
-;; Tide documentation (https://github.com/ananthakumaran/tide)
-;; recommends this, to align annotation to the right hand side.
-;; Not sure if it matters given we use company-box.
-;; TODO: Do an experiment.
-;; (setq company-tooltip-align-annotations t)
 
 (use-package company-box
   :after diminish
@@ -204,11 +195,6 @@
   :config (yas-global-mode))
 
 (use-package yasnippet-snippets)
-
-;; Dash
-
-;; TODO: Register a keyboard binding for dash-at-point
-(use-package dash-at-point)
 
 ;; LANGUAGES
 
@@ -245,7 +231,6 @@
   (markdown-table-face ((t (:inherit (shadow fixed-pitch)))))
   (markdown-code-face ((t (:inherit (shadow fixed-pitch)))))
   (markdown-pre-face ((t (:inherit (shadow fixed-pitch))))))
-
 
 
 (use-package rst
