@@ -19,3 +19,4 @@
 /emacs/projects
 /emacs/straight/
 .aider*
+flycheck_*
