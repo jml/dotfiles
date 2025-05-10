@@ -1,26 +1,3 @@
-;; Theme
-
-(use-package solaire-mode
- :hook
- ((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
- :config
- (solaire-global-mode +1))
-
-(use-package all-the-icons)
-
-(use-package doom-themes
-  :after all-the-icons
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (load-theme 'doom-spacegrey t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-
-  (setq doom-themes-treemacs-theme "doom-atom") ; use the colorful treemacs theme
-  (doom-themes-treemacs-config))
 
 (use-package treemacs
   :defer t
