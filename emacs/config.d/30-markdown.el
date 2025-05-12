@@ -14,3 +14,19 @@
   (markdown-table-face ((t (:inherit (shadow fixed-pitch)))))
   (markdown-code-face ((t (:inherit (shadow fixed-pitch)))))
   (markdown-pre-face ((t (:inherit (shadow fixed-pitch))))))
+
+
+(use-package obsidian
+  :config
+  (global-obsidian-mode t)
+  (obsidian-backlinks-mode t)
+  :custom
+  ;; Location of obsidian vault
+  (obsidian-directory "/Users/jml/Library/Mobile Documents/iCloud~md~obsidian/Documents/Exobrain")
+  ;; Default location for new notes from `obsidian-capture'
+  (obsidian-inbox-directory "Inbox")
+  ;; Useful if you're going to be using wiki links
+  (markdown-enable-wiki-links t))
+
+
+;; (define-key obsidian-mode-map (kbd "C-c M-o") 'obsidian-hydra/body)
