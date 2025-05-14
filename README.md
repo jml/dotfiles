@@ -85,7 +85,7 @@ jml's configuration
   ```
 - [ ] Launch Emacs
 - Omnifocus
-  - [ ] Run Omnifocus and supply license (kept in 1Password)
+  - [ ] Run Omnifocus and log in with OmniFocus account
   - [ ] Link personal calendar to laptop
   - [ ] Link work calendar to laptop
   - [ ] Configure Forecast view to use `Time : Today` tag
@@ -93,11 +93,7 @@ jml's configuration
   - Star commonly used perspectives
     - [ ] Easy wins
     - [ ] Weekly review
-    - [ ] Solo
-    - [ ] Tube
-- Fantastical
 - [ ] Set up Google Backup and Sync to get my own folders
-- [ ] Run Dash and provide license file (`~/Google Drive/Documents/Dash/dash.license`)
 - [ ] Set Chrome as default browser
 - [ ] Trim useless applications from Dock and make sure frequently used ones are there:
   - [ ] Emacs
@@ -117,12 +113,6 @@ Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow"
 #### UK (ISO) keyboard layout?
 
 - [ ] Set up Karabiner-Elements to swap stupid UK key (`non_us_backslash`) for tilde (`grave_accent_and_tilde`)
-
-#### Memrise-specific stuff
-
-- [ ] Set up Google Drive File Stream for work folders
-- [ ] Get Pritunl configured to connect to VPN
-
 
 #### If someone else chose the system language
 
