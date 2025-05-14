@@ -21,3 +21,4 @@
 .aider*
 flycheck_*
 /emacs/eln-cache/
+/emacs/elgrep-data.el
