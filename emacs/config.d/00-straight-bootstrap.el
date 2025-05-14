@@ -19,5 +19,7 @@
   (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
+;; Need this to prevent installed org and builtin org clashing
+(straight-use-package 'org)
 
 (setq straight-use-package-by-default t)
