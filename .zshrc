@@ -111,6 +111,6 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # Created by `pipx` on 2022-08-19 05:58:49
-export PATH="$PATH:/Users/jml/.local/bin"
+export PATH="$PATH:$HOME/.local/bin:$HOME/go/bin"
 
 alias terraform=tofu
