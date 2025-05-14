@@ -115,6 +115,7 @@
 
 ;; Projectile
 
+(use-package helm-rg)
 (use-package helm-projectile)
 
 (use-package projectile
