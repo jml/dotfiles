@@ -26,9 +26,15 @@ cask "slack"
 cask "1password-cli"
 
 tap "homebrew/cask-fonts"
+
+# My preferred coding font, Adobe Source Code Pro
 cask "font-source-code-pro"
 cask "font-source-sans-pro"
 
+# Nerdfonts for icons etc. https://www.nerdfonts.com/
+cask font-sauce-code-pro-nerd-font
+
+# Still the best editor.
 tap "d12frosted/emacs-plus"
 brew "emacs-plus"
 
