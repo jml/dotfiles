@@ -17,15 +17,17 @@
 
 
 (use-package obsidian
-  :config
-  (obsidian-backlinks-mode t)
   :custom
   ;; Location of obsidian vault
-  (obsidian-directory "/Users/jml/Library/Mobile Documents/iCloud~md~obsidian/Documents/Exobrain")
+  (obsidian-directory "/Users/jml/Documents/Chainbrain")
   ;; Default location for new notes from `obsidian-capture'
   (obsidian-inbox-directory "Inbox")
   ;; Useful if you're going to be using wiki links
   (markdown-enable-wiki-links t))
 
-
-;; (define-key obsidian-mode-map (kbd "C-c M-o") 'obsidian-hydra/body)
+;; Obsidian TODO
+;; - move to new .el file
+;; - understand global-obsidian-mode and obsidian-backlinks-mode configuration
+;; - move obsidian-directory configuration to local.d, as it varies across laptops
+;; - set up Hydra
+;;   (define-key obsidian-mode-map (kbd "C-c M-o") 'obsidian-hydra/body)
