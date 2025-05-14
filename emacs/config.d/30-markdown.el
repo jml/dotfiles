@@ -18,7 +18,6 @@
 
 (use-package obsidian
   :config
-  (global-obsidian-mode t)
   (obsidian-backlinks-mode t)
   :custom
   ;; Location of obsidian vault
