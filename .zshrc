@@ -75,7 +75,7 @@ eval "$(pyenv init --path)"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git direnv emacs colorize pyenv gcloud nvm aws)
+plugins=(git direnv emacs colorize pyenv gcloud nvm aws iterm2)
 
 zstyle :omz:plugins:iterm2 shell-integration yes
 
@@ -109,9 +109,6 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
 
 # Created by `pipx` on 2022-08-19 05:58:49
 export PATH="$PATH:/Users/jml/.local/bin"
