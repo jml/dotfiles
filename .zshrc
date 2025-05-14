@@ -70,11 +70,9 @@ ZSH_THEME="spaceship"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git emacs colorize pyenv gcloud nvm aws)
+plugins=(git direnv emacs colorize pyenv gcloud nvm aws)
 
 source $ZSH/oh-my-zsh.sh
-
-eval "$(direnv hook zsh)"
 
 # User configuration
 
