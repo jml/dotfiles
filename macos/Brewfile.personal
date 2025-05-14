@@ -1,0 +1,4 @@
+# Things I only use on personal laptops
+cask "discord"
+cask "spotify"
+cask "whatsapp"

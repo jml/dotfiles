@@ -19,14 +19,9 @@ brew "ripgrep"
 brew "shellcheck"
 
 cask "1password"
-cask "dash"
-cask "discord"
-cask "docker"
 cask "iterm2"
 cask "rectangle"
 cask "slack"
-cask "spotify"
-cask "whatsapp"
 
 cask "1password-cli"
 
