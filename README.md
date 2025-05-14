@@ -57,7 +57,7 @@ jml's configuration
 - [ ] Load the key into memory
 
   ```bash
-  ssh-add
+  ssh-add --apple-use-keychain
   ```
 
 - [ ] Change the clone to use SSH
