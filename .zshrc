@@ -112,5 +112,3 @@ source $ZSH/oh-my-zsh.sh
 
 # Created by `pipx` on 2022-08-19 05:58:49
 export PATH="$PATH:$HOME/.local/bin:$HOME/go/bin"
-
-alias terraform=tofu
