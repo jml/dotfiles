@@ -20,6 +20,7 @@
 
 (straight-use-package 'use-package)
 ;; Need this to prevent installed org and builtin org clashing
-(straight-use-package 'org)
+(use-package org
+  :straight (:host github :repo "emacs-straight/org-mode"))
 
 (setq straight-use-package-by-default t)
