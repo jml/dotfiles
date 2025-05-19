@@ -3,9 +3,8 @@
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package org
-  :after emacsql-sqlite-module
-  :bind (("C-c c" . org-capture)
-         ("C-c a" . org-agenda)
+  :straight (:host github :repo "emacs-straight/org-mode")
+  :bind (("C-c a" . org-agenda)
          :map org-mode-map
          ("RET" . org-return-and-maybe-indent))
 
