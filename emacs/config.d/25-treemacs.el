@@ -77,3 +77,16 @@
 
 (use-package treemacs-magit
   :after treemacs magit)
+
+;; See https://github.com/rainstormstudio/treemacs-nerd-icons
+;; Relies on:
+;; ```
+;; brew install --cask font-sauce-code-pro-nerd-font
+;; ```
+(use-package nerd-icons)
+
+(use-package treemacs-nerd-icons
+  :after treemacs nerd-icons
+  :config
+  (treemacs-load-theme "nerd-icons"))
+
