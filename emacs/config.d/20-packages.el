@@ -42,6 +42,8 @@
   :bind ("C-c h" . helm-projectile)
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
+  ;; If we don't have this, we get tonnes of crazy arguments on the command-line.
+  (setq helm-projectile-ignore-strategy 'search-tool)
   (projectile-global-mode)
   (helm-projectile-on)
   (setq projectile-use-git-grep 1))
