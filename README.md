@@ -129,3 +129,25 @@ Source: https://support.apple.com/en-gb/HT202036
 
 TODO: Various language servers for Emacs
 
+#### Aerospace
+
+TODO: Put this in bundle
+
+https://nikitabobko.github.io/AeroSpace/guide#tree
+
+Essentially equivalent of i3 for macOS.
+
+```
+brew install --cask nikitabobko/tap/aerospace
+ln -s ~/src/dotfiles/aerospace/config.toml ~/.aerospace.toml
+```
+
+#### Sketchybar
+
+https://felixkratz.github.io/SketchyBar/setup
+
+```
+brew tap FelixKratz/formulae
+brew install sketchybar
+brew services start sketchybar
+```
