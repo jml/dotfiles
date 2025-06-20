@@ -183,12 +183,6 @@ automatically-unhide-macos-hidden-apps = false
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
-    backspace = [
-      'close-all-windows-but-current',
-      'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
-    ]
-
     j = [
       'join-with left',
       'mode main',
