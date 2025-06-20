@@ -51,6 +51,7 @@ for sid in $(aerospace list-workspaces --all); do
         script="$CONFIG_DIR/plugins/aerospace.sh $sid"
 done
 
+
 ##### Adding Left Items #####
 # We add some regular items to the left side of the bar, where
 # only the properties deviating from the current defaults need to be set
@@ -80,6 +81,16 @@ sketchybar --add item clock right \
            --add item battery right \
            --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
            --subscribe battery system_woke power_source_change
+
+##### Adding Aerospace Mode Indicator #####
+
+# Add Aerospace mode item
+sketchybar --add item aerospace_mode right \
+           --set aerospace_mode label="main" \
+                                icon="✈️" \
+                                script="$PLUGIN_DIR/aerospace_mode.sh" \
+           --add event aerospace_mode_changed \
+           --subscribe aerospace_mode aerospace_mode_changed
 
 ##### Force all scripts to run the first time (never do this in a script) #####
 sketchybar --update
