@@ -189,25 +189,25 @@ automatically-unhide-macos-hidden-apps = false
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
-    alt-shift-j = [
+    j = [
       'join-with left',
       'mode main',
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
-    alt-shift-k = [
+    k = [
       'join-with down',
       'mode main',
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
-    alt-shift-l = [
+    l = [
       'join-with up',
       'mode main',
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
-    alt-shift-semicolon = [
+    semicolon = [
       'join-with right',
       'mode main',
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
