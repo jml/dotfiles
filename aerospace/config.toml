@@ -159,9 +159,6 @@ automatically-unhide-macos-hidden-apps = false
       'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=resize',
     ]
 
-    cmd-h = [] # Disable "hide application"
-    cmd-alt-h = [] # Disable "hide others"
-
 
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
