@@ -105,6 +105,18 @@ automatically-unhide-macos-hidden-apps = false
     end tell
     "'''
 
+    alt-shift-enter = '''exec-and-forget osascript -e "
+    tell application id \"com.google.Chrome\"
+         make new window
+         activate
+    end tell
+    "'''
+
+    ctrl-alt-enter = '''exec-and-forget emacsclient \
+    --create-frame --no-wait --suppress-output \
+    --eval "(progn (switch-to-buffer \"*scratch*\") (select-frame-set-input-focus (selected-frame)))"
+    '''
+
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-slash = 'layout tiles horizontal vertical'
     alt-comma = 'layout accordion horizontal vertical'
