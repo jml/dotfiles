@@ -1,5 +1,9 @@
+;; TODO(jml): Better understand dependency management for use-package
+(use-package closql)
+(use-package ghub)
+
 (use-package magit
-  :after (diminish transient magit-section)
+  :after (diminish transient magit-section closql ghub)
   :diminish auto-revert-mode
   :bind (("\C-c g g" . magit-status)
          ("<f12>" . magit-status))
