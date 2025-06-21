@@ -1,0 +1,13 @@
+# Install everything
+
+target := env_var_or_default('STOW_TARGET', env_var('HOME'))
+
+all: emacs
+    stow -t {{target}} aerospace sketchybar git zsh ghc
+
+emacs:
+    stow -t {{target}} --no-folding emacs
+
+# Remove all symlinks
+clean:
+    stow -t {{target}} -D aerospace sketchybar emacs git zsh ghc
