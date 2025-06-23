@@ -13,24 +13,37 @@ PLUGIN_DIR="$CONFIG_DIR/plugins"
 # If you are looking for other colors, see the color picker:
 # https://felixkratz.github.io/SketchyBar/config/tricks#color-picker
 
-sketchybar --bar position=top height=40 blur_radius=30 color=0x40000000
+BAR_COLOR="0x40000000"
+
+sketchybar --bar \
+  position=top \
+  height=40 \
+  blur_radius=30 \
+  color="${BAR_COLOR}"
 
 ##### Changing Defaults #####
 # We now change some default values, which are applied to all further items.
 # For a full list of all available item properties see:
 # https://felixkratz.github.io/SketchyBar/config/items
 
+FONT="Hack Nerd Font"
+
+ICON_COLOR="0xffffffff"
+LABEL_COLOR="0xffffffff"
+
+PADDING=4
+
 default=(
   padding_left=5
   padding_right=5
-  icon.font="Hack Nerd Font:Bold:17.0"
-  label.font="Hack Nerd Font:Bold:14.0"
-  icon.color=0xffffffff
-  label.color=0xffffffff
-  icon.padding_left=4
-  icon.padding_right=4
-  label.padding_left=4
-  label.padding_right=4
+  icon.font="${FONT}:Bold:17.0"
+  label.font="${FONT}:Bold:14.0"
+  icon.color="${ICON_COLOR}"
+  label.color="${LABEL_COLOR}"
+  icon.padding_left="${PADDING}"
+  icon.padding_right="${PADDING}"
+  label.padding_left="${PADDING}"
+  label.padding_right="${PADDING}"
 )
 sketchybar --default "${default[@]}"
 
