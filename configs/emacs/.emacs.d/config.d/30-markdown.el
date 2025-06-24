@@ -5,6 +5,11 @@
 
   :hook (markdown-mode . variable-pitch-mode)
 
+  :custom
+  (markdown-command "markdown | smartypants")
+  (markdown-follow-wiki-link-on-enter nil)
+  (markdown-indent-on-enter t)
+
   :config
   ;; We have to do this in :config rather than :customize-face,
   ;; otherwise it doesn't take effect. I don't understand the mechanism.

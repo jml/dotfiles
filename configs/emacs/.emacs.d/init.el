@@ -1,6 +1,3 @@
-;; Customize
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
 
 ;; Load manually-managed third-party plugins.
 (add-to-list 'load-path (expand-file-name "plugins" user-emacs-directory))

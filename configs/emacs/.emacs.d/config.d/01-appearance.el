@@ -6,6 +6,19 @@
 ;; Don't show the startup screen
 (setq inhibit-startup-message t)
 
+;; UI appearance settings
+(setq menu-bar-mode nil)
+(setq tool-bar-mode nil)
+(setq scroll-bar-mode nil)
+(setq visible-bell t)
+(setq initial-scratch-message nil)
+(setq blink-cursor-mode nil)
+(show-paren-mode t)
+(setq show-paren-style 'expression)
+(column-number-mode t)
+(line-number-mode t)
+(which-function-mode t)
+
 ;; Give us a bit of breathing room between lines.
 ;; Experimenting shows that VS Code uses line spacing of 3.
 (setq-default line-spacing 2)
