@@ -8,23 +8,15 @@ jml's configuration
 
 - [ ] Connect to the Internet
 - [ ] Get Apple ID credentials from 1Password on phone to sign in
-- Keyboard
-  - [ ] Set keyboard layout to Dvorak
-  - [ ] Change Caps Lock to be Control on laptop keyboard (Settings > Keyboard > Modifier Keys)
-  - [ ] Connect external keyboard (use physical cable to establish pairing)
-  - [ ] Change Caps Lock to be Control on external keyboard (Settings > Keyboard > Modifier Keys)
-- Trackpad
-  - [ ] Connect external trackpad (use physical cable to establish pairing)
-  - [ ] Set trackpad to "Tap to Click" (Settings > Trackpad)
+- [ ] Connect external keyboard (use physical cable to establish pairing)
+- [ ] Connect external trackpad (use physical cable to establish pairing)
 - Displays
   - [ ] Connect external displays to laptop
   - [ ] Arrange external displays
   - [ ] Set scaling on any Retina displays
 - [ ] Pair headphones with laptop
-- [ ] Configure system to automatically update
 - [ ] Install latest updates
 - [ ] Reboot
-- [ ] Configure Dock to auto-hide
 - [ ] Install [brew](https://brew.sh/)
 
   ```bash
@@ -47,6 +39,14 @@ jml's configuration
   brew bundle
   cd ..
   ```
+
+- [ ] **Run the automated system configuration script**
+
+  ```bash
+  ./macos-setup.sh
+  ```
+
+  This script automates most of the system configuration steps. For manual alternatives to any automated step, see the comments in the script file.
 
 - [ ] Create an SSH key and register it with GitHub
 
@@ -74,14 +74,10 @@ jml's configuration
         https://github.com/denysdovhan/spaceship-prompt#oh-my-zsh
 - [ ] Install iTerm2 Shell Integration
 
-- [ ] Set host name with System Preferences > Sharing > Computer Name
-- [ ] System Preferences > Security & Privacy > General > Require password 5 seconds after sleep
-- [ ] System Preferences > Desktop & Screen Saver > Screen Saver > Start after 5 minutes
-
-- [ ] Install Emacs configuration
+- [ ] Install configurations
 
   ```bash
-  ln -s ~/src/dotfiles/emacs ~/.emacs.d
+  just all
   ```
 - [ ] Launch Emacs
 - Omnifocus
@@ -94,7 +90,6 @@ jml's configuration
     - [ ] Easy wins
     - [ ] Weekly review
 - [ ] Set up Google Backup and Sync to get my own folders
-- [ ] Set Chrome as default browser
 - [ ] Trim useless applications from Dock and make sure frequently used ones are there:
   - [ ] Emacs
   - [ ] iTerm2
@@ -114,33 +109,13 @@ Tip: Ctrl-F7 toggles "Tab to get everywhere". Useful workaround for when "Allow"
 
 - [ ] Set up Karabiner-Elements to swap stupid UK key (`non_us_backslash`) for tilde (`grave_accent_and_tilde`)
 
-#### If someone else chose the system language
-
-Change your keyboard layout
-
-- [ ] Log in.
-- [ ] From the Apple menu, choose System Preferences.
-- [ ] Click the Users & Groups icon.
-- [ ] Click the lock icon. Enter an admin user name and password.
-- [ ] Click Login Options.
-- [ ] Select the option to Show Input menu in login window.
-
-Source: https://support.apple.com/en-gb/HT202036
-
 TODO: Various language servers for Emacs
 
 #### Aerospace
 
-TODO: Put this in bundle
-
 https://nikitabobko.github.io/AeroSpace/guide#tree
 
-Essentially equivalent of i3 for macOS.
-
-```
-brew install --cask nikitabobko/tap/aerospace
-ln -s ~/src/dotfiles/aerospace/config.toml ~/.aerospace.toml
-```
+Essentially equivalent of i3 for macOS. Configuration is installed via `just all`.
 
 #### Sketchybar
 
@@ -151,3 +126,26 @@ brew tap FelixKratz/formulae
 brew install sketchybar
 brew services start sketchybar
 ```
+
+## Automation References
+
+The `macos-setup.sh` script automates many of the manual configuration steps above. The following resources were particularly helpful for finding the command-line alternatives:
+
+### Key Resources
+
+- **[mathiasbynens/dotfiles](https://github.com/mathiasbynens/dotfiles)** - One of the most comprehensive collections of macOS automation commands with detailed explanations
+- **[Awesome macOS Command Line](https://github.com/herrbischoff/awesome-macos-command-line)** - Curated list of useful command-line tools and system configuration commands for macOS
+- **[Apple Technical Documentation](https://developer.apple.com/documentation/)** - Official documentation for understanding preference files (`.plist`) and system domains
+- **[Ask Different (Apple Stack Exchange)](https://apple.stackexchange.com/)** - Community Q&A for specific macOS configuration challenges
+- **[Stack Overflow](https://stackoverflow.com/)** - Technical solutions for command-line automation and edge cases
+
+### Essential Command Documentation
+
+- `man defaults` - Primary tool for modifying system preferences programmatically  
+- `man scutil` - System configuration utility for network and system settings
+- `man softwareupdate` - Software update configuration and management
+- `man hidutil` - Hardware input device utility for keyboard remapping
+
+### Notes
+
+Apple frequently changes preference keys and domains between macOS versions, so commands may need updates for newer releases. The GitHub dotfiles repositories listed above are actively maintained and provide the most current working solutions.
