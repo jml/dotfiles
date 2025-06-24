@@ -16,10 +16,10 @@ The repository contains configuration files for various development tools and ap
   - `zsh/` - Zsh shell configuration with Oh My Zsh
   - `sketchybar/` - SketchyBar status bar configuration
   - `ghc/` - GHC Haskell compiler configuration
-  - `Justfile` - Task runner for installing configurations
 - `macos/` - macOS-specific files
   - `Brewfile` - Homebrew package definitions
   - `Brewfile.personal` - Personal Homebrew packages
+- `Justfile` - Task runner for installing configurations
 - `README.md` - Detailed setup instructions for new macOS systems
 
 ## Key Commands
@@ -27,7 +27,7 @@ The repository contains configuration files for various development tools and ap
 ### Installing Configurations
 
 ```bash
-# Install all configurations (from configs/ directory)
+# Install all configurations (from repository root)
 just all
 
 # Install just Emacs (uses --no-folding for Emacs specifically)
