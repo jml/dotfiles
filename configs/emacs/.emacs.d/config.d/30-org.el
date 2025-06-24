@@ -16,6 +16,8 @@
   (setq org-adapt-indentation nil)
   (setq org-fontify-quote-and-verse-blocks t)
   (setq org-hidden-keywords '(title))
+  (setq org-agenda-todo-ignore-scheduled 'future)
+  (setq org-export-backends '(ascii html icalendar latex md odt))
 
   :custom-face
   (org-level-1 ((t (:inherit 'outline-1 :height 2.0))))

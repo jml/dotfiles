@@ -75,7 +75,17 @@
 
 (use-package go-mode
   :hook (before-save . gofmt-before-save)
-  :bind (:map go-mode-map ([remap xref-find-definitions] . godef-jump)))
+  :bind (:map go-mode-map ([remap xref-find-definitions] . godef-jump))
+  :custom
+  (godef-command "/Users/jml/go/bin/godef")
+  (gofmt-args '("-s" "-w")))
+
+(use-package flycheck
+  :custom
+  (flycheck-flake8rc ".flake8")
+  (flycheck-go-build-install-deps t)
+  (flycheck-go-golint-executable "/Users/jml/go/bin/golint")
+  (flycheck-hlint-language-extensions '("TypeApplications")))
 
 (use-package flycheck-gometalinter
   :after flycheck

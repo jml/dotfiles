@@ -6,7 +6,8 @@
   :mode "\\.l?hs\\'"
   :custom
   (haskell-font-lock-symbols t)
-  (haskell-indentation-show-indentations-after-eol nil))
+  (haskell-indentation-show-indentations-after-eol nil)
+  (haskell-program-name "ghci \"+.\""))
 
 (use-package lsp-haskell
   :hook (haskell-mode . lsp)
