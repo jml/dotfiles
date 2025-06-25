@@ -60,12 +60,6 @@
 (setq dabbrev-case-replace nil)
 (setq dabbrev-upcase-means-case-search t)
 
-;; Mode hooks
-(add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
-(add-hook 'text-mode-hook 'text-mode-hook-identify)
-(add-hook 'text-mode-hook 'visual-line-mode)
-(add-hook 'text-mode-hook (lambda () (setq show-trailing-whitespace t)))
-(add-hook 'compilation-mode-hook (lambda () (toggle-truncate-lines nil)))
 
 ;; Compilation settings
 (setq compilation-message-face 'default)
@@ -95,5 +89,20 @@
                           space-mark tab-mark newline-mark)
         (encoding . utf8)
         (encoding . utf-8)))
+
+;; Built-in mode configurations
+(use-package prog-mode
+  :ensure nil
+  :hook (prog-mode . (lambda () (setq show-trailing-whitespace t))))
+
+(use-package text-mode
+  :ensure nil
+  :hook ((text-mode . text-mode-hook-identify)
+         (text-mode . visual-line-mode)
+         (text-mode . (lambda () (setq show-trailing-whitespace t)))))
+
+(use-package compile
+  :ensure nil
+  :hook (compilation-mode . (lambda () (toggle-truncate-lines nil))))
 
 ;;; 02-interaction.el ends here
