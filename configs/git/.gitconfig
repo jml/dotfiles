@@ -39,7 +39,6 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
 [credential]
 	helper = cache --timeout=3600
 [core]
-	excludesfile = /Users/jml/.gitignore_global
     pager = "delta --dark"
 [github]
 	user = jml
