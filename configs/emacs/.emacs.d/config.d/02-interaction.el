@@ -92,11 +92,11 @@
 
 ;; Built-in mode configurations
 (use-package prog-mode
-  :ensure nil
+  :straight nil
   :hook (prog-mode . (lambda () (setq show-trailing-whitespace t))))
 
 (use-package text-mode
-  :ensure nil
+  :straight nil
   :hook ((text-mode . text-mode-hook-identify)
          (text-mode . visual-line-mode)
          (text-mode . (lambda () (setq show-trailing-whitespace t)))))
