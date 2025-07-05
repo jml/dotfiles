@@ -1,6 +1,6 @@
 ;; Obsidian
 (use-package obsidian
-  :after markdown
+  :after (markdown elgrep)
   :custom
   ;; Location of obsidian vault
   (obsidian-directory "/Users/jml/Documents/Chainbrain")
@@ -8,6 +8,8 @@
   (obsidian-inbox-directory "Inbox")
   ;; Useful if you're going to be using wiki links
   (markdown-enable-wiki-links t))
+
+(use-package elgrep)
 
 ;; Obsidian TODO
 ;; - understand global-obsidian-mode and obsidian-backlinks-mode configuration
