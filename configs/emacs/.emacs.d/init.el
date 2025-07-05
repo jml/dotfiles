@@ -1,3 +1,5 @@
+;; Don't use custom.el
+(setq custom-file "/dev/null")
 
 ;; Load manually-managed third-party plugins.
 (add-to-list 'load-path (expand-file-name "plugins" user-emacs-directory))

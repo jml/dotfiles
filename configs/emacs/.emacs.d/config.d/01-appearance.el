@@ -25,6 +25,9 @@
 
 ;; Theme
 
+;; I don't ever inspect the code on upgrade. Themes are the same as any other Emacs package for me.
+(setq custom-safe-themes t)
+
 (use-package solaire-mode
  :hook
  ((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
