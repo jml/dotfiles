@@ -134,6 +134,18 @@ automatically-unhide-macos-hidden-apps = false
     alt-shift-l = 'move up'
     alt-shift-semicolon = 'move right'
 
+    alt-leftSquareBracket = 'workspace prev'
+    alt-rightSquareBracket = 'workspace next'
+
+    alt-shift-leftSquareBracket = [
+      'move-node-to-workspace prev',
+      'workspace prev',
+    ]
+    alt-shift-rightSquareBracket = [
+      'move-node-to-workspace next',
+      'workspace next',
+    ]
+
     alt-f = 'fullscreen'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#mode
