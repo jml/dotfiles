@@ -7,9 +7,8 @@
 (setq inhibit-startup-message t)
 
 ;; UI appearance settings
-(setq menu-bar-mode nil)
-(setq tool-bar-mode nil)
-(setq scroll-bar-mode nil)
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
 (setq visible-bell t)
 (setq initial-scratch-message nil)
 (setq blink-cursor-mode nil)
