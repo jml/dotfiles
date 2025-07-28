@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+"""
+Aerospace Workspace Tree - Display workspaces and windows in tree format
+Similar to the `tree` CLI tool but for Aerospace window manager workspaces.
+"""
+
+import subprocess
+import json
+import sys
+from typing import Dict, List, Any
+
+def run_aerospace_command(args: List[str]) -> str:
+    """Run an aerospace command and return the output."""
+    try:
+        result = subprocess.run(['aerospace'] + args,
+                              capture_output=True,
+                              text=True,
+                              check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Error running aerospace command: {e}", file=sys.stderr)
+        return ""
+    except FileNotFoundError:
+        print("Error: 'aerospace' command not found. Make sure Aerospace is installed and in your PATH.", file=sys.stderr)
+        sys.exit(1)
+
+def get_workspaces() -> List[str]:
+    """Get list of all workspaces."""
+    output = run_aerospace_command(['list-workspaces', '--all'])
+    return [ws.strip() for ws in output.split('\n') if ws.strip()]
+
+def get_windows_in_workspace(workspace: str) -> List[Dict[str, Any]]:
+    """Get all windows in a specific workspace."""
+    output = run_aerospace_command(['list-windows', '--workspace', workspace, '--format', '%{app-name}|%{window-title}|%{window-id}'])
+    windows = []
+
+    for line in output.split('\n'):
+        if line.strip():
+            parts = line.split('|', 2)
+            if len(parts) >= 3:
+                windows.append({
+                    'app_name': parts[0],
+                    'title': parts[1],
+                    'window_id': parts[2]
+                })
+
+    return windows
+
+def get_current_workspace() -> str:
+    """Get the currently focused workspace."""
+    output = run_aerospace_command(['list-workspaces', '--focused'])
+    return output.strip() if output else ""
+
+def print_tree():
+    """Print the workspace tree."""
+    workspaces = get_workspaces()
+    current_workspace = get_current_workspace()
+
+    if not workspaces:
+        print("No workspaces found.")
+        return
+
+    print("Aerospace Workspaces")
+
+    total_windows = 0
+
+    for i, workspace in enumerate(workspaces):
+        is_last_workspace = (i == len(workspaces) - 1)
+        workspace_prefix = "└── " if is_last_workspace else "├── "
+
+        # Mark current workspace
+        workspace_display = workspace
+        if workspace == current_workspace:
+            workspace_display = f"{workspace} (current)"
+
+        print(f"{workspace_prefix}{workspace_display}")
+
+        # Get windows in this workspace
+        windows = get_windows_in_workspace(workspace)
+        total_windows += len(windows)
+
+        if windows:
+            for j, window in enumerate(windows):
+                is_last_window = (j == len(windows) - 1)
+
+                if is_last_workspace:
+                    window_prefix = "    └── " if is_last_window else "    ├── "
+                else:
+                    window_prefix = "│   └── " if is_last_window else "│   ├── "
+
+                # Format window info
+                window_info = f"{window['app_name']}: {window['title']}"
+                # Truncate very long titles
+                if len(window_info) > 80:
+                    window_info = window_info[:77] + "..."
+
+                print(f"{window_prefix}{window_info}")
+        else:
+            # Show empty workspace
+            if is_last_workspace:
+                print("    └── (empty)")
+            else:
+                print("│   └── (empty)")
+
+    # Print summary
+    workspace_count = len(workspaces)
+    print(f"\n{workspace_count} workspace{'s' if workspace_count != 1 else ''}, {total_windows} window{'s' if total_windows != 1 else ''}")
+
+def main():
+    """Main function."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Display Aerospace workspaces and windows in a tree format",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python aerospace_tree.py           # Show workspace tree
+
+This script requires the 'aerospace' command to be available in your PATH.
+        """
+    )
+
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
+
+    args = parser.parse_args()
+
+    try:
+        print_tree()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
