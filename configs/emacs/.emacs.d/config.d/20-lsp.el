@@ -8,14 +8,12 @@
 (use-package lsp-ui
   :after (diminish flycheck lsp-mode)
   :diminish eldoc-mode
-  :config
-  (setq lsp-ui-doc-use-webkit t)
   :commands (lsp-ui-mode lsp)
   :custom
   (lsp-ui-doc-header nil)
   (lsp-ui-doc-include-signature nil)
   (lsp-ui-doc-position (quote at-point))
-  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-doc-use-childframe nil)
   (lsp-ui-doc-use-webkit nil)
   (lsp-ui-flycheck-enable t)
   (lsp-ui-sideline-ignore-duplicate t)
