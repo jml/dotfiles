@@ -107,3 +107,6 @@ source $ZSH/oh-my-zsh.sh
 
 # Created by `pipx` on 2022-08-19 05:58:49
 export PATH="$PATH:$HOME/.local/bin:$HOME/go/bin"
+
+# Tell Claude not to get confused about what directory it's in.
+export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
