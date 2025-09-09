@@ -14,7 +14,6 @@ The repository contains configuration files for various development tools and ap
   - `aerospace/` - AeroSpace window manager configuration
   - `git/` - Git configuration files
   - `zsh/` - Zsh shell configuration with Oh My Zsh
-  - `sketchybar/` - SketchyBar status bar configuration
   - `ghc/` - GHC Haskell compiler configuration
 - `macos/` - macOS-specific files
   - `Brewfile` - Homebrew package definitions
@@ -59,7 +58,6 @@ The Emacs configuration uses a modular approach:
 ### AeroSpace Window Manager
 AeroSpace is configured as an i3-equivalent for macOS with:
 - Dvorak-optimized keybindings (hjkl → jkl;)
-- Integration with SketchyBar for workspace display
 - Service and resize modes for advanced window management
 
 ### Shell Environment
@@ -74,6 +72,6 @@ This repository is designed for macOS development environments and includes:
 - Development tools (git, ripgrep, jq, awscli, etc.)
 - Language runtimes (Go, Python via pyenv, Node via nvm)
 - GUI applications (Emacs, iTerm2, 1Password, OmniFocus)
-- Window management (AeroSpace + SketchyBar)
+- Window management (AeroSpace)
 
 The setup process involves manual steps for macOS system configuration, Homebrew installation, SSH key generation, and application-specific configurations as detailed in the README.md.
