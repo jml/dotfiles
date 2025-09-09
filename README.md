@@ -117,16 +117,6 @@ https://nikitabobko.github.io/AeroSpace/guide#tree
 
 Essentially equivalent of i3 for macOS. Configuration is installed via `just all`.
 
-#### Sketchybar
-
-https://felixkratz.github.io/SketchyBar/setup
-
-```
-brew tap FelixKratz/formulae
-brew install sketchybar
-brew services start sketchybar
-```
-
 ## Automation References
 
 The `macos-setup.sh` script automates many of the manual configuration steps above. The following resources were particularly helpful for finding the command-line alternatives:

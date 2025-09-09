@@ -69,7 +69,7 @@ automatically-unhide-macos-hidden-apps = false
     outer.bottom =     0
     outer.top =        [
       { monitor."^built-in .* display$" = 8 },
-      40
+      24
     ]
     outer.right =      0
 
@@ -158,11 +158,9 @@ automatically-unhide-macos-hidden-apps = false
     # See: https://nikitabobko.github.io/AeroSpace/commands#mode
     alt-shift-z = [
       'mode service',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=service',
     ]
     alt-shift-period = [
       'mode resize',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=resize',
     ]
 
 
@@ -172,45 +170,38 @@ automatically-unhide-macos-hidden-apps = false
     esc = [
         'reload-config',
         'mode main',
-        'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
     # reset layout
     r = [
       'flatten-workspace-tree',
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
      # Toggle between floating and tiling layout
     f = [
       'layout floating tiling',
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
     j = [
       'join-with left',
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
     k = [
       'join-with down',
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
     l = [
       'join-with up',
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
     semicolon = [
       'join-with right',
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
 [mode.resize.binding]
@@ -220,12 +211,10 @@ automatically-unhide-macos-hidden-apps = false
 
     enter = [
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
     esc = [
       'mode main',
-      'exec-and-forget sketchybar --trigger aerospace_mode_changed INFO=main',
     ]
 
 # 'workspace' binding mode for workspace switching with leader key

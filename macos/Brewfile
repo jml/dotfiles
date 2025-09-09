@@ -41,6 +41,3 @@ cask "omnifocus"
 
 tap "nikitabobko/tap"
 cask "aerospace"
-
-tap "FelixKratz/formulae"
-brew "sketchybar"
