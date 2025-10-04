@@ -49,15 +49,21 @@
   (setq doom-themes-treemacs-theme "doom-atom") ; use the colorful treemacs theme
   (doom-themes-treemacs-config))
 
-;; Smart Mode Line
+;; Doom Modeline
 ;;
-;; A better mode line
+;; Modern, performant mode line with rich LSP and Git indicators
 (use-package diminish)
 
-(use-package smart-mode-line-atom-one-dark-theme)
-
-(use-package smart-mode-line
-  :after smart-mode-line-atom-one-dark-theme
+(use-package doom-modeline
+  :after all-the-icons
+  :hook (after-init . doom-modeline-mode)
   :config
-  (setq sml/theme 'atom-one-dark)
-  (sml/setup))
+  (setq doom-modeline-height 25)
+  (setq doom-modeline-bar-width 3)
+  (setq doom-modeline-icon t)
+  (setq doom-modeline-major-mode-icon t)
+  (setq doom-modeline-major-mode-color-icon t)
+  (setq doom-modeline-buffer-file-name-style 'relative-from-project)
+  (setq doom-modeline-lsp t)
+  (setq doom-modeline-github t)
+  (setq doom-modeline-env-version t))
