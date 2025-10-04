@@ -18,11 +18,10 @@
 (use-package diff-hl
   :config (global-diff-hl-mode))
 
-;; More efficient line numbers
-(use-package nlinum
-  :config
-  (global-nlinum-mode)
-  (setq nlinum-highlight-current-line t))
+;; Built-in line numbers (Emacs 26+)
+(global-display-line-numbers-mode)
+(setq display-line-numbers-highlight-current-line t)
+
 
 ;; Diminish minor modes from the mode line
 (use-package diminish)
