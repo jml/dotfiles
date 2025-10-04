@@ -19,19 +19,32 @@
   (lsp-ui-sideline-ignore-duplicate t)
   (lsp-ui-sideline-show-hover t))
 
-;; Company for completion
-(use-package company
+;; Corfu for completion
+;; Lightweight completion popup using child frames
+(use-package corfu
   :ensure t
-  :hook (python-mode . company-mode)
+  :hook ((python-mode rust-mode) . corfu-mode)
   :custom
-  (company-idle-delay 0.1)
-  (company-minimum-prefix-length 1))
+  (corfu-auto t)                    ; Enable auto completion
+  (corfu-auto-delay 0.1)            ; Delay before showing completions
+  (corfu-auto-prefix 1)             ; Minimum prefix length
+  (corfu-cycle t)                   ; Enable cycling through candidates
+  (corfu-preview-current nil)       ; Don't preview current candidate
+  :bind
+  (:map corfu-map
+        ("TAB" . corfu-next)
+        ([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous)))
 
-;; TODO(jml): What is this for?
-(use-package company-box
-  :after diminish
-  :diminish company-box-mode
-  :hook (company-mode . company-box-mode))
+;; Corfu popup styling with icons
+(use-package kind-icon
+  :ensure t
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 
 ;; Debug Adapter Protocol for debugging
