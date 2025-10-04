@@ -22,6 +22,12 @@
 (global-display-line-numbers-mode)
 (setq display-line-numbers-highlight-current-line t)
 
+;; Show available keybindings in popup
+(use-package which-key
+  :diminish which-key-mode
+  :config
+  (which-key-mode)
+  (setq which-key-idle-delay 0.1))
 
 ;; Diminish minor modes from the mode line
 (use-package diminish)
