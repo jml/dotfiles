@@ -33,6 +33,11 @@
   (helm-projectile-on)
   (setq projectile-use-git-grep 1))
 
+;; Rich annotations for completion
+(use-package marginalia
+  :config
+  (marginalia-mode))
+
 ;; Popup window management
 (use-package popwin
   :config
