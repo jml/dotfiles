@@ -23,7 +23,8 @@
 ;; Lightweight completion popup using child frames
 (use-package corfu
   :ensure t
-  :hook ((python-mode rust-mode) . corfu-mode)
+  :init
+  (global-corfu-mode)
   :custom
   (corfu-auto t)                    ; Enable auto completion
   (corfu-auto-delay 0.1)            ; Delay before showing completions
