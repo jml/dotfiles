@@ -48,6 +48,16 @@
          ("C-;" . embark-dwim)
          ("C-h B" . embark-bindings))
   :config
+  ;; Custom action to open magit for a project
+  (defun embark-magit-status (project)
+    "Open magit-status for PROJECT directory."
+    (interactive "DProject: ")
+    (magit-status project))
+
+  ;; Add magit action to project keymap
+  (with-eval-after-load 'embark
+    (define-key embark-file-map (kbd "m") #'embark-magit-status))
+
   ;; Hide modeline when embark is active
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
