@@ -71,8 +71,6 @@
 
 ;; Project management
 (use-package projectile
-  :bind (("C-c h" . projectile-find-file)
-         ("C-c p p" . projectile-switch-project))
   :bind-keymap ("C-c p" . projectile-command-map)
   :config
   (projectile-mode +1)
