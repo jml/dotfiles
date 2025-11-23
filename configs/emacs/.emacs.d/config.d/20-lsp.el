@@ -23,8 +23,8 @@
 ;; Lightweight completion popup using child frames
 (use-package corfu
   :ensure t
-  :init
-  (global-corfu-mode)
+  :hook ((prog-mode . corfu-mode)
+         (conf-mode . corfu-mode))
   :custom
   (corfu-auto t)                    ; Enable auto completion
   (corfu-auto-delay 0.1)            ; Delay before showing completions
