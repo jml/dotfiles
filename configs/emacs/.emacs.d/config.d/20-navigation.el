@@ -75,7 +75,8 @@
   :config
   (projectile-mode +1)
   (setq projectile-completion-system 'default)
-  (setq projectile-use-git-grep 1))
+  (setq projectile-use-git-grep 1)
+  (setq projectile-switch-project-action #'magit-status))
 
 ;; M-x now uses Vertico with native execute-extended-command
 (global-set-key (kbd "M-x") 'execute-extended-command)
