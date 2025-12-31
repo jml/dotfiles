@@ -22,14 +22,6 @@
   :hook (go-mode . lsp)
   :commands lsp)
 
-;; Go linter integration (legacy - consider replacing with gopls)
-(use-package flycheck-gometalinter
-  :after flycheck
-  :config
-  (flycheck-gometalinter-setup)
-  (setq flycheck-gometalinter-vendor t)
-  (setq flycheck-gometalinter-fast t))
-
 ;; Go implementation generator
 (use-package go-impl)
 
