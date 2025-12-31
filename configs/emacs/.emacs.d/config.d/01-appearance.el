@@ -33,10 +33,10 @@
  :config
  (solaire-global-mode +1))
 
-(use-package all-the-icons)
+(use-package nerd-icons)
 
 (use-package doom-themes
-  :after all-the-icons
+  :after nerd-icons
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
@@ -55,12 +55,12 @@
 (use-package diminish)
 
 (use-package doom-modeline
-  :after all-the-icons
+  :after nerd-icons
   :hook (after-init . doom-modeline-mode)
   :config
   (setq doom-modeline-height 25)
   (setq doom-modeline-bar-width 3)
-  (setq doom-modeline-icon t)
+  (setq doom-modeline-icon 'nerd-icons)
   (setq doom-modeline-major-mode-icon t)
   (setq doom-modeline-major-mode-color-icon t)
   (setq doom-modeline-buffer-file-name-style 'relative-from-project)

@@ -71,22 +71,17 @@
 (use-package treemacs-projectile
   :after treemacs projectile)
 
-(use-package treemacs-icons-dired
-  :after treemacs dired
-  :config (treemacs-icons-dired-mode))
-
 (use-package treemacs-magit
   :after treemacs magit)
-
-;; See https://github.com/rainstormstudio/treemacs-nerd-icons
-;; Relies on:
-;; ```
-;; brew install --cask font-sauce-code-pro-nerd-font
-;; ```
-(use-package nerd-icons)
 
 (use-package treemacs-nerd-icons
   :after treemacs nerd-icons
   :config
   (treemacs-load-theme "nerd-icons"))
+
+;; Use nerd-icons-dired directly instead of treemacs-icons-dired
+;; This avoids the load-order issue where dired opens before treemacs
+(use-package nerd-icons-dired
+  :after nerd-icons
+  :hook (dired-mode . nerd-icons-dired-mode))
 
