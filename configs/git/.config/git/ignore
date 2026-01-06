@@ -10,4 +10,5 @@ Thumbs.db
 /.ipynb_checkpoints/
 /__pycache__/
 /.python-version
-.claude
+
+**/.claude/settings.local.json
