@@ -10,11 +10,12 @@ The repository contains configuration files for various development tools and ap
 ## Repository Structure
 
 - `configs/` - Contains all configuration files organized by application
-  - `emacs/` - Emacs configuration with modular config.d structure
   - `aerospace/` - AeroSpace window manager configuration
+  - `claude/` - Claude Code CLI configuration
+  - `emacs/` - Emacs configuration with modular config.d structure
   - `git/` - Git configuration files
-  - `zsh/` - Zsh shell configuration with Oh My Zsh
   - `ghc/` - GHC Haskell compiler configuration
+  - `zsh/` - Zsh shell configuration with Oh My Zsh
 - `macos/` - macOS-specific files
   - `Brewfile` - Homebrew package definitions
   - `Brewfile.personal` - Personal Homebrew packages
@@ -31,6 +32,9 @@ just all
 
 # Install just Emacs (uses --no-folding for Emacs specifically)
 just emacs
+
+# Install just Claude Code config
+just claude
 
 # Remove all symlinks
 just clean
@@ -65,6 +69,15 @@ Zsh configuration includes:
 - Oh My Zsh with Spaceship theme
 - Plugins: git, direnv, emacs, colorize, pyenv, gcloud, nvm, aws, iterm2
 - iTerm2 shell integration enabled
+
+### Claude Code Configuration
+The `configs/claude/.claude/` directory contains:
+- `CLAUDE.md` - Global instructions that apply to all projects (tone, coding style, workflow rules)
+- `settings.json` - User preferences: model choice, enabled plugins, and command permissions
+
+**Permission philosophy:** The settings pre-approve read-only operations for common tools (gcloud, gh, gsutil, bq, terraform) while explicitly denying dangerous operations like `terraform apply -auto-approve`.
+
+**Note:** Per-project instructions go in each project's own `CLAUDE.md` file, not in this dotfiles config.
 
 ## Environment Setup Notes
 
