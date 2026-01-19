@@ -110,3 +110,6 @@ export PATH="$PATH:$HOME/.local/bin:$HOME/go/bin"
 
 # Tell Claude not to get confused about what directory it's in.
 export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
+
+# Source machine-local config if it exists
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
