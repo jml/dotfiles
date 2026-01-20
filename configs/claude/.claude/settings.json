@@ -7,6 +7,8 @@
   "alwaysThinkingEnabled": true,
   "permissions": {
     "allow": [
+      "WebFetch",
+      "WebSearch",
       "Bash(gcloud * list *)",
       "Bash(gcloud * describe *)",
       "Bash(gcloud * get-iam-policy *)",
