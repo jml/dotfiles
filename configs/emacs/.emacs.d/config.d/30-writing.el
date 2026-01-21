@@ -6,6 +6,7 @@
 
 ;; Olivetti - Distraction-free writing with centered text
 (use-package olivetti
+  :hook (markdown-mode . olivetti-mode)
   :config
   (setq olivetti-body-width 80))
 
