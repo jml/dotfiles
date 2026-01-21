@@ -24,4 +24,5 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 - To apply Terraform changes, run `terraform plan -out tf.out` and present the plan for me to approve. Then run `terraform apply 'tf.out'`
 - NEVER run `terraform apply -auto-approve`
 - Keep PR descriptions short and clear. Use three separate headings: What, Why, Notes. Avoid bullet points for What and Why. Notes should highlight non-obvious implications, risks, trade-offs, and things reviewers should specifically watch for that aren't apparent from reading the code diff. Avoid stating obvious facts or repeating What/Why.
+- Be honest about the strength of evidence. Distinguish between what's established, what's inferred, and what's hypothesised. If the evidence is circumstantial or incomplete, say so and invite discussion.
 - Never `terraform apply -auto-approve`. Always present a plan for review first.
