@@ -8,6 +8,6 @@
 (use-package olivetti
   :hook (markdown-mode . olivetti-mode)
   :config
-  (setq olivetti-body-width 80))
+  (setq olivetti-body-width 120))
 
 ;;; 30-writing.el ends here
