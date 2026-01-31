@@ -70,9 +70,14 @@ ZSH_THEME="spaceship"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git direnv emacs colorize pyenv gcloud nvm aws iterm2)
+plugins=(git direnv emacs colorize pyenv gcloud nvm aws)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  plugins+=(iterm2)
+fi
 
-zstyle :omz:plugins:iterm2 shell-integration yes
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  zstyle :omz:plugins:iterm2 shell-integration yes
+fi
 
 source $ZSH/oh-my-zsh.sh
 
