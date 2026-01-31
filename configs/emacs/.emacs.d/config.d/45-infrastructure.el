@@ -3,7 +3,7 @@
 ;;; Commentary:
 ;; Configuration for infrastructure, DevOps, and system configuration languages:
 ;; - Terraform for infrastructure as code
-;; - Docker and containerization
+;; - Container tooling (podman, Dockerfiles)
 ;; - Nix package manager and system configuration
 
 ;;; Code:
@@ -12,7 +12,7 @@
 (use-package terraform-mode
   :hook (terraform-mode . terraform-format-on-save-mode))
 
-;; Docker containerization
+;; Container images (Dockerfile syntax works for podman too)
 (use-package dockerfile-mode)
 
 ;; Nix package manager
