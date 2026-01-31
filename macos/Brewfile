@@ -1,5 +1,8 @@
 brew "awscli"
 brew "coreutils"
+
+# Container runtime (docker-compatible, no daemon)
+brew "podman"
 brew "direnv"
 brew "git"
 brew "git-delta"
