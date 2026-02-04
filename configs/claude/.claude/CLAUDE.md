@@ -17,6 +17,39 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 
 # Workflow
 
+## Git Worktrees
+
+### Directory structure
+All Chainguard work lives under `~/src/chainguard/`. Immediate children are bare git repos (e.g. `~/src/chainguard/mono`). Children of those are worktrees.
+
+### Forked workflow
+All repos use a forked workflow:
+- `upstream` = official repo (where PRs get merged)
+- `origin` = my fork (where I push branches)
+
+### The main worktree
+Each repo has a `main` worktree that tracks `upstream/main`. It must be kept in sync and **never written to or committed to**. Before creating a new worktree, ensure main is up to date: `cd ~/src/chainguard/<repo>/main && git pull upstream main`.
+
+### Creating worktrees
+Use `gwm add <repo> <branch-name>` from anywhere, e.g. `gwm add mono DEV-123-fix-widget`. Branches linked to Linear issues should be prefixed with the issue ID.
+
+### Working in worktrees
+**Critical:** When working in a worktree (e.g. `~/src/chainguard/infra/make-a-change`), stay within that worktree for all searches and exploration. Never search the parent directory (`~/src/chainguard/infra/`) - it contains multiple worktrees with near-identical code at different states, which will confuse results.
+
+**Exception:** Exploring the `main` worktree is appropriate when comparing current work against main or understanding what changed.
+
+### Pushing and PRs
+1. Push to origin: `git push -u origin <branch-name>`
+2. Create PR: `gh pr create --draft` (default to draft PRs)
+
+If `gh pr create` targets the wrong repo (e.g. origin instead of upstream), fix the configuration:
+```bash
+git config remote.upstream.gh-resolved base
+```
+
+### Cleanup
+Use `gwm gc` to remove worktrees for merged branches.
+
 ## Terraform
 - Run `terraform init` and `terraform validate` after changing Terraform code
 - To apply Terraform changes, run `terraform plan -out tf.out` and present the plan for me to approve. Then run `terraform apply 'tf.out'`
