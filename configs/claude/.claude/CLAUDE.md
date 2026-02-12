@@ -40,20 +40,22 @@ Use `gwm add <repo> <branch-name>` from anywhere, e.g. `gwm add mono DEV-123-fix
 
 ### Pushing and PRs
 1. Push to origin: `git push -u origin <branch-name>`
-2. Create PR: `gh pr create --draft` (default to draft PRs)
+2. Create PR using explicit flags to avoid ambiguity:
+   ```bash
+   gh pr create --draft --repo <upstream-org>/<repo> --head <fork-owner>:<branch>
+   ```
+   Example: `gh pr create --draft --repo chainguard-dev/mono --head jml:my-feature`
 
-If `gh pr create` targets the wrong repo (e.g. origin instead of upstream), fix the configuration:
-```bash
-git config remote.upstream.gh-resolved base
-```
+The explicit `--repo` and `--head` flags are more reliable than relying on git config, especially in worktrees where gh can get confused about which remote to target.
 
 ### Cleanup
 Use `gwm gc` to remove worktrees for merged branches.
+
+## Pull Requests
+- Keep PR descriptions short and clear. Use three separate headings: What, Why, Notes. Avoid bullet points for What and Why. Notes should highlight non-obvious implications, risks, trade-offs, and things reviewers should specifically watch for that aren't apparent from reading the code diff. Avoid stating obvious facts or repeating What/Why.
+- Be honest about the strength of evidence. Distinguish between what's established, what's inferred, and what's hypothesised. If the evidence is circumstantial or incomplete, say so and invite discussion.
 
 ## Terraform
 - Run `terraform init` and `terraform validate` after changing Terraform code
 - To apply Terraform changes, run `terraform plan -out tf.out` and present the plan for me to approve. Then run `terraform apply 'tf.out'`
 - NEVER run `terraform apply -auto-approve`
-- Keep PR descriptions short and clear. Use three separate headings: What, Why, Notes. Avoid bullet points for What and Why. Notes should highlight non-obvious implications, risks, trade-offs, and things reviewers should specifically watch for that aren't apparent from reading the code diff. Avoid stating obvious facts or repeating What/Why.
-- Be honest about the strength of evidence. Distinguish between what's established, what's inferred, and what's hypothesised. If the evidence is circumstantial or incomplete, say so and invite discussion.
-- Never `terraform apply -auto-approve`. Always present a plan for review first.
