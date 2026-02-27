@@ -48,6 +48,13 @@ Use `gwm add <repo> <branch-name>` from anywhere, e.g. `gwm add mono DEV-123-fix
 
 The explicit `--repo` and `--head` flags are more reliable than relying on git config, especially in worktrees where gh can get confused about which remote to target.
 
+### Force-pushing in worktrees
+`--force-with-lease` fails with "stale info" in bare-repo worktree setups because worktrees share `refs/remotes/` and the tracking refs get out of sync. Use the explicit form instead:
+```bash
+sha=$(git ls-remote origin <branch> | cut -f1)
+git push --force-with-lease=<branch>:$sha origin <branch>
+```
+
 ### Cleanup
 Use `gwm gc` to remove worktrees for merged branches.
 
