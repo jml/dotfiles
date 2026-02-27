@@ -80,7 +80,6 @@
       "Bash(terraform destroy -auto-approve *)"
     ]
   },
-  "model": "opus",
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
@@ -89,5 +88,7 @@
     "superpowers@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "medium",
+  "model": "opus"
 }
