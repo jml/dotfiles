@@ -7,7 +7,6 @@
 ;; Tufte palette — named constants for every color used in the theme.
 (defconst jml/tufte-bg         "#fffff8" "Cream page background.")
 (defconst jml/tufte-fg         "#111111" "Body text, near-black.")
-(defconst jml/tufte-fg-code    "#333333" "Code and secondary text.")
 (defconst jml/tufte-fg-mid     "#444444" "Mid-gray, used for types.")
 (defconst jml/tufte-fg-dim     "#555555" "Dim text, used for builtins.")
 (defconst jml/tufte-fg-faint   "#888888" "Faint text, comments and line numbers.")
@@ -29,7 +28,6 @@
   ;; Must set :family explicitly since default now inherits variable-pitch.
   (face-remap-add-relative 'fixed-pitch
                            :family "Source Code Pro"
-                           :foreground jml/tufte-fg-code
                            :height 0.85)
   ;; Tufte headings: all weight-normal, never bold. h1 is upright;
   ;; h2–h5 use italics for hierarchy instead of weight.
@@ -47,22 +45,17 @@
                        :inherit 'markdown-header-face :height 1.1 :slant 'italic)
   (face-remap-set-base 'markdown-header-face-5
                        :inherit 'markdown-header-face :height 1.0 :slant 'italic)
-  ;; Disable hl-line and tone down line-number highlight —
-  ;; both clash with the cream background.
+  ;; Disable hl-line and line numbers — both clash with the cream background.
   (setq-local global-hl-line-mode nil)
   (hl-line-mode -1)
-  (face-remap-set-base 'line-number-current-line
-                       :inherit 'line-number
-                       :background jml/tufte-bg
-                       :foreground jml/tufte-fg-faint
-                       :weight 'normal)
+  (display-line-numbers-mode -1)
   ;; Override font-lock faces so syntax highlighting works on a light background.
   ;; Muted palette inspired by Tufte's restraint — no bright or saturated colors.
   (face-remap-add-relative 'font-lock-keyword-face       :foreground jml/tufte-red)
   (face-remap-add-relative 'font-lock-string-face        :foreground jml/tufte-green)
   (face-remap-add-relative 'font-lock-comment-face       :foreground jml/tufte-fg-faint :slant 'italic)
   (face-remap-add-relative 'font-lock-function-name-face :foreground jml/tufte-fg)
-  (face-remap-add-relative 'font-lock-variable-name-face :foreground jml/tufte-fg-code)
+  (face-remap-add-relative 'font-lock-variable-name-face :foreground jml/tufte-fg-dim)
   (face-remap-add-relative 'font-lock-type-face          :foreground jml/tufte-fg-mid)
   (face-remap-add-relative 'font-lock-constant-face      :foreground jml/tufte-purple)
   (face-remap-add-relative 'font-lock-builtin-face       :foreground jml/tufte-fg-dim)
@@ -87,5 +80,5 @@
   :config
   (custom-set-faces
    '(markdown-table-face ((t (:inherit fixed-pitch))))
-   `(markdown-code-face  ((t (:inherit fixed-pitch :foreground ,jml/tufte-fg-code :background unspecified))))
-   `(markdown-pre-face   ((t (:inherit fixed-pitch :foreground ,jml/tufte-fg-code :background unspecified))))))
+   '(markdown-code-face  ((t (:inherit fixed-pitch :background unspecified))))
+   '(markdown-pre-face   ((t (:inherit fixed-pitch :background unspecified))))))
