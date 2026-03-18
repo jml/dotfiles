@@ -31,8 +31,9 @@
                            :family "Source Code Pro"
                            :foreground jml/tufte-fg
                            :height 0.95)
-  (face-remap-add-relative 'markdown-code-face :foreground jml/tufte-fg)
-  (face-remap-add-relative 'markdown-pre-face  :foreground jml/tufte-fg)
+  (face-remap-add-relative 'markdown-code-face      :foreground jml/tufte-fg)
+  (face-remap-add-relative 'markdown-pre-face       :foreground jml/tufte-fg)
+  (face-remap-add-relative 'markdown-wiki-link-face :foreground jml/tufte-red :underline nil)
   ;; Tufte headings: all weight-normal, never bold. h1 is upright;
   ;; h2–h5 use italics for hierarchy instead of weight.
   ;; face-remap-set-base completely replaces the face definition buffer-locally,
@@ -78,7 +79,9 @@
 
   :custom
   (markdown-command "markdown | smartypants")
-  (markdown-follow-wiki-link-on-enter nil)
+  (markdown-enable-wiki-links t)
+  (markdown-follow-wiki-link-on-enter t)
+  (markdown-wiki-link-search-type '(sub-directories parent-directories))
   (markdown-indent-on-enter t)
   (markdown-hide-markup t)
 
