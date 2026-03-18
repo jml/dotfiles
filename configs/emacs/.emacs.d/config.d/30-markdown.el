@@ -80,6 +80,7 @@
   (markdown-command "markdown | smartypants")
   (markdown-follow-wiki-link-on-enter nil)
   (markdown-indent-on-enter t)
+  (markdown-hide-markup t)
 
   :config
   (custom-set-faces
