@@ -18,6 +18,7 @@ brew "pre-commit"
 brew "pwgen"
 brew "pyenv"
 brew "pyenv-virtualenv"
+brew "fnm"
 brew "ripgrep"
 brew "shellcheck"
 

@@ -70,7 +70,7 @@ ZSH_THEME="spaceship"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git direnv emacs colorize pyenv gcloud nvm aws)
+plugins=(git direnv emacs colorize pyenv gcloud aws)
 if [[ "$OSTYPE" == "darwin"* ]]; then
   plugins+=(iterm2)
 fi
@@ -80,6 +80,19 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 source $ZSH/oh-my-zsh.sh
+
+# Lazy-load fnm: defer full init until node/npm/npx/fnm is first called
+if (( $+commands[fnm] )); then
+  _fnm_lazy_init() {
+    unfunction node npm npx fnm 2>/dev/null
+    eval "$(fnm env --use-on-cd --shell zsh)"
+    "$@"
+  }
+  node()  { _fnm_lazy_init node "$@" }
+  npm()   { _fnm_lazy_init npm "$@" }
+  npx()   { _fnm_lazy_init npx "$@" }
+  fnm()   { _fnm_lazy_init fnm "$@" }
+fi
 
 # User configuration
 
