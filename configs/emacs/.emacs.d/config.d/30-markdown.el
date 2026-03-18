@@ -36,13 +36,13 @@
   (face-remap-set-base 'markdown-header-face
                        :weight 'normal :foreground jml/tufte-fg :inherit 'variable-pitch)
   (face-remap-set-base 'markdown-header-face-1
-                       :inherit 'markdown-header-face :height 1.8 :slant 'normal)
+                       :inherit 'markdown-header-face :height 2.8 :slant 'normal)
   (face-remap-set-base 'markdown-header-face-2
-                       :inherit 'markdown-header-face :height 1.4 :slant 'italic)
+                       :inherit 'markdown-header-face :height 2.0 :slant 'italic)
   (face-remap-set-base 'markdown-header-face-3
-                       :inherit 'markdown-header-face :height 1.15 :slant 'italic)
+                       :inherit 'markdown-header-face :height 1.5 :slant 'italic)
   (face-remap-set-base 'markdown-header-face-4
-                       :inherit 'markdown-header-face :height 1.1 :slant 'italic)
+                       :inherit 'markdown-header-face :height 1.2 :slant 'italic)
   (face-remap-set-base 'markdown-header-face-5
                        :inherit 'markdown-header-face :height 1.0 :slant 'italic)
   ;; Disable hl-line and line numbers — both clash with the cream background.
