@@ -19,16 +19,20 @@
   (face-remap-add-relative 'default
                            :background jml/tufte-bg
                            :foreground jml/tufte-fg
-                           :height 160)
+                           :height 180)
   (face-remap-add-relative 'fringe
                            :background jml/tufte-bg)
   (face-remap-add-relative 'variable-pitch
                            :family "Georgia")
-  ;; Code faces: keep monospace, slightly smaller than body (Tufte uses 0.71x).
+  ;; Code faces: monospace, slightly smaller than body (Tufte uses 0.9x for pre>code).
   ;; Must set :family explicitly since default now inherits variable-pitch.
+  ;; Foreground matches body text — Tufte CSS applies no special color to code.
   (face-remap-add-relative 'fixed-pitch
                            :family "Source Code Pro"
-                           :height 0.85)
+                           :foreground jml/tufte-fg
+                           :height 0.9)
+  (face-remap-add-relative 'markdown-code-face :foreground jml/tufte-fg)
+  (face-remap-add-relative 'markdown-pre-face  :foreground jml/tufte-fg)
   ;; Tufte headings: all weight-normal, never bold. h1 is upright;
   ;; h2–h5 use italics for hierarchy instead of weight.
   ;; face-remap-set-base completely replaces the face definition buffer-locally,
