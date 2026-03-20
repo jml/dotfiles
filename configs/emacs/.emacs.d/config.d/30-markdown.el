@@ -34,6 +34,10 @@
   (face-remap-add-relative 'markdown-code-face      :foreground jml/tufte-fg)
   (face-remap-add-relative 'markdown-pre-face       :foreground jml/tufte-fg)
   (face-remap-add-relative 'markdown-wiki-link-face :foreground jml/tufte-red :underline nil)
+  ;; YAML frontmatter should use monospace, not the variable-pitch body font.
+  (face-remap-add-relative 'markdown-yaml-header-delimiter-face :inherit 'fixed-pitch)
+  (face-remap-add-relative 'markdown-metadata-key-face          :inherit 'fixed-pitch)
+  (face-remap-add-relative 'markdown-metadata-value-face         :inherit 'fixed-pitch)
   ;; Tufte headings: all weight-normal, never bold. h1 is upright;
   ;; h2–h5 use italics for hierarchy instead of weight.
   ;; face-remap-set-base completely replaces the face definition buffer-locally,
@@ -84,6 +88,7 @@
   (markdown-wiki-link-search-type '(sub-directories parent-directories))
   (markdown-indent-on-enter t)
   (markdown-hide-markup t)
+  (markdown-fontify-yaml-header t)
 
   :config
   (custom-set-faces
