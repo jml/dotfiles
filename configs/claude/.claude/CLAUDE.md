@@ -44,7 +44,12 @@ git push --force-with-lease=<branch>:$sha origin <branch>
 ```
 
 ## Pull Requests
-- Keep PR descriptions short and clear. Use three separate headings: What, Why, Notes. Avoid bullet points for What and Why. Notes should highlight non-obvious implications, risks, trade-offs, and things reviewers should specifically watch for that aren't apparent from reading the code diff. Avoid stating obvious facts or repeating What/Why.
+- Keep PR descriptions short and clear. Use the headings What, Why, Notes, and optionally Next. Avoid bullet points for What and Why.
+- What: state intent in one short sentence. Don't summarise the diff or name files/symbols that are right there in the code.
+- Why: explain the trigger and rationale only. Don't extrapolate predicted benefits, narrate counterfactuals ("rather than X"), or restate facts established in linked prior PRs. Match confidence to evidence — prefer "looks correct" over "no false positives" unless you actually measured.
+- Notes: must be load-bearing. Ask: would a reviewer make a different decision without this line? If not, cut it. Don't restate numbers, paths, or thresholds visible in the diff. Operational facts that change the risk picture (e.g. "won't page, just warnings") belong here.
+- Next: only include this section if there really is follow-up work. Each item is a short bullet point. If there is no follow-up, omit the heading entirely.
+- Verify before asserting. Don't claim system state ("running silently in prod", "no regressions seen") unless you've checked.
 - Be honest about the strength of evidence. Distinguish between what's established, what's inferred, and what's hypothesised. If the evidence is circumstantial or incomplete, say so and invite discussion.
 
 ## Terraform
