@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# Close Google Chrome tabs whose GitHub PR is merged.
+#
+# Requires: Google Chrome, gh (authenticated), macOS.
+
+set -euo pipefail
+
+DRY_RUN=0
+ASSUME_YES=0
+PARALLEL=8
+
+usage() {
+  cat <<USAGE
+Usage: close-merged [-n|--dry-run] [-y|--yes] [-j N]
+
+  -n, --dry-run   List tabs that would be closed, but don't close them.
+  -y, --yes       Skip the interactive confirmation.
+  -j N            Run N parallel gh queries (default: ${PARALLEL}).
+  -h, --help      Show this help.
+USAGE
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -n|--dry-run) DRY_RUN=1 ;;
+    -y|--yes) ASSUME_YES=1 ;;
+    -j) shift; PARALLEL="$1" ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+  shift
+done
+
+command -v gh >/dev/null || { echo "gh not found in PATH" >&2; exit 1; }
+command -v osascript >/dev/null || { echo "osascript not found (macOS only)" >&2; exit 1; }
+
+# Enumerate Chrome tabs as: tab_id<TAB>url
+tabs=$(osascript -l JavaScript <<'JS'
+const chrome = Application('Google Chrome');
+const out = [];
+try {
+  for (const w of chrome.windows()) {
+    for (const t of w.tabs()) {
+      out.push(t.id() + '\t' + t.url());
+    }
+  }
+} catch (e) {
+  // Chrome not running, or no windows.
+}
+out.join('\n');
+JS
+)
+
+if [ -z "$tabs" ]; then
+  echo "No Chrome tabs found (is Chrome running?)."
+  exit 0
+fi
+
+# Filter to GitHub PR tabs, canonicalising URL to https://github.com/OWNER/REPO/pull/N.
+pr_tabs=$(printf '%s\n' "$tabs" | awk -F'\t' '
+{
+  tid = $1
+  url = $2
+  sub(/[?#].*$/, "", url)
+  n = split(url, p, "/")
+  if (n >= 7 && p[3] == "github.com" && p[6] == "pull" && p[7] ~ /^[0-9]+$/) {
+    print tid "\t" "https://github.com/" p[4] "/" p[5] "/pull/" p[7]
+  }
+}')
+
+if [ -z "$pr_tabs" ]; then
+  echo "No GitHub PR tabs found."
+  exit 0
+fi
+
+# Query each unique PR for its state.
+unique_urls=$(printf '%s\n' "$pr_tabs" | awk -F'\t' '{print $2}' | sort -u)
+
+states=$(printf '%s\n' "$unique_urls" | xargs -n1 -P"$PARALLEL" -I{} sh -c '
+  s=$(gh pr view "$1" --json state -q .state 2>/dev/null || true)
+  [ -z "$s" ] && s=UNKNOWN
+  printf "%s\t%s\n" "$1" "$s"
+' _ {})
+
+merged_urls=$(printf '%s\n' "$states" | awk -F'\t' '$2 == "MERGED" {print $1}')
+
+if [ -z "$merged_urls" ]; then
+  echo "No merged PR tabs to close."
+  exit 0
+fi
+
+# Tabs to close: every tab whose canonical URL is in the merged set.
+merged_file=$(mktemp)
+trap 'rm -f "$merged_file"' EXIT
+printf '%s\n' "$merged_urls" > "$merged_file"
+to_close=$(printf '%s\n' "$pr_tabs" | awk -F'\t' -v mf="$merged_file" '
+  BEGIN {
+    while ((getline line < mf) > 0) m[line] = 1
+    close(mf)
+  }
+  m[$2] { print $0 }
+')
+
+count=$(printf '%s\n' "$to_close" | awk 'NF{c++} END{print c+0}')
+
+echo "Merged PR tabs ($count):"
+printf '%s\n' "$to_close" | awk -F'\t' '{print "  " $2}'
+
+if [ "$DRY_RUN" = "1" ]; then
+  echo "Dry run; no tabs closed."
+  exit 0
+fi
+
+if [ "$ASSUME_YES" != "1" ]; then
+  printf "Close %d tab(s)? [y/N] " "$count"
+  read -r answer
+  case "$answer" in
+    y|Y|yes|YES) ;;
+    *) echo "Aborted."; exit 0 ;;
+  esac
+fi
+
+id_list=$(printf '%s\n' "$to_close" | awk -F'\t' '{print $1}' | paste -sd, -)
+
+osascript -l JavaScript <<JS
+const chrome = Application('Google Chrome');
+const ids = new Set('$id_list'.split(','));
+let closed = 0;
+for (const w of chrome.windows()) {
+  let tabs;
+  try { tabs = w.tabs(); } catch (e) { continue; }
+  for (let i = tabs.length - 1; i >= 0; i--) {
+    try {
+      if (ids.has(tabs[i].id())) {
+        tabs[i].close();
+        closed++;
+      }
+    } catch (e) { /* tab vanished */ }
+  }
+}
+closed + ' tab(s) closed.';
+JS
