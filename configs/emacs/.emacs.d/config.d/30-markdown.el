@@ -72,7 +72,15 @@
   ;; At ~16pt in Emacs, 6px extra leading is roughly equivalent.
   (setq-local line-spacing 6)
   ;; Hide the modeline for distraction-free prose
-  (setq-local mode-line-format nil))
+  (setq-local mode-line-format nil)
+  ;; Running head — show the buffer name like a page header in a book.
+  (face-remap-set-base 'header-line
+                       :background jml/tufte-bg
+                       :foreground jml/tufte-fg-faint
+                       :family "Georgia"
+                       :height 0.9
+                       :box nil)
+  (setq-local header-line-format '("  %b")))
 
 (use-package markdown-mode
   :mode (("\\.md" . markdown-mode)
