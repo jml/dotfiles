@@ -79,6 +79,11 @@ jml's configuration
   ```bash
   just all
   ```
+- [ ] Install the Emacs apps into `/Applications` and make Emacs Client the `.md` handler
+
+  ```bash
+  just emacs-apps
+  ```
 - [ ] Launch Emacs
 - Omnifocus
   - [ ] Run Omnifocus and log in with OmniFocus account
