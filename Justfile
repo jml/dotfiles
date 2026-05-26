@@ -13,6 +13,17 @@ linux: emacs claude
 emacs:
     stow -t {{target}} -d configs --no-folding emacs
 
+# emacs-plus ships both bundles in its keg but does not install them; copying lets Launch Services
+# offer them as handlers. Emacs Client.app is a thin droplet around emacsclient, so it survives upgrades.
+# Copy the Emacs apps into /Applications and make Emacs Client the .md handler (macOS)
+emacs-apps:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    prefix="$(brew --prefix emacs-plus)"
+    ditto "$prefix/Emacs.app" "/Applications/Emacs.app"
+    ditto "$prefix/Emacs Client.app" "/Applications/Emacs Client.app"
+    duti -s org.gnu.EmacsClient .md all
+
 claude:
     stow -t {{target}} -d configs --no-folding claude
 

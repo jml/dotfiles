@@ -4,6 +4,8 @@ brew "coreutils"
 # Container runtime (docker-compatible, no daemon)
 brew "podman"
 brew "direnv"
+# Set the default app for a file type (e.g. Emacs Client for .md), used by `just emacs-apps`
+brew "duti"
 brew "git"
 brew "git-delta"
 brew "git-secret"
