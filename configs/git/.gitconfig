@@ -27,9 +27,10 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
 [pull]
 	ff = only
 [filter "lfs"]
-	clean = git-lfs clean %f
-	smudge = git-lfs smudge %f
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
 	required = true
+	process = git-lfs filter-process
 
 
 [url "git+ssh://jml@git.launchpad.net/"]
@@ -63,7 +64,14 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
         badTimezone = ignore
 [init]
 	defaultBranch = main
-[gpg "x509"]
-	program = gitsign
-[gpg]
-	format = x509
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !/opt/homebrew/bin/gh auth git-credential
+
+# Machine-specific config (signing, etc.) lives here, untracked.
+# Missing file is silently ignored on machines that don't have it.
+[include]
+	path = ~/.gitconfig.local
