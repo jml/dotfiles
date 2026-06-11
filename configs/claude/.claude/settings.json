@@ -50,6 +50,9 @@
       "Bash(gh pr status *)",
       "Bash(gh pr checks *)",
       "Bash(gh pr diff *)",
+      "Bash(gh api repos/*/pulls/*/comments:*)",
+      "Bash(gh api repos/*/pulls/*/reviews:*)",
+      "Bash(bash /Users/jml/.claude/skills/my-prs/scripts/run.sh:*)",
       "Bash(gh issue list *)",
       "Bash(gh issue view *)",
       "Bash(gh issue status *)",
@@ -73,7 +76,8 @@
       "Bash(terraform fmt)",
       "Bash(terraform show *)",
       "mcp__go-linear__go-linear_*_list",
-      "mcp__go-linear__go-linear_*_get"
+      "mcp__go-linear__go-linear_*_get",
+      "Bash(golangci-lint run:*)"
     ],
     "deny": [
       "Bash(terraform apply -auto-approve *)",
@@ -85,10 +89,10 @@
     "claude-md-management@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
-  "model": "opus"
+  "effortLevel": "xhigh",
+  "model": "claude-opus-4-6"
 }
