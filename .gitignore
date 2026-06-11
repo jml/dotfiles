@@ -1,2 +1,5 @@
 .aider*
 /configs/emacs/.emacs.d/tramp
+
+# Local secrets / per-machine env (e.g. ANTHROPIC_API_KEY)
+/.envrc
