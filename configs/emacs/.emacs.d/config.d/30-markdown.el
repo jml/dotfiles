@@ -2,7 +2,7 @@
 ;;
 ;; Mirrors the typographic choices from Tufte CSS: ET Book / Palatino body,
 ;; lightweight headings (h2/h3 italic, never bold), cream background, and a
-;; narrow measure (~70 chars via olivetti in 30-writing.el).
+;; narrow measure (120 cols via olivetti in 30-writing.el).
 
 ;; Tufte palette — named constants for every color used in the theme.
 (defconst jml/tufte-bg         "#fffff8" "Cream page background.")
