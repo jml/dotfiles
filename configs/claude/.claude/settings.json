@@ -86,6 +86,10 @@
       "Bash(terraform destroy -auto-approve *)"
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/jml/.claude/statusline-command.sh"
+  },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
