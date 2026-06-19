@@ -8,6 +8,9 @@
 (use-package olivetti
   :hook (markdown-mode . olivetti-mode)
   :config
-  (setq olivetti-body-width 120))
+  ;; `olivetti-body-width' is automatically buffer-local, so a plain `setq'
+  ;; would only affect the current buffer. Set the default so every buffer
+  ;; that enables olivetti picks up 120 columns without manual adjustment.
+  (setq-default olivetti-body-width 120))
 
 ;;; 30-writing.el ends here
