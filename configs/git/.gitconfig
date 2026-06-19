@@ -22,6 +22,10 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
 	ui = true
 [push]
 	default = simple
+[commit]
+	# Show the full diff below the message when an editor opens, so commit
+	# messages are written with the change in view.
+	verbose = true
 [svn]
 	rmdir = true
 [pull]

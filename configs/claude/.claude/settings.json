@@ -38,6 +38,8 @@
       "Bash(git cat-file *)",
       "Bash(git ls-tree *)",
       "Bash(git for-each-ref *)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
       "Bash(go mod tidy)",
       "Bash(gsutil ls *)",
       "Bash(gsutil cat *)",

@@ -9,7 +9,10 @@
          ("<f12>" . magit-status))
   :config
   (setq magit-last-seen-setup-instructions "1.4.0")
-  (setq magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1))
+  (setq magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
+  ;; Surface the branch description (edited via `b d`) in the status buffer,
+  ;; not only the refs buffer, so a drafted PR body is visible while reviewing.
+  (add-hook 'magit-status-headers-hook #'magit-insert-branch-description))
 
 (use-package forge
   :after magit)
