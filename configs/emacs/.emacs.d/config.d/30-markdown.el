@@ -103,3 +103,8 @@
    '(markdown-table-face ((t (:inherit fixed-pitch))))
    '(markdown-code-face  ((t (:inherit fixed-pitch :background unspecified))))
    '(markdown-pre-face   ((t (:inherit fixed-pitch :background unspecified))))))
+
+(use-package markdown-mermaid
+  :straight (:host github :repo "pasunboneleve/markdown-mermaid")
+  :bind (:map markdown-mode-map
+              ("C-c m" . markdown-mermaid-preview)))
