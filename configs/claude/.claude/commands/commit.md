@@ -20,11 +20,18 @@ The blocking editor handoff *is* the review gate — don't try to finalise the c
      `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
    - `$ARGUMENTS`, if present, is guidance on scope/intent — fold it in.
 
-   Write the draft to `/tmp/claude-commit-msg.txt` with the **Write tool** (not `echo`/`cat`).
+   Derive a unique temp path from the repo and branch to avoid collisions with concurrent
+   sessions in other repos:
+   ```bash
+   repo=$(git rev-parse --show-toplevel | xargs basename)
+   branch=$(git branch --show-current | tr '/' '-')
+   msgfile="/tmp/claude-commit-msg-${repo}-${branch}.txt"
+   ```
+   Write the draft to `$msgfile` with the **Write tool** (not `echo`/`cat`).
 
 3. **Hand off to Emacs**, with `run_in_background: true`:
    ```bash
-   GIT_EDITOR=emacsclient git commit -eF /tmp/claude-commit-msg.txt
+   GIT_EDITOR=emacsclient git commit -eF "$msgfile"
    ```
    This opens the message plus the full diff in my running Emacs daemon (git-commit-mode).
    I finish with `C-c C-c` or abort with `C-c C-k`. Because it's backgrounded, you'll be
