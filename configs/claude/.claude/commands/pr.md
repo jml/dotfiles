@@ -26,10 +26,16 @@ is pushed or created until I approve.
    ## Why
    ...
    ```
-   Write it to `/tmp/claude-pr-desc.txt` with the **Write tool**, then store it as the branch
-   description:
+   Derive a unique temp path from the repo and branch to avoid collisions with concurrent
+   sessions in other repos:
    ```bash
-   git config "branch.$(git branch --show-current).description" "$(cat /tmp/claude-pr-desc.txt)"
+   repo=$(git rev-parse --show-toplevel | xargs basename)
+   branch=$(git branch --show-current | tr '/' '-')
+   descfile="/tmp/claude-pr-desc-${repo}-${branch}.txt"
+   ```
+   Write it to `$descfile` with the **Write tool**, then store it as the branch description:
+   ```bash
+   git config "branch.$(git branch --show-current).description" "$(cat "$descfile")"
    ```
 
 3. **Open the diff for review** (non-blocking):
@@ -40,7 +46,7 @@ is pushed or created until I approve.
 
 4. **Gate on the description edit**, with `run_in_background: true`:
    ```bash
-   GIT_EDITOR=emacsclient git branch --edit-description
+   GIT_EDITOR=emacsclient git -c core.commentChar=';' branch --edit-description
    ```
    I review the diff and edit the title/body in the now-prefilled buffer, then `C-c C-c` to
    approve or `C-c C-k` to cancel. You'll be notified on exit — **do not poll**.
