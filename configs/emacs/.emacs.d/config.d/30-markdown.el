@@ -13,6 +13,7 @@
 (defconst jml/tufte-red        "#770000" "Dark red, used for keywords.")
 (defconst jml/tufte-green      "#2a6a2a" "Forest green, used for strings.")
 (defconst jml/tufte-purple     "#553388" "Muted purple, used for constants.")
+(defconst jml/tufte-bg-alt     "#f6f6e9" "Slightly darker cream, used for table stripes.")
 
 (defun jml/markdown-tufte-faces ()
   "Buffer-local face remaps that approximate Tufte CSS."
@@ -74,13 +75,15 @@
   ;; Hide the modeline for distraction-free prose
   (setq-local mode-line-format nil)
   ;; Running head — show the buffer name like a page header in a book.
+  ;; When scrolled inside a long table, show the table's header row instead
+  ;; so the column names stay in view (see jml-markdown-tables.el).
   (face-remap-set-base 'header-line
                        :background jml/tufte-bg
                        :foreground jml/tufte-fg-faint
                        :family "Georgia"
                        :height 0.9
                        :box nil)
-  (setq-local header-line-format '("  %b")))
+  (setq-local header-line-format '(:eval (jml/markdown-table-header-line))))
 
 (use-package markdown-mode
   :mode (("\\.md" . markdown-mode)
@@ -103,6 +106,30 @@
    '(markdown-table-face ((t (:inherit fixed-pitch))))
    '(markdown-code-face  ((t (:inherit fixed-pitch :background unspecified))))
    '(markdown-pre-face   ((t (:inherit fixed-pitch :background unspecified))))))
+
+;; Pretty tables, rendered in the buffer itself.
+;; valign pixel-aligns columns under variable-pitch fonts, honours the
+;; :---: alignment markers, and draws real borders (fancy bars plus a
+;; straight line for the separator row).
+(use-package valign
+  :hook (markdown-mode . valign-mode)
+  :custom
+  (valign-fancy-bar t))
+
+;; Alternating row backgrounds, so wide rows are easy to follow across.
+(use-package stripe-buffer
+  :hook (markdown-mode . turn-on-stripe-table-mode)
+  :config
+  (custom-set-faces
+   `(stripe-highlight ((t (:background ,jml/tufte-bg-alt))))))
+
+;; Local extensions: italic header row, and the sticky table header used by
+;; the header-line in jml/markdown-tufte-faces.  Loaded eagerly so the
+;; header-line :eval never sees an unbound function.
+(use-package jml-markdown-tables
+  :straight nil
+  :demand t
+  :hook (markdown-mode . jml/markdown-tables-fontify))
 
 (use-package markdown-mermaid
   :straight (:host github :repo "pasunboneleve/markdown-mermaid")
