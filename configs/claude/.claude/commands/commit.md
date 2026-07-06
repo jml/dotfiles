@@ -33,7 +33,7 @@ The blocking editor handoff *is* the review gate — don't try to finalise the c
    ```bash
    GIT_EDITOR=emacsclient git commit -eF "$msgfile"
    ```
-   This opens the message plus the full diff in my running Emacs daemon (git-commit-mode).
+   This opens the message in my running Emacs daemon (git-commit-mode); magit shows the diff on the side.
    I finish with `C-c C-c` or abort with `C-c C-k`. Because it's backgrounded, you'll be
    notified when I'm done — **do not poll** for completion.
 
@@ -45,4 +45,3 @@ The blocking editor handoff *is* the review gate — don't try to finalise the c
 ## Notes
 - `GIT_EDITOR=emacsclient` must be inline: the harness sets `GIT_EDITOR=true`, which would
   otherwise make git skip the editor and commit immediately with the raw draft.
-- The diff appears below the message because `commit.verbose` is enabled in my gitconfig.
