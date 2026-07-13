@@ -86,10 +86,7 @@
       "Bash(terraform destroy -auto-approve *)"
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "bash /Users/jml/.claude/statusline-command.sh"
-  },
+  "model": "claude-fable-5",
   "hooks": {
     "PreToolUse": [
       {
@@ -103,6 +100,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /Users/jml/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
