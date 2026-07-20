@@ -5,9 +5,22 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 
 # Code style
 - Segregate I/O from pure logic - push side effects to boundaries, keep core functions deterministic and easily testable.
-- Use comments to explain the intended behaviour of code or the motivation behind the code. Do not describe the actual behaviour.
 - Use conventional commits
 - In commit body text, describe the impact and the motivation for the change before summarising the changes themselves.
+
+## Comments
+- Comments are read in a world where the code below them has always existed; PR descriptions are read at the moment of the change. Write each from its own vantage point, and never reuse prose from one in the other unedited. Test every comment: would it still be true and useful to a reader who never saw the PR?
+- Explain intended behaviour, constraints, or motivation for the code as it stands. Motivation for the *change* is not motivation for the code. Do not describe the actual behaviour.
+- A hazard the code prevents is only true *without* the code. Never state it in the present indicative next to the code preventing it — phrase it counterfactually, or cite the real incident in the past tense.
+  - Bad: "apps are exempt from those rules there: a bot pushing from a stale clone can rewrite main."
+  - Good: "if these rules lived only there, a bot pushing from a stale clone could rewrite main."
+- Referents must resolve within the comment — name the thing ("the default branches that Standard Branch Protections covers"), don't point at it ("its rules there").
+- Route each fact to the channel where it survives:
+  - Constraint, invariant, or motivation the code cannot express → comment
+  - Why the change was made, what it replaced → commit message
+  - Evidence the approach is sound, why this instance was chosen → PR description
+  - Rollout state and follow-up plans ("staging pilot", "prod flips later") → tracking issue, with `TODO(<issue>)` in code only if the spot must be findable
+- Deleting change-narration from a comment loses nothing: file it in the commit message or PR description instead. Warning signs of a diff-anchored comment: "instead of", "previously", "now", "for now", "new", "pilot", "will be", or pre-empting a question you expect from the reviewer.
 
 ## Testing
 - Avoid "should" in test descriptions.
