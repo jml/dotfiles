@@ -16,8 +16,9 @@ The blocking editor handoff *is* the review gate — don't try to finalise the c
 2. **Draft the message** from the staged diff, following my conventions:
    - Conventional Commits (`type(scope): summary`).
    - Body explains *impact and motivation first*, then summarises the changes.
-   - End with the trailer:
-     `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`
+   - End with the trailer, naming the model actually running this session (e.g. `Claude
+     Sonnet 4.6`, `Claude Opus 4.8`) — never hardcode a specific model:
+     `Co-Authored-By: <model name> <noreply@anthropic.com>`
    - `$ARGUMENTS`, if present, is guidance on scope/intent — fold it in.
 
    Derive a unique temp path from the repo and branch to avoid collisions with concurrent
