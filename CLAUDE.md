@@ -15,6 +15,7 @@ The repository contains configuration files for various development tools and ap
   - `emacs/` - Emacs configuration with modular config.d structure
   - `git/` - Git configuration files
   - `ghc/` - GHC Haskell compiler configuration
+  - `launchd/` - launchd agents (weekday 11:00 screen lock); opt-in via `just launchd`, work laptop only
   - `zsh/` - Zsh shell configuration with Oh My Zsh
 - `macos/` - macOS-specific files
   - `Brewfile` - Homebrew package definitions
@@ -36,7 +37,10 @@ just emacs
 # Install just Claude Code config
 just claude
 
-# Remove all symlinks
+# Work laptop only: install and load the launchd agents (not part of `just all`)
+just launchd
+
+# Remove all symlinks (also unloads the launchd agents)
 just clean
 ```
 
