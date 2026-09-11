@@ -27,6 +27,27 @@ emacs-apps:
 claude:
     stow -t {{target}} -d configs --no-folding claude
 
+# Today the only agent is the weekday 11:00 screen lock. Unloading first makes the recipe
+# safe to rerun and picks up edits to the plists.
+# Work laptop only, not part of `all`: install and load the launchd agents in configs/launchd
+launchd: launchd-unload
+    #!/usr/bin/env bash
+    set -euo pipefail
+    stow -t {{target}} -d configs --no-folding launchd
+    for plist in configs/launchd/Library/LaunchAgents/*.plist; do
+        launchctl bootstrap "gui/$(id -u)" "{{target}}/Library/LaunchAgents/$(basename "$plist")"
+    done
+
+# Stop the launchd agents in configs/launchd, leaving their symlinks in place
+launchd-unload:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    command -v launchctl >/dev/null || exit 0
+    for plist in configs/launchd/Library/LaunchAgents/*.plist; do
+        label="$(/usr/libexec/PlistBuddy -c 'Print :Label' "$plist")"
+        launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+    done
+
 # Remove all symlinks
-clean:
-    stow -t {{target}} -d configs -D aerospace claude emacs git zsh ghc
+clean: launchd-unload
+    stow -t {{target}} -d configs -D aerospace claude emacs git zsh ghc launchd

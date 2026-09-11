@@ -79,6 +79,11 @@ jml's configuration
   ```bash
   just all
   ```
+- [ ] Work laptop only: schedule the weekday 11:00 screen lock
+
+  ```bash
+  just launchd
+  ```
 - [ ] Install the Emacs apps into `/Applications` and make Emacs Client the `.md` handler
 
   ```bash

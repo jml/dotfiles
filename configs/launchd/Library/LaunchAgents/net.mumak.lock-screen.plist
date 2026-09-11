@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>net.mumak.lock-screen</string>
+    <!-- launchd expands neither ~ nor $HOME, and its PATH holds only the system
+         directories, so the script is named by absolute path. The time argument
+         must match StartCalendarInterval below: the script locks only within a
+         few minutes of it, so that jobs replayed after sleep do nothing. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/jml/.local/bin/lock-screen-if-due</string>
+        <string>11:00</string>
+    </array>
+    <!-- Weekdays at 11:00 local time. -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Weekday</key><integer>1</integer>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key><integer>2</integer>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key><integer>3</integer>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key><integer>4</integer>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key><integer>5</integer>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+    </array>
+</dict>
+</plist>
