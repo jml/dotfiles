@@ -129,5 +129,17 @@ export PATH="$PATH:$HOME/.local/bin:$HOME/go/bin"
 # Tell Claude not to get confused about what directory it's in.
 export CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR=1
 
+# Show the Magit status buffer for the repository containing DIR (default: the
+# current directory) in the running Emacs, starting the daemon if there is none.
+# Frame choice and focus live in jml/magit-status-in-gui-frame (config.d/20-vc.el).
+magit() {
+  local root
+  root=$(git -C "${1:-.}" rev-parse --show-toplevel) || return
+  # Escape for an Emacs Lisp string literal: backslashes first, then quotes.
+  root=${root//\\/\\\\}
+  root=${root//\"/\\\"}
+  emacsclient --alternate-editor='' --eval "(jml/magit-status-in-gui-frame \"$root\")" >/dev/null
+}
+
 # Source machine-local config if it exists
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
