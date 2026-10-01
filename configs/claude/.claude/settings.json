@@ -55,6 +55,8 @@
       "Bash(gh api repos/*/pulls/*/comments:*)",
       "Bash(gh api repos/*/pulls/*/reviews:*)",
       "Bash(bash /Users/jml/.claude/skills/my-prs/scripts/run.sh:*)",
+      "Bash(bash /Users/jml/.claude/skills/wip/scripts/inventory.sh:*)",
+      "Bash(bash /Users/jml/.claude/skills/wip/scripts/sessions.sh:*)",
       "Bash(gh issue list *)",
       "Bash(gh issue view *)",
       "Bash(gh issue status *)",
