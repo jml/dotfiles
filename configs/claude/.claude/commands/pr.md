@@ -15,9 +15,15 @@ is pushed or created until I approve.
    - Upstream repo `OWNER/REPO`: derive from `git remote get-url upstream` (fall back to
      `origin` if there is no `upstream`).
 
-2. **Simplify.** Invoke the `simplify` skill with the Skill tool and let it apply its fixes.
-   If it leaves the working tree dirty, land those changes with the `commit` skill before going
-   on, so the PR diff contains them. If that commit is cancelled, stop: don't open the PR.
+2. **Simplify, if the PR is over 200 lines.** Count the lines changed against the base:
+   ```bash
+   git diff --numstat BASE...HEAD | awk '{n += $1 + $2} END {print n+0}'
+   ```
+   At 200 or fewer, go straight to step 3 with gate `small`: a small PR doesn't repay a
+   simplify pass. Otherwise the gate is `simplified`: invoke the `simplify` skill with the
+   Skill tool and let it apply its fixes. If it leaves the working tree dirty, land those
+   changes with the `commit` skill before going on, so the PR diff contains them. If that
+   commit is cancelled, stop: don't open the PR.
 
 3. **Draft the description** following my PR conventions (What / Why / Notes, optional Next;
    prose not bullets for What and Why). Shape it so the first line is the PR title and
@@ -30,16 +36,18 @@ is pushed or created until I approve.
    ## Why
    ...
    ```
-   Derive a unique temp path from the repo and branch to avoid collisions with concurrent
-   sessions in other repos:
+   Make a fresh temp directory, so that concurrent sessions, even on the same branch, never
+   share a draft:
    ```bash
    repo=$(git rev-parse --show-toplevel | xargs basename)
    branch=$(git branch --show-current | tr '/' '-')
-   descfile="/tmp/claude-pr-desc-${repo}-${branch}.txt"
+   mktemp -d "/tmp/claude-pr-desc-${repo}-${branch}.XXXXXX"
    ```
-   Write it to `$descfile` with the **Write tool**, then store it as the branch description:
+   Shell variables don't carry over between Bash calls, so use the printed path literally.
+   Write the description to `<dir>/PR_DESC` with the **Write tool**, then store it as the
+   branch description:
    ```bash
-   git config "branch.$(git branch --show-current).description" "$(cat "$descfile")"
+   git config "branch.$(git branch --show-current).description" "$(cat "<dir>/PR_DESC")"
    ```
 
 4. **Open the diff for review** (non-blocking):
@@ -60,9 +68,10 @@ is pushed or created until I approve.
    - Read the (possibly edited) description back and open the PR:
      ```bash
      desc=$(git config "branch.<branch>.description")
-     CLAUDE_PR_GATE=simplified gh pr create --draft --repo OWNER/REPO --head jml:<branch> \
+     CLAUDE_PR_GATE=<gate> gh pr create --draft --repo OWNER/REPO --head jml:<branch> \
        --title "$(sed -n 1p <<<"$desc")" --body "$(sed '1,2d' <<<"$desc")"
      ```
+     (`<gate>` is `small` or `simplified`, from step 2.)
    - Report the PR URL.
 
 7. **On cancel (non-zero exit):** do not push, do not create the PR. Say it was cancelled.
@@ -70,8 +79,8 @@ is pushed or created until I approve.
 
 ## Notes
 - `GIT_EDITOR=emacsclient` must be inline: the harness sets `GIT_EDITOR=true`.
-- `CLAUDE_PR_GATE=simplified` must be inline too: a PreToolUse hook denies any `gh pr create`
-  without it, so that PRs can't skip the simplify step.
+- `CLAUDE_PR_GATE=<gate>` must be inline too: a PreToolUse hook denies any `gh pr create`
+  without it, so that PRs can't skip the size check in step 2.
 - Push happens only after approval, so cancelling leaves nothing on the remote.
 - Always use explicit `--repo` and `--head jml:<branch>` — don't rely on gh's remote guessing,
   which gets confused in worktrees.

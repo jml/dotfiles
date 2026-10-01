@@ -21,18 +21,19 @@ The blocking editor handoff *is* the review gate — don't try to finalise the c
      `Co-Authored-By: <model name> <noreply@anthropic.com>`
    - `$ARGUMENTS`, if present, is guidance on scope/intent — fold it in.
 
-   Derive a unique temp path from the repo and branch to avoid collisions with concurrent
-   sessions in other repos:
+   Make a fresh temp directory, so that concurrent sessions, even on the same branch, never
+   share a draft:
    ```bash
    repo=$(git rev-parse --show-toplevel | xargs basename)
    branch=$(git branch --show-current | tr '/' '-')
-   msgfile="/tmp/claude-commit-msg-${repo}-${branch}.txt"
+   mktemp -d "/tmp/claude-commit-msg-${repo}-${branch}.XXXXXX"
    ```
-   Write the draft to `$msgfile` with the **Write tool** (not `echo`/`cat`).
+   Shell variables don't carry over between Bash calls, so use the printed path literally.
+   Write the draft to `<dir>/COMMIT_MSG` with the **Write tool** (not `echo`/`cat`).
 
 3. **Hand off to Emacs**, with `run_in_background: true`:
    ```bash
-   GIT_EDITOR=emacsclient git commit -eF "$msgfile"
+   GIT_EDITOR=emacsclient git commit -eF "<dir>/COMMIT_MSG"
    ```
    This opens the message in my running Emacs daemon (git-commit-mode); magit shows the diff on the side.
    I finish with `C-c C-c` or abort with `C-c C-k`. Because it's backgrounded, you'll be

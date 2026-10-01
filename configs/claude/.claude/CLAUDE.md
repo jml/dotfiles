@@ -52,7 +52,7 @@ All repos use a forked workflow:
 ### Pushing and PRs
 Push branches to origin: `git push -u origin <branch-name>`.
 
-Open PRs with `/pr`. It runs `/simplify`, has me review the description in Emacs, then pushes and opens a draft PR on upstream. A PreToolUse hook denies `gh pr create` from any other path.
+Open PRs with `/pr`. It runs `/simplify` on PRs over 200 changed lines, has me review the description in Emacs, then pushes and opens a draft PR on upstream. A PreToolUse hook denies `gh pr create` from any other path.
 
 When running other `gh` commands against upstream, pass `--repo <upstream-org>/<repo>` explicitly rather than relying on git config: in worktrees gh can get confused about which remote to target.
 
