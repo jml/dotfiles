@@ -15,7 +15,11 @@ is pushed or created until I approve.
    - Upstream repo `OWNER/REPO`: derive from `git remote get-url upstream` (fall back to
      `origin` if there is no `upstream`).
 
-2. **Draft the description** following my PR conventions (What / Why / Notes, optional Next;
+2. **Simplify.** Invoke the `simplify` skill with the Skill tool and let it apply its fixes.
+   If it leaves the working tree dirty, land those changes with the `commit` skill before going
+   on, so the PR diff contains them. If that commit is cancelled, stop: don't open the PR.
+
+3. **Draft the description** following my PR conventions (What / Why / Notes, optional Next;
    prose not bullets for What and Why). Shape it so the first line is the PR title and
    everything after the blank line is the body:
    ```
@@ -38,34 +42,36 @@ is pushed or created until I approve.
    git config "branch.$(git branch --show-current).description" "$(cat "$descfile")"
    ```
 
-3. **Open the diff for review** (non-blocking):
+4. **Open the diff for review** (non-blocking):
    ```bash
    emacsclient -n -e '(magit-diff-range "BASE...HEAD")'
    ```
    (substitute the base from step 1 — three dots = the PR diff since the branch diverged.)
 
-4. **Gate on the description edit**, with `run_in_background: true`:
+5. **Gate on the description edit**, with `run_in_background: true`:
    ```bash
    GIT_EDITOR=emacsclient git -c core.commentChar=';' branch --edit-description
    ```
    I review the diff and edit the title/body in the now-prefilled buffer, then `C-c C-c` to
    approve or `C-c C-k` to cancel. You'll be notified on exit — **do not poll**.
 
-5. **On approval (exit 0):**
+6. **On approval (exit 0):**
    - Push to my fork: `git push -u origin <branch>`.
    - Read the (possibly edited) description back and open the PR:
      ```bash
      desc=$(git config "branch.<branch>.description")
-     gh pr create --draft --repo OWNER/REPO --head jml:<branch> \
+     CLAUDE_PR_GATE=simplified gh pr create --draft --repo OWNER/REPO --head jml:<branch> \
        --title "$(sed -n 1p <<<"$desc")" --body "$(sed '1,2d' <<<"$desc")"
      ```
    - Report the PR URL.
 
-6. **On cancel (non-zero exit):** do not push, do not create the PR. Say it was cancelled.
+7. **On cancel (non-zero exit):** do not push, do not create the PR. Say it was cancelled.
    The draft description stays in git config; the next `/pr` overwrites it.
 
 ## Notes
 - `GIT_EDITOR=emacsclient` must be inline: the harness sets `GIT_EDITOR=true`.
+- `CLAUDE_PR_GATE=simplified` must be inline too: a PreToolUse hook denies any `gh pr create`
+  without it, so that PRs can't skip the simplify step.
 - Push happens only after approval, so cancelling leaves nothing on the remote.
 - Always use explicit `--repo` and `--head jml:<branch>` — don't rely on gh's remote guessing,
   which gets confused in worktrees.

@@ -28,6 +28,16 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 - Test descriptions or comments should state why we want this behavior, why it is important
 - Prefer testing on interface boundaries over writing unit tests
 
+# Design docs & long-form prose
+- Ration punchline cadence. The verbless closer and the "X: Y" apposition ("Ownership partition instead of replication.") are effective for genuine invariants ("Git success defines RPC success"); used everywhere, the rhythm becomes conspicuous and the load-bearing statements lose contrast. Keep the few that state invariants; write the rest as plain sentences.
+- Coin a term only to define it and reuse it. A coinage that names a concept the doc keeps returning to is terminology; a coinage used once ("mixed ID economy") is a flourish — replace it with the plain claim it compresses.
+- Voice is uniform or absent. A single whimsical phrase in an otherwise flat doc reads as decoration.
+- Aphorisms overclaim. Check every punchy compression against the rest of the doc — the memorable version of a claim is often the version some other section contradicts. When precise and memorable conflict, keep precise.
+
+# Linear tickets
+- In Markdown prose (design docs, PR descriptions, issue and review comments), cite a Linear ticket as a bracketed reference link: `[DEV-1234]` in the text, with a `[DEV-1234]: https://linear.app/chainguard/issue/DEV-1234/<slug>` definition at the end of the document. Never a bare identifier, never an inline `[DEV-1234](url)` link.
+- Commit messages are plain text, so the bare identifier stays there (`Tracking: DEV-1234`).
+
 # Workflow
 
 ## Git Worktrees
@@ -40,14 +50,11 @@ All repos use a forked workflow:
 - `origin` = my fork (where I push branches)
 
 ### Pushing and PRs
-1. Push to origin: `git push -u origin <branch-name>`
-2. Create PR using explicit flags to avoid ambiguity:
-   ```bash
-   gh pr create --draft --repo <upstream-org>/<repo> --head <fork-owner>:<branch>
-   ```
-   Example: `gh pr create --draft --repo chainguard-dev/mono --head jml:worktree-DEV-123-fix-widget`
+Push branches to origin: `git push -u origin <branch-name>`.
 
-The explicit `--repo` and `--head` flags are more reliable than relying on git config, especially in worktrees where gh can get confused about which remote to target.
+Open PRs with `/pr`. It runs `/simplify`, has me review the description in Emacs, then pushes and opens a draft PR on upstream. A PreToolUse hook denies `gh pr create` from any other path.
+
+When running other `gh` commands against upstream, pass `--repo <upstream-org>/<repo>` explicitly rather than relying on git config: in worktrees gh can get confused about which remote to target.
 
 ### Force-pushing in worktrees
 `--force-with-lease` fails with "stale info" in bare-repo worktree setups because worktrees share `refs/remotes/` and the tracking refs get out of sync. Use the explicit form instead:

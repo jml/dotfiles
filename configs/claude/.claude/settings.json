@@ -86,7 +86,7 @@
       "Bash(terraform destroy -auto-approve *)"
     ]
   },
-  "model": "claude-fable-5",
+  "model": "fable",
   "hooks": {
     "PreToolUse": [
       {
@@ -96,6 +96,11 @@
             "type": "command",
             "command": "bash /Users/jml/.claude/hooks/enforce-commit-review.sh",
             "statusMessage": "Checking commit goes via /commit"
+          },
+          {
+            "type": "command",
+            "command": "bash /Users/jml/.claude/hooks/enforce-pr-simplify.sh",
+            "statusMessage": "Checking PR goes via /pr"
           }
         ]
       }
@@ -111,8 +116,26 @@
     "gopls-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": false,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "product-org-tools@product-org-tools": true,
+    "i-have-adhd@i-have-adhd": true
+  },
+  "extraKnownMarketplaces": {
+    "product-org-tools": {
+      "source": {
+        "source": "github",
+        "repo": "chainguard-sandbox/product-org-tools"
+      }
+    },
+    "i-have-adhd": {
+      "source": {
+        "source": "github",
+        "repo": "ayghri/i-have-adhd"
+      }
+    }
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "xhigh"
+  "effortLevel": "xhigh",
+  "skipWorkflowUsageWarning": true,
+  "tui": "fullscreen"
 }
