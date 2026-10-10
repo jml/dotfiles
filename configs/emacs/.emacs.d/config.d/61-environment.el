@@ -8,9 +8,11 @@
 
 ;;; Code:
 
-;; Import environment variables from shell on macOS
+;; Import environment variables from shell. Must not gate on `window-system'
+;; because when launched via `emacsclient -a ""' the daemon starts with no
+;; frame, leaving `window-system' nil during init.
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns))
+  :demand t
   :config (exec-path-from-shell-initialize))
 
 ;; Directory-based environment management
