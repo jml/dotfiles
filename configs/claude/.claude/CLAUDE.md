@@ -7,6 +7,7 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 - Segregate I/O from pure logic - push side effects to boundaries, keep core functions deterministic and easily testable.
 - Use conventional commits
 - In commit body text, describe the impact and the motivation for the change before summarising the changes themselves.
+- Stage only the paths that belong to the change; never `git add -A`. If it's unclear what belongs, ask.
 
 ## Comments
 - Comments are read in a world where the code below them has always existed; PR descriptions are read at the moment of the change. Write each from its own vantage point, and never reuse prose from one in the other unedited. Test every comment: would it still be true and useful to a reader who never saw the PR?
@@ -50,9 +51,7 @@ All repos use a forked workflow:
 - `origin` = my fork (where I push branches)
 
 ### Pushing and PRs
-Push branches to origin: `git push -u origin <branch-name>`.
-
-Open PRs with `/pr`. It runs `/simplify` on PRs over 200 changed lines, has me review the description in Emacs, then pushes and opens a draft PR on upstream.
+Push branches to origin: `git push -u origin <branch-name>`, then open a draft PR on upstream with `gh pr create --draft --repo <upstream-org>/<repo> --head jml:<branch>`.
 
 When running other `gh` commands against upstream, pass `--repo <upstream-org>/<repo>` explicitly rather than relying on git config: in worktrees gh can get confused about which remote to target.
 

@@ -122,10 +122,6 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": []
-      },
-      {
         "hooks": [
           {
             "type": "command",
