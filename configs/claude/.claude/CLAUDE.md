@@ -3,6 +3,9 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 # Tools
 - ALWAYS use `gh` for any interaction with GitHub, including viewing issues. Never use direct HTTP access.
 
+# Chat output
+- Every mention of a GitHub PR, GitHub issue, or Linear ticket in chat is an inline Markdown link to its full URL, e.g. `[#3757](https://github.com/chainguard-dev/stereo-staging/pull/3757)` or `[DEV-1234](https://linear.app/chainguard/issue/DEV-1234)`. This applies to every mention, not just the first, because a bare `#3757` or `DEV-1234` isn't clickable in the terminal. Include the repo in the link text (`[stereo-staging#3757](…)`) when more than one repo is in play. Linear URLs resolve without the slug, so there's no need to look it up just to link a ticket in chat.
+
 # Code style
 - Segregate I/O from pure logic - push side effects to boundaries, keep core functions deterministic and easily testable.
 - Use conventional commits
