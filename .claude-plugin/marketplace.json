@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "jml",
+  "description": "jml's Claude Code plugins",
+  "owner": {
+    "name": "Jonathan M. Lange",
+    "email": "jml@mumak.net"
+  },
+  "plugins": [
+    {
+      "name": "technical-writing",
+      "description": "Writing and review skills for engineering prose drafted by agents: commit messages, PR descriptions, issues, review comments, code comments, design and intent docs, READMEs, and explanations. Written for the reader who saw none of the session that produced the text.",
+      "author": {
+        "name": "Jonathan M. Lange"
+      },
+      "category": "productivity",
+      "source": "./plugins/technical-writing"
+    }
+  ]
+}
