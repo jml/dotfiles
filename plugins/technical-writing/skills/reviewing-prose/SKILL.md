@@ -85,7 +85,7 @@ prose. A command that finds nothing exits with status 1, which is fine.
 # antithesis
 grep -nE ', not |rather than|instead of|(^|[.!?] +)Instead\b' "$f"
 # scope-defence and stance-hedge
-grep -niE 'happens to|turns out|notably|worth noting|it is worth|by design|deliberate|intentional|not an oversight|honest|frankly|genuinely' "$f"
+grep -niE 'happens? to|turns out|notably|worth noting|it is worth|by design|deliberate|intentional|not an oversight|honest|frankly|genuinely' "$f"
 # vantage (expected in commit messages and PR descriptions)
 grep -nwiE 'now|previously|for now|new|no longer|will be|still|has been|have been|going forward|anymore|pilot|currently' "$f"
 # label-opener (bold run-in labels in design docs are exempt)
@@ -108,9 +108,12 @@ grep -o '—' "$f" | wc -l
 ```
 
 ```bash
-# the same patterns across line breaks: join each paragraph, then search
-j=$(mktemp); awk 'BEGIN{RS=""} {gsub(/\n/," "); print}' "$f" > "$j"
-grep -noE '.{0,40}(, not |rather than|What [^.]{1,60} (is|are) |(two|three|four|five) (ways|things|pieces|parts)).{0,40}' "$j"
+# the same patterns across line breaks: join each paragraph, dropping the
+# comment markers of a comment block, then search
+j=$(mktemp); awk 'BEGIN{RS=""} {sub(/^[ \t]*(\/\/|#) ?/,""); gsub(/\n[ \t]*(\/\/|#) ?/," "); gsub(/\n/," "); print}' "$f" > "$j"
+# `command` skips a shell function that wraps grep in ugrep, which rejects this
+# pattern as too complex
+command grep -noE '.{0,40}(, not |rather than|, so |, hence |which means|What [^.]{1,60} (is|are) |(two|three|four|five) (ways|things|pieces|parts)).{0,40}' "$j"
 ```
 
 The joined search reports paragraph numbers, not line numbers. Find the line in
