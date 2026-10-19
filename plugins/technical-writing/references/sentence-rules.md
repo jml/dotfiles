@@ -167,6 +167,13 @@ The home of the "so" rule, which inverts between genres (principle 4).
   - Before: "Entries come from the cached tree, so file contents are never read."
   - After: "File contents are never read."
 
+  The test is where the premise comes from. When it describes the
+  implementation, the "so" introduces a derivation. When it is a fact from
+  outside the implementation, such as a caller's behaviour or an upstream bug,
+  the premise is the reason a constraint exists, and it stays.
+  - Keep: "Callers hold this across a network call, so it has to stay
+    lock-free."
+
 ### `subject-early`
 
 Put the subject near the start. Clauses stacked before it make the reader hold

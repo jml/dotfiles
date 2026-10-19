@@ -58,7 +58,9 @@ Doc comments are reference text.
   comment matches an elaborate neighbour, it copies that neighbour's coinages.
 - Give each sentence one fact (`one-fact`).
 - State the guarantee, and leave the derivation to the PR description
-  (`connective`).
+  (`connective`). Keep a premise the code can't show, because it is the reason
+  a constraint exists: "Callers hold this across a network call, so it has to
+  stay lock-free."
 - No punchlines and no "X, not Y" contrasts (`punchline`, `antithesis`).
 - Use the code's own identifiers. A noun phrase that names something existing
   nowhere in the code ("the served surface") sends the reader on a search that
