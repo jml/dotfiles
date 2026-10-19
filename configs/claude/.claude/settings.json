@@ -255,7 +255,8 @@
     "product-org-tools@product-org-tools": true,
     "pyright-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": false
+    "superpowers@claude-plugins-official": false,
+    "technical-writing@jml": true
   },
   "extraKnownMarketplaces": {
     "i-have-adhd": {
@@ -268,6 +269,12 @@
       "source": {
         "source": "github",
         "repo": "chainguard-sandbox/product-org-tools"
+      }
+    },
+    "jml": {
+      "source": {
+        "source": "github",
+        "repo": "jml/dotfiles"
       }
     }
   },
