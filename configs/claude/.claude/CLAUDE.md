@@ -4,7 +4,7 @@ When I ask a question or express uncertainty or curiosity, treat it as genuine. 
 - ALWAYS use `gh` for any interaction with GitHub, including viewing issues. Never use direct HTTP access.
 
 # Writing
-@~/src/dotfiles/plugins/technical-writing/references/always-on.md
+@~/src/chainguard/technical-writing/references/always-on.md
 
 The technical-writing skills cover each genre. My own conventions on top of them:
 - In chat, include the repo in a PR link's text (`[stereo-staging#3757](…)`) when more than one repo is in play. Linear URLs resolve without the slug, so there's no need to look it up just to link a ticket in chat.

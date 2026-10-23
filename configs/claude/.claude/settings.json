@@ -256,7 +256,7 @@
     "pyright-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": false,
-    "technical-writing@jml": true
+    "technical-writing@technical-writing": true
   },
   "extraKnownMarketplaces": {
     "i-have-adhd": {
@@ -271,10 +271,10 @@
         "repo": "chainguard-sandbox/product-org-tools"
       }
     },
-    "jml": {
+    "technical-writing": {
       "source": {
         "source": "github",
-        "repo": "jml/dotfiles"
+        "repo": "chainguard-sandbox/technical-writing"
       }
     }
   },
