@@ -1,6 +1,6 @@
 ---
 name: jml-voice
-description: Describes how Jonathan Lange (jml) writes, for drafting text he will post or send under his own name, or when he asks for something "in my voice" or "in my style". Covers issues, design docs, review comments, explanations to him, and Slack messages. Use alongside the technical-writing skills, which still govern content and review.
+description: Describes how Jonathan Lange (jml) writes, for drafting text he will post or send under his own name, or when he asks for something "in my voice" or "in my style". Covers issues, design docs, PR descriptions, review comments, explanations to him, and Slack messages. Use alongside the technical-writing skills, which still govern content and review.
 ---
 
 # jml's voice
@@ -25,7 +25,11 @@ attribute a model's coinage or claim to him.
 - Dry humour, understatement, and allusion in asides and comments, never in the
   sentences that describe the system.
 - Emphasis by italicising a single word ("_are_", "_very_"), rarely bold.
-- Numbers, money, and percentages whenever they are available.
+- Numbers, money, and percentages whenever they describe the system or measure
+  an outcome. A design's motivation rests on a principle, not on counts from a
+  recent incident, which go stale and invite argument about the count. He cut
+  "merge-bot opened 460 of them…" from both a design doc's Background and its
+  PR description.
 - Reference-style links.
 
 ## Issues
@@ -62,6 +66,20 @@ attribute a model's coinage or claim to him.
   measured baseline.
 - Sentences average 16–20 words.
 
+## Pull request descriptions
+
+- What: one sentence naming the outcome or the shift of responsibility, without
+  the mechanism. "Shift responsibility for escalating away from merge-bot and
+  instead to the producer bot that knows what matters, using vpa-bot as the
+  first producer."
+- Why: the principle in a sentence or two, then a candid judgement of the
+  status quo. "The bot that owns the workload is the one that best knows what
+  to do if it fails. merge-bot raising escalations was only ever a stop-gap."
+  For a design-doc PR, the evidence lives in the doc.
+- Notes: factual dependencies and side effects, as drafted.
+- Once he has reviewed the text, he removes the model-attribution line and the
+  generated-with footer.
+
 ## Review comments
 
 - Short, genuine questions: "Why?", "Say why.", "Which claim?", "What does `true`
@@ -74,6 +92,20 @@ attribute a model's coinage or claim to him.
 - For a long first review of someone new: "Please feel free to get me on the
   phone… A chunky code review is rarely the best way to meet someone for the
   first time."
+
+## Replies to review on his own PRs
+
+From comparing drafted replies with what he posted on [mono#80410][pr80410]:
+
+- One or two sentences: where it landed, then what changed.
+- Conceding: a brief credit ("Good point."), then the change. Don't restate why
+  the reviewer is right.
+- Holding firm: answer what the concern implies, not the fact it states, with
+  the principle in one sentence ("it's still better to have an explicit command
+  rather than manual `gcloud`"). Leave the mechanism to the code and docs.
+- No commit SHAs. The thread already shows the new commits.
+
+[pr80410]: https://github.com/chainguard-dev/mono/pull/80410
 
 ## Explanations written for him
 
