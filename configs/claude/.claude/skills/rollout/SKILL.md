@@ -48,6 +48,9 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name
 - Step `check`: `{"workflow": {repo, file, event?, since?}}` passes on a successful run; `{"variable": {repo, name}}` passes once the Actions variable exists. Without a check, a step is done only when marked.
 - `channel`: a Slack channel for every review request in this rollout (a `proj-` channel, say). It beats the config map.
 - `context`: the design or intent docs. Read them before recommending an answer to any decision.
+- `work` (instead of `pr`): a change not yet opened as a PR. `session` names the session building it. Add `pr` once the PR exists; keep `work` as the note of what it is.
+- `proposed: "<why>"`: new work this session found that jml hasn't yet accepted into the rollout. It blocks whatever waits on it until jml decides. See "New work" below.
+- `follow_ups`: `[{"ref", "url", "title"}]`, work jml chose to do after the rollout, listed on the status page.
 
 Edges exist only where deploy safety or ordering requires them. A PR whose only edge to its parent is `merged`, in the same repo, is a candidate to fold into the parent; say so when building or reviewing a manifest.
 
@@ -89,9 +92,22 @@ A PR goes to a person only once its review bots are finished with it. `status` r
 
 Record every answer in `<name>.decisions.md` as a dated line: the question, the answer, and the rule it implies if jml states one ("bot style nits are follow-ups"). Apply those rules on later ticks without asking again.
 
+## New work
+
+Following a rollout turns up work nobody planned: a ruleset change, a missing grant, a fix on main, a better place for a fix. Whether it belongs in the rollout is jml's call. The mechanics after that are the session's.
+
+1. Add it to the manifest as a node with `proposed` saying what was found and why it matters, and `after` edges from whatever it blocks. Use `work` for a change, or `step` for something a person does. `status` turns it into a `decide-scope` action.
+2. Put the decision to jml with a recommendation: **part of this rollout** (it blocks something here), **follow-up** (it doesn't block; do it later), **fix it elsewhere** (it belongs at a lower layer or to another team), or **drop it**.
+3. Then:
+   - Part of the rollout: remove `proposed`. If the change is a handful of lines in one file, make it here and add the PR as `pr`. Otherwise propose a session for it (`start_session`, own worktree, brief covering only that change), record the session's id as `session` on the node, and add `pr` when its PR opens.
+   - Follow-up: file a Linear issue (the go-linear tools; link the rollout's Linear issue as related), move the node to `follow_ups`, and remove its edges.
+   - Elsewhere: file the issue or message for the owning team, and keep the node as a `by: external` step if it still blocks this rollout.
+   - Drop: remove the node.
+4. Record the decision in `<name>.decisions.md`.
+
 ## Status page
 
-Each rollout has a page jml opens to see the whole thing: what needs them, the dependency graph with every node's state, and what's in flight. `--page` renders it; publish it with the Artifact tool.
+Each rollout has a page jml opens to see the whole thing: **Needs you** (only jml's own moves: approvals and decisions), **With other people** (steps someone else does, other people's PRs, review requests out and unanswered), the dependency graph with every node's state, what the session is on, and what's in flight. `core.whose_move` decides which list an action goes in. `--page` renders it; publish it with the Artifact tool.
 
 - First publish (no `<name>.artifact` yet): publish the rendered file with `icon: "flowchart"` and a one-sentence `description`, then write the URL it returns to `<name>.artifact`, and give jml the link.
 - Later publishes: pass the URL from `<name>.artifact` as `url`. In a session that hasn't yet read or published it, read it first (`action: "read"`), then publish the new render with that `url`; the page is generated, so there is nothing on it to merge.

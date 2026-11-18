@@ -8,6 +8,11 @@ for in `after`, written `<node>` (the node's default condition) or
   pr:   merged (default), deployed:<env>
   step: done (default)
 
+A node may also be `work`: a change not yet opened as a PR, being built in a
+session (`session`) or by someone; it gains `pr` once the PR exists. A node
+with `proposed` is new work found during the rollout that jml hasn't yet
+accepted into it: it blocks whatever waits on it until jml decides.
+
 `facts` holds what the I/O layer fetched: `prs` keyed by node id, `deploys`
 keyed by node id then env (True, False or None when it can't tell), and
 `checks` keyed by step node id (True when the step's check passed).
@@ -29,7 +34,7 @@ def parse_after(entry: str, nodes: dict) -> tuple[str, str]:
     if node_id not in nodes:
         raise ValueError(f"unknown node {node_id!r} in after: {entry!r}")
     if not cond:
-        cond = "merged" if "pr" in nodes[node_id] else "done"
+        cond = "done" if "step" in nodes[node_id] else "merged"
     return node_id, cond
 
 
@@ -39,8 +44,8 @@ def validate(manifest: dict) -> list[str]:
     if len(nodes) != len(manifest.get("nodes", [])):
         errors.append("duplicate node ids")
     for n in manifest.get("nodes", []):
-        if ("pr" in n) == ("step" in n):
-            errors.append(f"{n['id']}: exactly one of pr or step")
+        if (("pr" in n) or ("work" in n)) == ("step" in n):
+            errors.append(f"{n['id']}: exactly one of pr (or work) or step")
         for a in n.get("after", []):
             try:
                 _, cond = parse_after(a, nodes)
@@ -75,6 +80,8 @@ def _has_cycle(nodes: dict) -> bool:
 def satisfied(node_id: str, cond: str, nodes: dict, facts: dict, marks: dict):
     """True, False, or None when the facts can't say."""
     node = nodes[node_id]
+    if node.get("proposed") or ("work" in node and "pr" not in node):
+        return False
     if "step" in node:
         return bool(marks.get(node_id)) or bool(facts.get("checks", {}).get(node_id))
     pr = facts["prs"].get(node_id) or {}
@@ -207,6 +214,28 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
         actions: list[dict] = []
         entry = {"id": n["id"], "waiting_on": waiting}
 
+        if n.get("proposed"):
+            pr = facts["prs"].get(n["id"]) if "pr" in n else None
+            entry |= {
+                "kind": "pr" if "pr" in n else ("step" if "step" in n else "work"),
+                "title": (pr or {}).get("title") or n.get("work") or n.get("step"),
+                "phase": "proposed",
+                "actions": [{"kind": "decide-scope", "auto": False, "detail": n["proposed"]}],
+            }
+            if pr:
+                entry |= {"ref": n["pr"], "url": pr["url"]}
+            ticks.append(TICK_WAITING_ON_PEOPLE)
+            out_nodes.append(entry)
+            continue
+
+        if "work" in n and "pr" not in n:
+            entry |= {"kind": "work", "title": n["work"], "phase": "building", "actions": []}
+            if n.get("session"):
+                entry["session"] = n["session"]
+            ticks.append(TICK_WAITING_ON_PEOPLE)
+            out_nodes.append(entry)
+            continue
+
         if "step" in n:
             entry |= {"kind": "step", "title": n["step"]}
             if satisfied(n["id"], "done", nodes, facts, marks):
@@ -302,6 +331,15 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
         "complete": all(e["phase"] == "done" for e in out_nodes),
         "next_tick_seconds": min(ticks),
     }
+
+
+def whose_move(action: dict) -> str:
+    """Who acts next on an action: the session, jml, or someone else jml may chase."""
+    if action["auto"]:
+        return "session"
+    if action["kind"] == "do-step" and action["detail"] == "external":
+        return "other"
+    return "jml"
 
 
 def weekday_hours(start: datetime, end: datetime) -> float:

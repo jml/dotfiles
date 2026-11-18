@@ -13,7 +13,10 @@ W, H, GAP_X, GAP_Y, PAD = 232, 66, 72, 18, 12
 # word so that colour never carries the state alone.
 STATES = {
     "needs-you": ("!", "needs you"),
+    "others": ("→", "with someone else"),
     "session": ("↻", "session working"),
+    "proposed": ("?", "proposed"),
+    "building": ("⚒", "being built"),
     "waiting": ("…", "waiting"),
     "deploying": ("↑", "deploying"),
     "blocked": ("⏸", "blocked"),
@@ -31,15 +34,21 @@ ACTION_WORDS = {
     "rebase": "Rebase",
     "fix-ci": "Fix CI",
     "respond": "Address review threads",
+    "decide-scope": "Decide whether this is part of the rollout",
 }
 
 
 def display_state(n: dict) -> str:
-    if n["phase"] in ("done", "closed", "deploying", "blocked"):
+    if n["phase"] in ("done", "closed", "deploying", "blocked", "proposed", "building"):
         return n["phase"]
-    if any(not a["auto"] for a in n["actions"]):
+    if n.get("author"):
+        return "others"
+    moves = {core.whose_move(a) for a in n["actions"]}
+    if "jml" in moves:
         return "needs-you"
-    if n["actions"]:
+    if "other" in moves:
+        return "others"
+    if moves:
         return "session"
     return "waiting"
 
@@ -49,7 +58,7 @@ def short_ref(ref: str) -> str:
 
 
 def label(n: dict) -> str:
-    return short_ref(n["ref"]) if n["kind"] == "pr" else n["id"]
+    return short_ref(n["ref"]) if n.get("ref") else n["id"]
 
 
 def clip(s: str, k: int) -> str:
@@ -71,7 +80,13 @@ def waiting_reason(n: dict, requests: list[dict], now: datetime) -> str:
         return "deploying to " + ", ".join(n.get("deploying_to", []))
     if n["kind"] == "step":
         return "happens on its own; its check reports it" if not n["actions"] else ""
+    if n["phase"] == "building":
+        return "being built" + (f" in session {n['session']}" if n.get("session") else "")
+    if n["phase"] == "proposed":
+        return "your decision"
     parts = [f"merges after {deps}"] if deps else []
+    if n.get("author"):
+        parts.insert(0, f"{n['author']}'s PR")
     bots = n.get("bot_review")
     if bots == "pending":
         parts.append("review bots running")
@@ -190,11 +205,38 @@ def item(n: dict, a: dict) -> str:
     )
 
 
+def others_items(nodes: list[dict], requests: list[dict], now: datetime) -> list[str]:
+    """What other people owe the rollout: steps someone else does, PRs someone
+    else wrote, and review requests that have gone out and not been answered."""
+    out = []
+
+    def li(verb: str, n: dict, meta: str) -> str:
+        ref = escape(label(n))
+        link = f'<a href="{escape(n["url"])}" target="_blank" rel="noopener">{ref}</a>' if n.get("url") else f"<span>{ref}</span>"
+        return (f'<li class="item"><div class="item-head"><span class="verb">{escape(verb)}</span> {link}</div>'
+                f'<div class="item-title">{escape(n["title"])}</div><div class="meta">{meta}</div></li>')
+
+    for n in nodes:
+        if n["phase"] in ("done", "closed", "proposed", "building"):
+            continue
+        if any(core.whose_move(a) == "other" for a in n["actions"]):
+            out.append(li("Someone else does this step", n, "ask them, then mark it done"))
+        elif n.get("author"):
+            out.append(li(f"Waiting on {n['author']}", n, escape(waiting_reason(n, requests, now))))
+        elif n["kind"] == "pr" and n.get("review") != "APPROVED":
+            reqs = [r for r in requests if r["pr"] == n["ref"]]
+            if reqs:
+                last = max(reqs, key=lambda r: r["sent_at"])
+                out.append(li("Waiting on review", n, f"asked in {escape(last['channel'])} {ago(last['sent_at'], now)}; /chase lists it once it's overdue"))
+    return out
+
+
 def render(manifest: dict, report: dict, requests: list[dict], now: datetime) -> str:
     nodes = report["nodes"]
     done = [n for n in nodes if n["phase"] == "done"]
-    yours = [(n, a) for n in nodes for a in n["actions"] if not a["auto"]]
-    sessions = [(n, a) for n in nodes for a in n["actions"] if a["auto"]]
+    yours = [(n, a) for n in nodes for a in n["actions"] if core.whose_move(a) == "jml"]
+    sessions = [(n, a) for n in nodes for a in n["actions"] if core.whose_move(a) == "session"]
+    others = others_items(nodes, requests, now)
     in_flight = [n for n in nodes if n["phase"] != "done"]
     mins = report["next_tick_seconds"] // 60
     title = manifest.get("title") or manifest["name"]
@@ -209,6 +251,18 @@ def render(manifest: dict, report: dict, requests: list[dict], now: datetime) ->
     done_list = "".join(f'<li><span class="mono">{escape(label(n))}</span> {escape(n["title"])}</li>' for n in done)
     yours_html = "".join(item(n, a) for n, a in yours) or '<li class="empty">Nothing needs you right now.</li>'
     sessions_html = "".join(item(n, a) for n, a in sessions)
+    others_html = "".join(others)
+    building_html = "".join(
+        f'<li class="item"><div class="item-head"><span class="verb">Being built</span> <span>{escape(n["id"])}</span></div>'
+        f'<div class="item-title">{escape(n["title"])}</div>'
+        f'<div class="meta">{escape("in session " + n["session"]) if n.get("session") else "no session yet"}</div></li>'
+        for n in nodes if n["phase"] == "building"
+    )
+    follow_html = "".join(
+        f'<li><a href="{escape(f["url"])}" target="_blank" rel="noopener">{escape(f.get("ref") or f["url"])}</a> {escape(f.get("title", ""))}</li>'
+        if f.get("url") else f'<li>{escape(f.get("title", ""))}</li>'
+        for f in manifest.get("follow_ups", [])
+    )
     return f"""<title>{escape(manifest['name'])} rollout</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -217,7 +271,7 @@ def render(manifest: dict, report: dict, requests: list[dict], now: datetime) ->
 /* Layout: one column; summary, what needs you, the graph (scrolls sideways), then what's in flight. */
 :root {{
   --bg: #f6f7f9; --surface: #ffffff; --ink: #17202b; --muted: #5b6776; --line: #d5dbe3; --accent: #2f5bd3;
-  --you: #b45309; --you-bg: #fdf0dc; --session: #6d43c9; --session-bg: #efe9fb; --wait: #5b6776; --wait-bg: #eceff3;
+  --you: #b45309; --you-bg: #fdf0dc; --other: #0f766e; --other-bg: #dcf3ef; --session: #6d43c9; --session-bg: #efe9fb; --wait: #5b6776; --wait-bg: #eceff3;
   --deploy: #1d6fa3; --deploy-bg: #e0eff8; --done: #2f7d4f; --done-bg: #e3f2e8; --closed: #b42318; --closed-bg: #fbe5e3;
   --display: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
   --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
@@ -227,7 +281,7 @@ def render(manifest: dict, report: dict, requests: list[dict], now: datetime) ->
   :root:not([data-theme="light"]) {{
     color-scheme: dark;
     --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a2b0; --line: #2b3541; --accent: #7fa2ff;
-    --you: #f2a65a; --you-bg: #3a2814; --session: #b79bff; --session-bg: #2a2140; --wait: #a3adb9; --wait-bg: #222a33;
+    --you: #f2a65a; --you-bg: #3a2814; --other: #5fd4c4; --other-bg: #10322e; --session: #b79bff; --session-bg: #2a2140; --wait: #a3adb9; --wait-bg: #222a33;
     --deploy: #6cb8e6; --deploy-bg: #132c3c; --done: #6fcf97; --done-bg: #15301f; --closed: #f28b82; --closed-bg: #3b1715;
   }}
 }}
@@ -254,6 +308,8 @@ section {{ display: grid; gap: 12px; }}
 ul.items {{ list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }}
 .item {{ background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--you); border-radius: 6px; padding: 12px 14px; display: grid; gap: 4px; }}
 .session-items .item {{ border-left-color: var(--session); }}
+.other-items .item {{ border-left-color: var(--other); }}
+ul.plain {{ margin: 0; padding-left: 18px; }}
 .item-head {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; }}
 .item-head a, .item-head span:not(.verb) {{ font: 500 0.86rem var(--mono); }}
 .item-title {{ color: var(--muted); }}
@@ -277,6 +333,9 @@ svg text {{ font-family: var(--body); }}
 a:hover .node, a:focus-visible .node {{ stroke-width: 2.5; }}
 .s-needs-you {{ --c: var(--you); --cb: var(--you-bg); }}
 .s-session {{ --c: var(--session); --cb: var(--session-bg); }}
+.s-others {{ --c: var(--other); --cb: var(--other-bg); }}
+.s-proposed {{ --c: var(--you); --cb: var(--surface); }}
+.s-building {{ --c: var(--session); --cb: var(--surface); }}
 .s-waiting {{ --c: var(--wait); --cb: var(--wait-bg); }}
 .s-deploying {{ --c: var(--deploy); --cb: var(--deploy-bg); }}
 .s-blocked {{ --c: var(--wait); --cb: var(--surface); }}
@@ -286,6 +345,8 @@ a:hover .node, a:focus-visible .node {{ stroke-width: 2.5; }}
 .chip.s-blocked {{ box-shadow: inset 0 0 0 1px var(--line); }}
 rect.node {{ fill: var(--cb); stroke: var(--c); }}
 rect.node.s-blocked {{ stroke-dasharray: 4 3; stroke: var(--muted); }}
+rect.node.s-proposed, rect.node.s-building {{ stroke-dasharray: 6 3; }}
+.chip.s-proposed, .chip.s-building {{ box-shadow: inset 0 0 0 1px var(--c); }}
 text.n-state {{ fill: var(--c); }}
 .table-wrap {{ overflow-x: auto; }}
 table {{ border-collapse: collapse; width: 100%; min-width: 640px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }}
@@ -310,15 +371,17 @@ details ul {{ margin: 8px 0 0; padding-left: 18px; color: var(--muted); }}
   </div>
 </header>
 <section aria-labelledby="yours"><h2 id="yours">Needs you</h2><ul class="items">{yours_html}</ul></section>
+{f'<section aria-labelledby="others"><h2 id="others">With other people</h2><ul class="items other-items">{others_html}</ul></section>' if others_html else ''}
 <section aria-labelledby="graph"><h2 id="graph">Dependencies</h2>
   <div class="legend">{legend}</div>
   <div class="graph">{svg(manifest, report)}</div>
   <div class="meta">Solid arrows are met, dashed ones aren't. Labels mark deploy conditions; an unlabelled arrow means merged or done.</div>
 </section>
-{f'<section aria-labelledby="sess"><h2 id="sess">The session is on it</h2><ul class="items session-items">{sessions_html}</ul></section>' if sessions_html else ''}
+{f'<section aria-labelledby="sess"><h2 id="sess">The session is on it</h2><ul class="items session-items">{sessions_html}{building_html}</ul></section>' if sessions_html or building_html else ''}
 <section aria-labelledby="flight"><h2 id="flight">In flight</h2>
   <div class="table-wrap"><table><thead><tr><th>Node</th><th>State</th><th>What</th><th>Waiting on</th></tr></thead><tbody>{rows}</tbody></table></div>
 </section>
+{f'<section aria-labelledby="fu"><h2 id="fu">Follow-ups filed</h2><ul class="plain">{follow_html}</ul></section>' if follow_html else ''}
 {f'<section><details><summary>{len(done)} done</summary><ul>{done_list}</ul></details></section>' if done else ''}
 </main>
 """
