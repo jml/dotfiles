@@ -1,0 +1,37 @@
+{
+  "deploys": {
+    "chainguard-dev/mono": {
+      "staging": "provision-chainops.dev.yaml",
+      "prod": "provision-enforce.dev.yaml"
+    },
+    "chainguard-dev/data-analytics-infra": {
+      "prod": "apply.yml"
+    }
+  },
+  "channels": {
+    "teams": {
+      "chainguard-dev/data-analytics-admins": "#chan-data-eng",
+      "chainguard-dev/data-analytics-write": "#chan-data-eng"
+    },
+    "paths": [
+      {
+        "repo": "chainguard-dev/mono",
+        "prefix": "public/go-driftlessaf/",
+        "channel": "#chan-lib"
+      }
+    ],
+    "repos": {},
+    "ids": {
+      "#chan-data-eng": "C000000000A"
+    }
+  },
+  "chase": {
+    "base_hours": 4,
+    "lines_per_hour": 250,
+    "max_hours": 16,
+    "ignore_authors": [
+      "chainguard",
+      "github-actions"
+    ]
+  }
+}

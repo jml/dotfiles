@@ -1,0 +1,299 @@
+"""Pure rollout logic: no I/O. Inputs are plain dicts; outputs are plain dicts.
+
+A rollout is a DAG of nodes. A node is a pull request (`pr`) or a step a
+person or a session performs (`step`). Each node lists the conditions it waits
+for in `after`, written `<node>` (the node's default condition) or
+`<node>@<condition>`:
+
+  pr:   merged (default), deployed:<env>
+  step: done (default)
+
+`facts` holds what the I/O layer fetched: `prs` keyed by node id, `deploys`
+keyed by node id then env (True, False or None when it can't tell), and
+`checks` keyed by step node id (True when the step's check passed).
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta
+
+# Seconds until the next tick, by the cheapest thing still in motion.
+TICK_CHECKS_RUNNING = 300
+TICK_DEPLOYING = 900
+TICK_WAITING_ON_PEOPLE = 1800
+TICK_IDLE = 3600
+
+
+def parse_after(entry: str, nodes: dict) -> tuple[str, str]:
+    node_id, _, cond = entry.partition("@")
+    if node_id not in nodes:
+        raise ValueError(f"unknown node {node_id!r} in after: {entry!r}")
+    if not cond:
+        cond = "merged" if "pr" in nodes[node_id] else "done"
+    return node_id, cond
+
+
+def validate(manifest: dict) -> list[str]:
+    errors = []
+    nodes = {n["id"]: n for n in manifest.get("nodes", [])}
+    if len(nodes) != len(manifest.get("nodes", [])):
+        errors.append("duplicate node ids")
+    for n in manifest.get("nodes", []):
+        if ("pr" in n) == ("step" in n):
+            errors.append(f"{n['id']}: exactly one of pr or step")
+        for a in n.get("after", []):
+            try:
+                _, cond = parse_after(a, nodes)
+            except ValueError as e:
+                errors.append(f"{n['id']}: {e}")
+                continue
+            if cond not in ("merged", "done") and not cond.startswith("deployed:"):
+                errors.append(f"{n['id']}: unknown condition {cond!r}")
+    if not errors and _has_cycle(nodes):
+        errors.append("after edges form a cycle")
+    return errors
+
+
+def _has_cycle(nodes: dict) -> bool:
+    state: dict[str, int] = {}
+
+    def visit(i: str) -> bool:
+        if state.get(i) == 1:
+            return True
+        if state.get(i) == 2:
+            return False
+        state[i] = 1
+        for a in nodes[i].get("after", []):
+            if visit(parse_after(a, nodes)[0]):
+                return True
+        state[i] = 2
+        return False
+
+    return any(visit(i) for i in nodes)
+
+
+def satisfied(node_id: str, cond: str, nodes: dict, facts: dict, marks: dict):
+    """True, False, or None when the facts can't say."""
+    node = nodes[node_id]
+    if "step" in node:
+        return bool(marks.get(node_id)) or bool(facts.get("checks", {}).get(node_id))
+    pr = facts["prs"].get(node_id) or {}
+    if cond == "merged":
+        return pr.get("state") == "MERGED"
+    if cond.startswith("deployed:"):
+        if pr.get("state") != "MERGED":
+            return False
+        return facts.get("deploys", {}).get(node_id, {}).get(cond.split(":", 1)[1])
+    raise ValueError(cond)
+
+
+def _checks(pr: dict) -> tuple[str, list[str]]:
+    """Summarise the head commit's checks as (state, failing names)."""
+    failing, pending = [], False
+    for c in pr.get("checks", []):
+        result = (c.get("conclusion") or c.get("state") or "").upper()
+        status = (c.get("status") or "").upper()
+        if result in ("FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE"):
+            failing.append(c["name"])
+        elif status in ("QUEUED", "IN_PROGRESS", "PENDING", "WAITING", "REQUESTED") or result in ("PENDING", "EXPECTED"):
+            pending = True
+    if failing:
+        return "failing", sorted(failing)
+    return ("pending" if pending else "green"), []
+
+
+def _awaiting_author(pr: dict) -> int:
+    """Unresolved threads whose last comment isn't the PR author's."""
+    return sum(
+        1
+        for t in pr.get("threads", [])
+        if not t["resolved"] and t["last_author"] != pr["author"]
+    )
+
+
+def resolve_channels(manifest: dict, pr: dict, config: dict) -> list[dict]:
+    """Candidate Slack channels for a review request, most specific first."""
+    out: list[dict] = []
+
+    def add(channel: str, why: str):
+        if channel and channel not in [c["channel"] for c in out]:
+            out.append({"channel": channel, "why": why})
+
+    if manifest.get("channel"):
+        add(manifest["channel"], "rollout channel")
+    for rule in config.get("channels", {}).get("paths", []):
+        if rule.get("repo") and rule["repo"] != pr["repo"]:
+            continue
+        if any(f.startswith(rule["prefix"]) for f in pr.get("files", [])):
+            add(rule["channel"], f"path {rule['prefix']}")
+    teams = config.get("channels", {}).get("teams", {})
+    for t in pr.get("requested_teams", []):
+        if t in teams:
+            add(teams[t], f"team {t}")
+    if pr["repo"] in config.get("channels", {}).get("repos", {}):
+        add(config["channels"]["repos"][pr["repo"]], f"repo {pr['repo']}")
+    return out
+
+
+def _latest_request(requests: list[dict], ref: str) -> dict | None:
+    mine = [r for r in requests if r["pr"] == ref]
+    return max(mine, key=lambda r: r["sent_at"]) if mine else None
+
+
+def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], config: dict) -> dict:
+    nodes = {n["id"]: n for n in manifest["nodes"]}
+    consumers: dict[str, list[str]] = {}
+    for n in manifest["nodes"]:
+        for a in n.get("after", []):
+            dep, cond = parse_after(a, nodes)
+            consumers.setdefault(dep, []).append(cond)
+
+    out_nodes, ticks = [], [TICK_IDLE]
+    for n in manifest["nodes"]:
+        waiting = []
+        for a in n.get("after", []):
+            dep, cond = parse_after(a, nodes)
+            s = satisfied(dep, cond, nodes, facts, marks)
+            if s is not True:
+                waiting.append({"node": dep, "condition": cond, "unknown": s is None})
+        deps_met = not waiting
+        actions: list[dict] = []
+        entry = {"id": n["id"], "waiting_on": waiting}
+
+        if "step" in n:
+            entry |= {"kind": "step", "title": n["step"]}
+            if satisfied(n["id"], "done", nodes, facts, marks):
+                entry["phase"] = "done"
+            elif not deps_met:
+                entry["phase"] = "blocked"
+            elif n.get("by") == "automatic":
+                # Something else does it (a schedule, a bot); its check reports when.
+                entry["phase"] = "waiting"
+                ticks.append(TICK_DEPLOYING)
+            else:
+                entry["phase"] = "actionable"
+                actions.append({"kind": "do-step", "auto": n.get("by") == "session", "detail": n.get("by", "jml")})
+                ticks.append(TICK_WAITING_ON_PEOPLE)
+            entry["actions"] = actions
+            out_nodes.append(entry)
+            continue
+
+        pr = facts["prs"][n["id"]]
+        entry |= {"kind": "pr", "ref": n["pr"], "title": pr["title"], "url": pr["url"]}
+        if pr["state"] == "CLOSED":
+            entry["phase"] = "closed"
+            actions.append({"kind": "decide", "auto": False, "detail": "closed without merging; drop the node or replace it"})
+        elif pr["state"] == "MERGED":
+            pending = [
+                c for c in consumers.get(n["id"], [])
+                if c.startswith("deployed:") and satisfied(n["id"], c, nodes, facts, marks) is not True
+            ]
+            entry["phase"] = "deploying" if pending else "done"
+            if pending:
+                entry["deploying_to"] = sorted({c.split(":", 1)[1] for c in pending})
+                ticks.append(TICK_DEPLOYING)
+        else:
+            checks, failing = _checks(pr)
+            entry |= {"checks": checks, "failing": failing, "review": pr.get("review_decision")}
+            if checks == "pending":
+                ticks.append(TICK_CHECKS_RUNNING)
+            if pr.get("mergeable") == "CONFLICTING":
+                # Only the next leg is pushed after a rebase; later legs would
+                # just be rebased and pushed again, re-running their CI.
+                actions.append({"kind": "rebase", "auto": deps_met, "detail": "push now" if deps_met else "rebase locally, push when next"})
+            if failing:
+                if deps_met:
+                    actions.append({"kind": "fix-ci", "auto": True, "detail": failing})
+                else:
+                    actions.append({"kind": "check-failures", "auto": False, "detail": {"failing": failing, "note": "dependencies not landed; failures may be expected"}})
+            if _awaiting_author(pr) or pr.get("review_decision") == "CHANGES_REQUESTED":
+                actions.append({"kind": "respond", "auto": True, "detail": f"{_awaiting_author(pr)} unresolved thread(s) awaiting the author"})
+            if pr["draft"]:
+                if checks == "green" and not n.get("hold_draft"):
+                    actions.append({"kind": "mark-ready", "auto": False, "detail": "draft is green"})
+            elif pr.get("review_decision") == "APPROVED":
+                if deps_met and checks == "green" and pr.get("mergeable") == "MERGEABLE":
+                    actions.append({"kind": "merge", "auto": False, "detail": "approved, green, dependencies landed"})
+            elif checks != "failing":
+                req = _latest_request(requests, n["pr"])
+                if req is None:
+                    actions.append({"kind": "request-review", "auto": False, "detail": {"channels": resolve_channels(manifest, pr, config), "message": f":pr: [{pr['title']}]({pr['url']})"}})
+                ticks.append(TICK_WAITING_ON_PEOPLE)
+            entry["phase"] = "actionable" if actions else ("blocked" if not deps_met else "waiting")
+        entry["actions"] = actions
+        out_nodes.append(entry)
+
+    return {
+        "name": manifest["name"],
+        "nodes": out_nodes,
+        "complete": all(e["phase"] == "done" for e in out_nodes),
+        "next_tick_seconds": min(ticks),
+    }
+
+
+def weekday_hours(start: datetime, end: datetime) -> float:
+    """Hours between start and end that fall Monday to Friday (UTC), day and night.
+
+    Reviewers span time zones, so no working-day window is assumed.
+    """
+    total, t = 0.0, start
+    while t < end:
+        step = min(end, (t + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0))
+        if t.weekday() < 5:
+            total += (step - t).total_seconds() / 3600
+        t = step
+    return total
+
+
+def chase_threshold_hours(pr: dict, config: dict) -> float:
+    c = config.get("chase", {})
+    size = pr.get("additions", 0) + pr.get("deletions", 0)
+    return min(c.get("max_hours", 16), c.get("base_hours", 4) + size / c.get("lines_per_hour", 250))
+
+
+def chase(requests: list[dict], prs: dict, now: datetime, config: dict) -> list[dict]:
+    """Review requests that have gone unanswered past their threshold.
+
+    `prs` is keyed by "owner/repo#N". A request counts as answered once the PR
+    is merged, closed or approved, or once a person other than the author
+    reviewed or commented on it after the latest request went out. The clock
+    runs from the latest request for the PR, whatever channel it went to.
+    """
+    ignored = set(config.get("chase", {}).get("ignore_authors", []))
+    by_pr: dict[str, list[dict]] = {}
+    for r in requests:
+        by_pr.setdefault(r["pr"], []).append(r)
+    overdue = []
+    for ref, rs in sorted(by_pr.items()):
+        r = max(rs, key=lambda x: x["sent_at"])
+        pr = prs.get(ref)
+        if pr is None or pr["state"] != "OPEN" or pr.get("review_decision") == "APPROVED":
+            continue
+        sent = datetime.fromisoformat(r["sent_at"])
+        answered = any(
+            a["author"] != pr["author"]
+            and a["author"] not in ignored
+            and not a["author"].endswith("[bot]")
+            and datetime.fromisoformat(a["at"]) > sent
+            for a in pr.get("activity", [])
+        )
+        if answered:
+            continue
+        waited = weekday_hours(sent, now)
+        limit = chase_threshold_hours(pr, config)
+        if waited >= limit:
+            overdue.append({
+                "pr": ref,
+                "title": pr["title"],
+                "url": pr["url"],
+                "rollout": r["rollout"],
+                "channel": r["channel"],
+                "channels_tried": sorted({x["channel"] for x in rs}),
+                "permalink": r.get("permalink"),
+                "sent_at": r["sent_at"],
+                "weekday_hours_waited": round(waited, 1),
+                "threshold_hours": round(limit, 1),
+                "requested_teams": pr.get("requested_teams", []),
+                "requested_users": pr.get("requested_users", []),
+            })
+    return sorted(overdue, key=lambda o: -o["weekday_hours_waited"])
