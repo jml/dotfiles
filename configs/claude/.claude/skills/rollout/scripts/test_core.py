@@ -175,5 +175,43 @@ class ChaseTest(unittest.TestCase):
         self.assertEqual(core.weekday_hours(fri, mon), 4.0)  # Fri 22-24, Mon 00-02
 
 
+class BotReviewGateTest(unittest.TestCase):
+    """A person is asked to review only once the review bots are finished."""
+
+    MANIFEST = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}]}
+    CI = {"name": "ci", "conclusion": "SUCCESS", "status": "COMPLETED"}
+
+    def run_case(self, checks=(), threads=()):
+        facts = {"prs": {"a": pr(url="u", title="t", checks=[self.CI, *checks], threads=list(threads))}, "deploys": {}, "checks": {}}
+        n = core.evaluate(self.MANIFEST, facts, {}, [], CONFIG)["nodes"][0]
+        return n.get("bot_review"), [a["kind"] for a in n["actions"]]
+
+    def test_states(self):
+        running = {"name": "reviewer/developer-platform", "conclusion": None, "status": "IN_PROGRESS"}
+        neutral = {"name": "reviewer/developer-platform", "conclusion": "NEUTRAL", "status": "COMPLETED"}
+        gate_ok = {"name": "Checks review gate", "conclusion": "SUCCESS", "status": "COMPLETED"}
+        gate_no = {"name": "Checks review gate", "conclusion": "NEUTRAL", "status": "COMPLETED"}
+        skipped = {"name": "claude-code-action", "conclusion": "SKIPPED", "status": "COMPLETED"}
+        bot_open = {"resolved": False, "last_author": "chainguard", "started_by_bot": True}
+        bot_done = {"resolved": True, "last_author": "jml", "started_by_bot": True}
+        person_open = {"resolved": False, "last_author": "rev", "started_by_bot": False}
+        cases = {
+            "no bots": ((skipped,), (), (None, ["request-review"])),
+            "bot review running": ((running,), (), ("pending", [])),
+            "bot finding open": ((neutral, gate_no), (bot_open,), ("findings", ["respond"])),
+            "gate passed": ((neutral, gate_ok), (bot_done,), ("approved", [])),
+            "bots done, no approval": ((neutral, gate_no), (bot_done,), ("done", ["request-review"])),
+            "person thread only": ((neutral, gate_no), (person_open,), ("done", ["respond", "request-review"])),
+        }
+        got = {name: self.run_case(c, t) for name, (c, t, _) in cases.items()}
+        self.assertEqual(got, {name: want for name, (_, _, want) in cases.items()})
+
+    def test_bot_activity_is_not_an_answer(self):
+        requests = [{"rollout": "r", "pr": "o/r#1", "channel": "#a", "sent_at": "2026-11-16T09:00:00+00:00"}]
+        prs = {"o/r#1": pr(activity=[{"author": "some-app", "at": "2026-11-16T12:00:00+00:00", "bot": True}])}
+        now = datetime(2026, 11, 18, 10, 0, tzinfo=timezone.utc)
+        self.assertEqual([o["pr"] for o in core.chase(requests, prs, now, CONFIG)], ["o/r#1"])
+
+
 if __name__ == "__main__":
     unittest.main()

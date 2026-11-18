@@ -111,13 +111,51 @@ def _checks(pr: dict, review_gated: set[str]) -> tuple[str, list[str], list[str]
     return ("pending" if pending else "green"), [], awaiting
 
 
-def _awaiting_author(pr: dict) -> int:
-    """Unresolved threads whose last comment isn't the PR author's."""
-    return sum(
-        1
-        for t in pr.get("threads", [])
-        if not t["resolved"] and t["last_author"] != pr["author"]
-    )
+def _awaiting_author(pr: dict) -> dict:
+    """Unresolved threads whose last comment isn't the PR author's, split by who started them."""
+    open_ = [t for t in pr.get("threads", []) if not t["resolved"] and t["last_author"] != pr["author"]]
+    bots = sum(1 for t in open_ if t.get("started_by_bot"))
+    return {"bot_threads": bots, "person_threads": len(open_) - bots}
+
+
+# Check runs that carry a review bot's verdict. In repos where Checks reviews,
+# `reviewer/<team>` is one reviewer's verdict (success = approve) and the gate
+# succeeds when Checks has approved, or is about to, for every changed path.
+BOT_REVIEW_CHECKS = ("reviewer/", "Checks review gate", "claude-code-action", "claude-review")
+BOT_APPROVAL_GATE = "Checks review gate"
+
+
+def bot_review(pr: dict, config: dict) -> dict:
+    """Where the review bots are on this PR's head.
+
+    state: none (no bot reviews here), pending (a bot review is running),
+    findings (a bot's thread is unresolved), approved (the gate passed; its
+    approving review follows), done (the bots finished without approving, so
+    a person must review).
+    """
+    prefixes = tuple(config.get("bot_review_checks", BOT_REVIEW_CHECKS))
+    gate = config.get("bot_approval_gate", BOT_APPROVAL_GATE)
+    ran = [
+        c for c in pr.get("checks", [])
+        if c["name"].startswith(prefixes) and (c.get("conclusion") or "").upper() != "SKIPPED"
+    ]
+    pending = sorted({
+        c["name"] for c in ran
+        if (c.get("status") or "").upper() in ("QUEUED", "IN_PROGRESS", "PENDING", "WAITING", "REQUESTED")
+    })
+    open_threads = _awaiting_author(pr)["bot_threads"]
+    present = ran or any(t.get("started_by_bot") for t in pr.get("threads", []))
+    if not present:
+        state = "none"
+    elif pending:
+        state = "pending"
+    elif open_threads:
+        state = "findings"
+    elif any(c["name"] == gate and (c.get("conclusion") or "").upper() == "SUCCESS" for c in ran):
+        state = "approved"
+    else:
+        state = "done"
+    return {"state": state, "pending": pending, "open_threads": open_threads}
 
 
 def resolve_channels(manifest: dict, pr: dict, config: dict) -> list[dict]:
@@ -217,8 +255,12 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
                     actions.append({"kind": "fix-ci", "auto": True, "detail": failing})
                 else:
                     actions.append({"kind": "check-failures", "auto": False, "detail": {"failing": failing, "note": "dependencies not landed; failures may be expected"}})
-            if _awaiting_author(pr) or pr.get("review_decision") == "CHANGES_REQUESTED":
-                actions.append({"kind": "respond", "auto": True, "detail": f"{_awaiting_author(pr)} unresolved thread(s) awaiting the author"})
+            threads = _awaiting_author(pr)
+            if threads["bot_threads"] or threads["person_threads"] or pr.get("review_decision") == "CHANGES_REQUESTED":
+                actions.append({"kind": "respond", "auto": True, "detail": threads})
+            bots = bot_review(pr, config)
+            if bots["state"] != "none":
+                entry["bot_review"] = bots["state"]
             if pr["draft"]:
                 if checks == "green" and not n.get("hold_draft"):
                     actions.append({"kind": "mark-ready", "auto": False, "detail": "draft is green"})
@@ -230,6 +272,12 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
                     actions.append({"kind": "merge", "auto": False, "detail": "approved, green, dependencies landed"})
             # Wait for a run in progress: a review request offered while checks are
             # pending would vanish if they then fail, and come back on the next push.
+            # People hear about a PR only once the review bots are finished with
+            # it: their findings addressed, and no approval of theirs on the way.
+            elif checks == "green" and bots["state"] in ("pending", "approved"):
+                ticks.append(TICK_CHECKS_RUNNING)
+            elif checks == "green" and bots["state"] == "findings":
+                pass  # the respond action above addresses them
             elif checks == "green":
                 req = _latest_request(requests, n["pr"])
                 if req is None:
@@ -288,6 +336,7 @@ def chase(requests: list[dict], prs: dict, now: datetime, config: dict) -> list[
         sent = datetime.fromisoformat(r["sent_at"])
         answered = any(
             a["author"] != pr["author"]
+            and not a.get("bot")
             and a["author"] not in ignored
             and not a["author"].endswith("[bot]")
             and datetime.fromisoformat(a["at"]) > sent

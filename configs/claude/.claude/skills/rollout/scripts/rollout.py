@@ -21,6 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import core  # noqa: E402
+import page  # noqa: E402
 
 STATE = Path(os.environ.get("ROLLOUT_STATE_DIR", Path.home() / ".local/state/rollouts"))
 CONFIG = Path(__file__).resolve().parent.parent / "config.json"
@@ -32,9 +33,11 @@ mergeCommit { oid }
 files(first: 100) { nodes { path } }
 reviewRequests(first: 20) { nodes { requestedReviewer {
   __typename ... on Team { slug organization { login } } ... on User { login } } } }
-reviews(last: 50) { nodes { author { login } submittedAt state } }
-comments(last: 50) { nodes { author { login } createdAt } }
-reviewThreads(first: 100) { nodes { isResolved comments(last: 1) { nodes { author { login } createdAt } } } }
+reviews(last: 50) { nodes { author { __typename login } submittedAt state } }
+comments(last: 50) { nodes { author { __typename login } createdAt } }
+reviewThreads(first: 100) { nodes { isResolved
+  first: comments(first: 1) { nodes { author { __typename login } } }
+  last: comments(last: 1) { nodes { author { __typename login } createdAt } } } }
 commits(last: 1) { nodes { commit { statusCheckRollup { contexts(first: 100) { nodes {
   __typename ... on CheckRun { name conclusion status } ... on StatusContext { context state } } } } } } }
 """
@@ -54,6 +57,10 @@ def login(a) -> str:
     return (a or {}).get("login") or "ghost"
 
 
+def is_bot(a) -> bool:
+    return (a or {}).get("__typename") == "Bot"
+
+
 def normalise(ref: str, raw: dict) -> dict:
     rollup = (raw["commits"]["nodes"] or [{}])[0].get("commit", {}).get("statusCheckRollup") or {}
     checks = []
@@ -71,15 +78,20 @@ def normalise(ref: str, raw: dict) -> dict:
             users.append(rr["login"])
     threads, activity = [], []
     for t in raw["reviewThreads"]["nodes"]:
-        last = (t["comments"]["nodes"] or [{}])[-1]
-        threads.append({"resolved": t["isResolved"], "last_author": login(last.get("author"))})
+        first = (t["first"]["nodes"] or [{}])[0]
+        last = (t["last"]["nodes"] or [{}])[-1]
+        threads.append({
+            "resolved": t["isResolved"],
+            "last_author": login(last.get("author")),
+            "started_by_bot": is_bot(first.get("author")),
+        })
         if last.get("createdAt"):
-            activity.append({"author": login(last.get("author")), "at": last["createdAt"]})
+            activity.append({"author": login(last.get("author")), "at": last["createdAt"], "bot": is_bot(last.get("author"))})
     for r in raw["reviews"]["nodes"]:
         if r.get("submittedAt"):
-            activity.append({"author": login(r.get("author")), "at": r["submittedAt"]})
+            activity.append({"author": login(r.get("author")), "at": r["submittedAt"], "bot": is_bot(r.get("author"))})
     for c in raw["comments"]["nodes"]:
-        activity.append({"author": login(c.get("author")), "at": c["createdAt"]})
+        activity.append({"author": login(c.get("author")), "at": c["createdAt"], "bot": is_bot(c.get("author"))})
     return {
         "repo": ref.split("#")[0],
         "number": raw["number"],
@@ -196,7 +208,10 @@ def cmd_status(args) -> int:
     prs = {i: by_ref[ref] for i, ref in pr_nodes.items()}
     facts = {"prs": prs, "deploys": fetch_deploys(manifest, prs, config), "checks": fetch_checks(manifest)}
     marks = load_json(STATE / f"{args.name}.marks.json", {})
-    report = core.evaluate(manifest, facts, marks, load_requests(), config)
+    requests = load_requests()
+    report = core.evaluate(manifest, facts, marks, requests, config)
+    if args.page:
+        Path(args.page).write_text(page.render(manifest, report, requests, datetime.now(timezone.utc)))
     print(json.dumps(report, indent=2) if args.json else render(report))
     return 0
 
@@ -265,6 +280,7 @@ def main() -> int:
     s = sub.add_parser("status")
     s.add_argument("name")
     s.add_argument("--json", action="store_true")
+    s.add_argument("--page", metavar="PATH", help="also write the rollout's HTML status page to PATH")
     s.set_defaults(fn=cmd_status)
     m = sub.add_parser("mark")
     m.add_argument("name")
