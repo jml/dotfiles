@@ -217,7 +217,9 @@ def others_items(nodes: list[dict], requests: list[dict], now: datetime) -> list
                 f'<div class="item-title">{escape(n["title"])}</div><div class="meta">{meta}</div></li>')
 
     for n in nodes:
-        if n["phase"] in ("done", "closed", "proposed", "building"):
+        # Only open work can be owed by someone: a merged PR that is deploying
+        # has nothing left for a reviewer to do.
+        if n["phase"] in ("done", "closed", "deploying", "proposed", "building"):
             continue
         if any(core.whose_move(a) == "other" for a in n["actions"]):
             out.append(li("Someone else does this step", n, "ask them, then mark it done"))
@@ -295,7 +297,7 @@ def render(manifest: dict, report: dict, requests: list[dict], now: datetime, re
 :root[data-theme="dark"] {{
   color-scheme: dark;
   --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a2b0; --line: #2b3541; --accent: #7fa2ff;
-  --you: #f2a65a; --you-bg: #3a2814; --session: #b79bff; --session-bg: #2a2140; --wait: #a3adb9; --wait-bg: #222a33;
+  --you: #f2a65a; --you-bg: #3a2814; --other: #5fd4c4; --other-bg: #10322e; --session: #b79bff; --session-bg: #2a2140; --wait: #a3adb9; --wait-bg: #222a33;
   --deploy: #6cb8e6; --deploy-bg: #132c3c; --done: #6fcf97; --done-bg: #15301f; --closed: #f28b82; --closed-bg: #3b1715;
 }}
 body {{ background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body);

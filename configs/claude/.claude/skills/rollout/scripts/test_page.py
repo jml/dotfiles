@@ -74,5 +74,26 @@ class NewWorkAndOwnershipTest(unittest.TestCase):
         self.assertIn("Tidy the loader", html.split('<h2 id="fu">')[1])
 
 
+class RegressionTest(unittest.TestCase):
+    def test_merged_pr_with_request_is_not_waiting_on_review(self):
+        manifest = {"name": "r", "nodes": [{"id": "grant", "pr": "o/r#1"}, {"id": "use", "step": "Set the variable", "after": ["grant@deployed:prod"]}]}
+        facts = {"prs": {"grant": pr(state="MERGED", url="u1", title="grant")}, "deploys": {"grant": {"prod": False}}, "checks": {}}
+        requests = [{"rollout": "r", "pr": "o/r#1", "channel": "#a", "sent_at": "2026-11-18T10:00:00+00:00"}]
+        report = core.evaluate(manifest, facts, {}, requests, CONFIG)
+        html = page.render(manifest, report, requests, datetime(2026, 11, 18, 19, 0, tzinfo=timezone.utc))
+        self.assertNotIn("Waiting on review", html)
+
+    def test_every_theme_block_defines_every_colour_token(self):
+        html = page.render(MANIFEST, core.evaluate(MANIFEST, {"prs": {"infra": pr(), "models": pr()}, "deploys": {}, "checks": {}}, {}, [], CONFIG), [],
+                           datetime(2026, 11, 18, 19, 0, tzinfo=timezone.utc))
+        css = html.split("<style>")[1].split("</style>")[0]
+        light = css.split(":root {")[1].split("}")[0]
+        media_dark = css.split(':root:not([data-theme="light"]) {')[1].split("}")[0]
+        toggled_dark = css.split(':root[data-theme="dark"] {')[1].split("}")[0]
+        colours = lambda block: {t for t in re.findall(r"(--[a-z-]+):\s*#", block)}
+        self.assertEqual(colours(media_dark), colours(light))
+        self.assertEqual(colours(toggled_dark), colours(light))
+
+
 if __name__ == "__main__":
     unittest.main()
