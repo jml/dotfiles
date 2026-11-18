@@ -10,12 +10,16 @@
     },
     "chainguard-dev/data-analytics-infra": {
       "prod": "apply.yml"
+    },
+    "chainguard-dev/chainguard-devops": {
+      "prod": "deploy.yaml"
     }
   },
   "channels": {
     "teams": {
       "chainguard-dev/data-analytics-admins": "#chan-data-eng",
-      "chainguard-dev/data-analytics-write": "#chan-data-eng"
+      "chainguard-dev/data-analytics-write": "#chan-data-eng",
+      "chainguard-dev/developer-platform-team-write": "#chan-home"
     },
     "paths": [
       {
@@ -24,9 +28,12 @@
         "channel": "#chan-lib"
       }
     ],
-    "repos": {},
+    "repos": {
+      "chainguard-dev/chainguard-devops": "#chan-home"
+    },
     "ids": {
-      "#chan-data-eng": "C000000000A"
+      "#chan-data-eng": "C000000000A",
+      "#chan-home": "C000000000B"
     }
   },
   "chase": {
