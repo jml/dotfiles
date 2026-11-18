@@ -81,11 +81,13 @@ A PR goes to a person only once its review bots are finished with it. `status` r
 - **fix-ci**: follow the fix-ci skill. A re-run replays the original run's workflow file and merge ref, so if main has moved or the workflow's auth changed since, push (or update the branch) rather than re-run. If the failure also appears on main or on unrelated PRs, it isn't this PR's: find the fix PR if there is one, and bring jml the choice "wait and rebase onto the fix, or land the fix" with that evidence.
 - **respond**: fetch the feedback (fetch-pr-feedback skill) and sort each item; `detail` counts bot threads and people's threads. Mechanical (typo, rename, missing test the reviewer named): fix and push, and resolve a bot's thread once its finding is fixed so its next pass sees it addressed. Judgment (follow-up or fix now, fix at a lower layer, scope): ask jml, with a recommended answer and the reason. Decline: draft the reply. Post no reply until jml approves it; post approved replies in the thread with `gh api`.
 
+- **mark-ready** (jml's standing yes, 2026-11-18): mark the green draft ready with `gh pr ready --repo <repo> <N>`. A node with `"hold_draft": true` is a draft on purpose and gets no action.
+- **request-review** (jml's standing yes, 2026-11-18, when `detail.channels` isn't empty): send `detail.message`, exactly `:pr: [<title>](<url>)` with no attribution line (Slack labels messages sent through Claude), to the first channel in `detail.channels` with `slack_send_message`, using the channel's ID from `config.json` `channels.ids` or `slack_search_channels`. Then `record-request` with the message link the tool returns, and tell jml in the tick's report where it went.
+
 ### Actions jml decides
 
-- **request-review**: show the drafted message (`detail.message`, exactly `:pr: [<title>](<url>)`, with no attribution line: Slack labels messages sent through Claude) and the candidate channels (`detail.channels`, most specific first). On a yes, send it with `slack_send_message` to the channel's ID (`config.json` `channels.ids`, or look it up with `slack_search_channels`), then `record-request` with the message link the tool returns. If `channels` is empty, ask jml which channel and add the mapping to `config.json` (`channels.teams` keyed by the requested GitHub team, or `channels.paths`) so the next request resolves itself. `#chan-lib` and `proj-` channels go in `paths` or the manifest's `channel`, not `teams`.
+- **request-review** with empty `channels` (`auto: false`): ask jml which channel, send the request there, and add the mapping to `config.json` (`channels.teams` keyed by the requested GitHub team, or `channels.paths`) so the next one resolves itself. `#chan-lib` and `proj-` channels go in `paths` or the manifest's `channel`, not `teams`.
 - **merge**: ask, then `gh pr merge --repo <repo> <N>` with that repo's merge method (squash for chainguard-dev repos unless jml says otherwise).
-- **mark-ready**: ask; a draft may be draft on purpose. If jml says it stays draft, set `"hold_draft": true` on the node.
 - **do-step**: `by: jml` or `external`: say what's needed and from whom; when jml says it's done, `rollout.py mark`. `by: session`: ask once, then do it.
 - **check-failures** (failing while dependencies are unlanded): say whether the failures are the expected ones from the PR body; ask only if they aren't.
 - **decide** (a PR closed unmerged): ask whether to drop or replace the node.
@@ -119,7 +121,7 @@ Publish the Artifact only when `config.json` has `"publish_artifact": true` (jml
 
 ## Rules
 
-- Never post to Slack or GitHub on jml's behalf without their yes for that message.
-- Never merge, mark ready or dispatch a workflow without asking, unless `<name>.decisions.md` records a standing yes for that kind of action in this rollout.
+- Never post to Slack or GitHub on jml's behalf without their yes for that message, except the templated review request above, which jml gave a standing yes.
+- Never merge or dispatch a workflow without asking, unless `<name>.decisions.md` records a standing yes for that kind of action in this rollout.
 - Don't edit the manifest's edges silently; propose the change and say why.
 - Report in short lines: what changed since the last tick, then what needs jml. Say nothing on a tick where nothing changed.

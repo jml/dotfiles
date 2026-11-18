@@ -10,7 +10,7 @@ The technical-writing skills cover each genre. My own conventions on top of them
 - In chat, include the repo in a PR link's text (`[stereo-staging#3757](…)`) when more than one repo is in play. Linear URLs resolve without the slug, so there's no need to look it up just to link a ticket in chat.
 - In Markdown prose (design docs, PR descriptions, issue and review comments), cite a Linear ticket as a bracketed reference link: `[DEV-1234]` in the text, with a `[DEV-1234]: https://linear.app/chainguard/issue/DEV-1234/<slug>` definition at the end of the document. Never a bare identifier, never an inline `[DEV-1234](url)` link. Commit messages are plain text, so the bare identifier stays there (`Tracking: DEV-1234`).
 - Text posted under my name that I haven't reviewed ends with `_Written by Claude <model name>._`, except in Slack, which labels messages sent through Claude itself.
-- A Slack request for review is exactly `:pr: [<PR title>](<PR URL>)`, with nothing before or after it. Several PRs go one per line.
+- A Slack request for review is exactly `:pr: [<PR title>](<PR URL>)`, with nothing before or after it. Several PRs go one per line. Once my PR's CI is green, mark it ready and send its review request without asking me.
 - Never use semantic line breaks in text for other people.
 - When drafting something I'll send as myself, or when I ask for my voice or style, use the jml-voice skill.
 

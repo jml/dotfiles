@@ -301,7 +301,9 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
                 entry["bot_review"] = bots["state"]
             if pr["draft"]:
                 if checks == "green" and not n.get("hold_draft"):
-                    actions.append({"kind": "mark-ready", "auto": False, "detail": "draft is green"})
+                    # jml's standing yes: a green draft goes ready without asking;
+                    # `hold_draft` keeps one that is a draft on purpose.
+                    actions.append({"kind": "mark-ready", "auto": True, "detail": "draft is green"})
             elif pr.get("review_decision") == "APPROVED":
                 if awaiting:
                     # Approval has landed; the review-gated checks re-run on it.
@@ -319,7 +321,10 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
             elif checks == "green":
                 req = _latest_request(requests, n["pr"])
                 if req is None:
-                    actions.append({"kind": "request-review", "auto": False, "detail": {"channels": resolve_channels(manifest, pr, config), "message": f":pr: [{pr['title']}]({pr['url']})"}})
+                    channels = resolve_channels(manifest, pr, config)
+                    # jml's standing yes covers the templated request to a known
+                    # channel; with no channel mapped, jml has to name one.
+                    actions.append({"kind": "request-review", "auto": bool(channels), "detail": {"channels": channels, "message": f":pr: [{pr['title']}]({pr['url']})"}})
                 ticks.append(TICK_WAITING_ON_PEOPLE)
             entry["phase"] = "actionable" if actions else ("blocked" if not deps_met else "waiting")
         entry["actions"] = actions

@@ -23,8 +23,12 @@ class PageTest(unittest.TestCase):
         report = core.evaluate(MANIFEST, facts, {}, [], CONFIG)
         html = page.render(MANIFEST, report, [], datetime(2026, 11, 18, 19, 0, tzinfo=timezone.utc))
         self.assertIn("<title>loader rollout</title>", html)
-        # The review request jml must approve, with its exact message and channel.
-        self.assertIn("Approve the review request", html)
+        # A review request to a mapped channel is the session's to send; one with
+        # no channel is jml's to route.
+        session = html.split('<h2 id="sess">')[1].split("</section>")[0]
+        yours = html.split('<h2 id="yours">')[1].split("</section>")[0]
+        self.assertIn("Request review", session)
+        self.assertIn("Name a Slack channel for this review request", yours)
         self.assertIn("<code>:pr: [infra](https://github.com/chainguard-dev/data-analytics-infra/pull/21)</code>", html)
         self.assertIn("to #chan-data <span", html)
         # A PR that can be reviewed before its dependencies land says what its merge waits for.

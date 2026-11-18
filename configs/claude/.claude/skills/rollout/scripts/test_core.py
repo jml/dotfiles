@@ -58,7 +58,7 @@ class EvaluateTest(unittest.TestCase):
                 {"id": "infra", "kind": "pr", "ref": "chainguard-dev/data-analytics-infra#21", "title": "infra", "url": "u21",
                  "phase": "actionable", "checks": "green", "failing": [], "review": "REVIEW_REQUIRED",
                  "waiting_on": [{"node": "bootstrap", "condition": "done", "unknown": False}],
-                 "actions": [{"kind": "request-review", "auto": False, "detail": {
+                 "actions": [{"kind": "request-review", "auto": True, "detail": {
                      "channels": [{"channel": "#chan-data", "why": "team chainguard-dev/data-analytics-admins"}],
                      "message": ":pr: [infra](u21)"}}]},
                 {"id": "bootstrap", "kind": "step", "title": "Owner applies bootstrap/", "phase": "actionable",

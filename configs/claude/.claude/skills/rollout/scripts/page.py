@@ -25,7 +25,7 @@ STATES = {
 }
 
 ACTION_WORDS = {
-    "request-review": "Approve the review request",
+    "request-review": "Request review",
     "merge": "Merge",
     "mark-ready": "Mark ready for review",
     "do-step": "Do this step",
@@ -197,10 +197,13 @@ def action_detail(a: dict) -> str:
 
 
 def item(n: dict, a: dict) -> str:
+    verb = ACTION_WORDS.get(a["kind"], a["kind"])
+    if a["kind"] == "request-review" and not a["detail"]["channels"]:
+        verb = "Name a Slack channel for this review request"
     ref = escape(label(n))
     link = f'<a href="{escape(n["url"])}" target="_blank" rel="noopener">{ref}</a>' if n.get("url") else f"<span>{ref}</span>"
     return (
-        f'<li class="item"><div class="item-head"><span class="verb">{escape(ACTION_WORDS.get(a["kind"], a["kind"]))}</span> {link}</div>'
+        f'<li class="item"><div class="item-head"><span class="verb">{escape(verb)}</span> {link}</div>'
         f'<div class="item-title">{escape(n["title"])}</div>{action_detail(a)}</li>'
     )
 
