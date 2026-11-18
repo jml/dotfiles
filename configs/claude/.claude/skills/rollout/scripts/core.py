@@ -244,6 +244,15 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
             entry |= {"checks": checks, "failing": failing, "review": pr.get("review_decision")}
             if awaiting:
                 entry["awaiting_review"] = awaiting
+            if config.get("me") and pr["author"] != config["me"]:
+                # Someone else's PR: its author rebases, fixes, answers, requests
+                # review and merges it, so the rollout only waits for it.
+                entry["author"] = pr["author"]
+                entry["phase"] = "waiting" if deps_met else "blocked"
+                entry["actions"] = actions
+                ticks.append(TICK_WAITING_ON_PEOPLE)
+                out_nodes.append(entry)
+                continue
             if checks == "pending":
                 ticks.append(TICK_CHECKS_RUNNING)
             if pr.get("mergeable") == "CONFLICTING":

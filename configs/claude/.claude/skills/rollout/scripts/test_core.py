@@ -128,6 +128,19 @@ class EvaluateTest(unittest.TestCase):
                             {}, [], config)
         self.assertEqual((got["nodes"][0]["actions"], got["next_tick_seconds"]), ([], core.TICK_CHECKS_RUNNING))
 
+    def test_someone_elses_pr_is_only_waited_for(self):
+        manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}, {"id": "b", "pr": "o/r#2"}]}
+        config = CONFIG | {"me": "jml"}
+        threads = [{"resolved": False, "last_author": "reviewer", "started_by_bot": False}]
+        facts = {"prs": {"a": pr(number=1, author="robert", threads=threads, mergeable="CONFLICTING",
+                                 checks=[{"name": "ci", "conclusion": "FAILURE", "status": "COMPLETED"}]),
+                         "b": pr(number=2, author="robert", review_decision="APPROVED")},
+                 "deploys": {}, "checks": {}}
+        got = core.evaluate(manifest, facts, {}, [], config)
+        self.assertEqual([(n["phase"], n["actions"], n["author"]) for n in got["nodes"]],
+                         [("waiting", [], "robert"), ("waiting", [], "robert")])
+        self.assertEqual(got["next_tick_seconds"], core.TICK_WAITING_ON_PEOPLE)
+
     def test_approved_green_and_landed_dependencies_offers_merge(self):
         manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}, {"id": "b", "pr": "o/r#2", "after": ["a"]}]}
         facts = {"prs": {"a": pr(state="MERGED"), "b": pr(review_decision="APPROVED", mergeable="CONFLICTING")}, "deploys": {}, "checks": {}}
