@@ -93,6 +93,14 @@ class EvaluateTest(unittest.TestCase):
         })
         self.assertEqual(got["next_tick_seconds"], core.TICK_DEPLOYING)
 
+    def test_no_review_request_while_checks_run(self):
+        manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}]}
+        running = pr(checks=[{"name": "dbt", "conclusion": None, "status": "IN_PROGRESS"}])
+        got = core.evaluate(manifest, {"prs": {"a": running}, "deploys": {}, "checks": {}}, {}, [], CONFIG)
+        node = got["nodes"][0]
+        self.assertEqual((node["checks"], node["actions"], node["phase"]), ("pending", [], "waiting"))
+        self.assertEqual(got["next_tick_seconds"], core.TICK_CHECKS_RUNNING)
+
     def test_approved_green_and_landed_dependencies_offers_merge(self):
         manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}, {"id": "b", "pr": "o/r#2", "after": ["a"]}]}
         facts = {"prs": {"a": pr(state="MERGED"), "b": pr(review_decision="APPROVED", mergeable="CONFLICTING")}, "deploys": {}, "checks": {}}

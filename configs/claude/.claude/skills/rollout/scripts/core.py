@@ -214,7 +214,9 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
             elif pr.get("review_decision") == "APPROVED":
                 if deps_met and checks == "green" and pr.get("mergeable") == "MERGEABLE":
                     actions.append({"kind": "merge", "auto": False, "detail": "approved, green, dependencies landed"})
-            elif checks != "failing":
+            # Wait for a run in progress: a review request offered while checks are
+            # pending would vanish if they then fail, and come back on the next push.
+            elif checks == "green":
                 req = _latest_request(requests, n["pr"])
                 if req is None:
                     actions.append({"kind": "request-review", "auto": False, "detail": {"channels": resolve_channels(manifest, pr, config), "message": f":pr: [{pr['title']}]({pr['url']})"}})
