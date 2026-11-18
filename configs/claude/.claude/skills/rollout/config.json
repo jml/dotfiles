@@ -46,5 +46,5 @@
       "github-actions"
     ]
   },
-  "publish_artifact": true
+  "publish_artifact": false
 }
