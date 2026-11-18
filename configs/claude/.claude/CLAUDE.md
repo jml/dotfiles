@@ -23,6 +23,9 @@ The technical-writing skills cover each genre. My own conventions on top of them
 
 # Workflow
 
+## PR size
+Split a change into PRs only at deploy-safety boundaries: where one part must merge or deploy before another can safely land. Otherwise keep one conceptual change in one PR, even across several components. Where a repo asks for "small and focused" PRs, read "focused" as one conceptual change.
+
 ## Git Worktrees
 
 Prefix worktree names with the Linear issue ID when applicable, e.g. `claude -w DEV-123-fix-widget`.
