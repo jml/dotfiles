@@ -101,6 +101,33 @@ class EvaluateTest(unittest.TestCase):
         self.assertEqual((node["checks"], node["actions"], node["phase"]), ("pending", [], "waiting"))
         self.assertEqual(got["next_tick_seconds"], core.TICK_CHECKS_RUNNING)
 
+    def test_review_gated_check_waits_on_people(self):
+        manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}]}
+        config = CONFIG | {"review_gated_checks": ["doc-approval"]}
+        checks = [{"name": "ci", "conclusion": "SUCCESS", "status": "COMPLETED"},
+                  {"name": "doc-approval", "conclusion": None, "status": "IN_PROGRESS"}]
+        requests = [{"rollout": "m", "pr": "o/r#1", "channel": "#x", "sent_at": "2026-11-18T10:00:00+00:00"}]
+        got = core.evaluate(manifest, {"prs": {"a": pr(checks=checks)}, "deploys": {}, "checks": {}}, {}, requests, config)
+        node = got["nodes"][0]
+        self.assertEqual((node["checks"], node["failing"], node["awaiting_review"], node["actions"], node["phase"]),
+                         ("green", [], ["doc-approval"], [], "waiting"))
+        self.assertEqual(got["next_tick_seconds"], core.TICK_WAITING_ON_PEOPLE)
+
+    def test_review_gated_failure_is_not_a_ci_failure(self):
+        manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}]}
+        config = CONFIG | {"review_gated_checks": ["doc-approval"]}
+        checks = [{"name": "doc-approval", "conclusion": "FAILURE", "status": "COMPLETED"}]
+        got = core.evaluate(manifest, {"prs": {"a": pr(checks=checks)}, "deploys": {}, "checks": {}}, {}, [], config)
+        self.assertEqual([a["kind"] for a in got["nodes"][0]["actions"]], ["request-review"])
+
+    def test_approved_waits_for_review_gated_checks_before_merge(self):
+        manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}]}
+        config = CONFIG | {"review_gated_checks": ["doc-approval"]}
+        checks = [{"name": "doc-approval", "conclusion": None, "status": "IN_PROGRESS"}]
+        got = core.evaluate(manifest, {"prs": {"a": pr(checks=checks, review_decision="APPROVED")}, "deploys": {}, "checks": {}},
+                            {}, [], config)
+        self.assertEqual((got["nodes"][0]["actions"], got["next_tick_seconds"]), ([], core.TICK_CHECKS_RUNNING))
+
     def test_approved_green_and_landed_dependencies_offers_merge(self):
         manifest = {"name": "m", "nodes": [{"id": "a", "pr": "o/r#1"}, {"id": "b", "pr": "o/r#2", "after": ["a"]}]}
         facts = {"prs": {"a": pr(state="MERGED"), "b": pr(review_decision="APPROVED", mergeable="CONFLICTING")}, "deploys": {}, "checks": {}}

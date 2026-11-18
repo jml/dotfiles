@@ -87,19 +87,28 @@ def satisfied(node_id: str, cond: str, nodes: dict, facts: dict, marks: dict):
     raise ValueError(cond)
 
 
-def _checks(pr: dict) -> tuple[str, list[str]]:
-    """Summarise the head commit's checks as (state, failing names)."""
-    failing, pending = [], False
+def _checks(pr: dict, review_gated: set[str]) -> tuple[str, list[str], list[str]]:
+    """Summarise the head commit's checks as (state, failing names, awaiting-review names).
+
+    A review-gated check resolves only when someone approves the PR, so it is
+    left out of the state: counted as running, it would hold the rollout to the
+    CI cadence for days, and counted as failing, it would send the session to fix it.
+    """
+    failing, awaiting, pending = [], [], False
     for c in pr.get("checks", []):
         result = (c.get("conclusion") or c.get("state") or "").upper()
         status = (c.get("status") or "").upper()
-        if result in ("FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE"):
+        if c["name"] in review_gated:
+            if result not in ("SUCCESS", "NEUTRAL", "SKIPPED"):
+                awaiting.append(c["name"])
+        elif result in ("FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE"):
             failing.append(c["name"])
         elif status in ("QUEUED", "IN_PROGRESS", "PENDING", "WAITING", "REQUESTED") or result in ("PENDING", "EXPECTED"):
             pending = True
+    awaiting = sorted(set(awaiting))
     if failing:
-        return "failing", sorted(failing)
-    return ("pending" if pending else "green"), []
+        return "failing", sorted(failing), awaiting
+    return ("pending" if pending else "green"), [], awaiting
 
 
 def _awaiting_author(pr: dict) -> int:
@@ -193,8 +202,10 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
                 entry["deploying_to"] = sorted({c.split(":", 1)[1] for c in pending})
                 ticks.append(TICK_DEPLOYING)
         else:
-            checks, failing = _checks(pr)
+            checks, failing, awaiting = _checks(pr, set(config.get("review_gated_checks", [])))
             entry |= {"checks": checks, "failing": failing, "review": pr.get("review_decision")}
+            if awaiting:
+                entry["awaiting_review"] = awaiting
             if checks == "pending":
                 ticks.append(TICK_CHECKS_RUNNING)
             if pr.get("mergeable") == "CONFLICTING":
@@ -212,7 +223,10 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
                 if checks == "green" and not n.get("hold_draft"):
                     actions.append({"kind": "mark-ready", "auto": False, "detail": "draft is green"})
             elif pr.get("review_decision") == "APPROVED":
-                if deps_met and checks == "green" and pr.get("mergeable") == "MERGEABLE":
+                if awaiting:
+                    # Approval has landed; the review-gated checks re-run on it.
+                    ticks.append(TICK_CHECKS_RUNNING)
+                elif deps_met and checks == "green" and pr.get("mergeable") == "MERGEABLE":
                     actions.append({"kind": "merge", "auto": False, "detail": "approved, green, dependencies landed"})
             # Wait for a run in progress: a review request offered while checks are
             # pending would vanish if they then fail, and come back on the next push.

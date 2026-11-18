@@ -18,7 +18,7 @@ The goal is that jml makes decisions and approves outward messages; the session 
 | `~/.local/state/rollouts/<name>.marks.json` | Steps marked done (`rollout.py mark`) |
 | `~/.local/state/rollouts/<name>.decisions.md` | jml's decisions, read every tick as policy |
 | `~/.local/state/rollouts/requests.jsonl` | Every Slack review request, all rollouts (chase reads it) |
-| `~/.claude/skills/rollout/config.json` | Deploy workflows per repo, Slack channel map, chase thresholds |
+| `~/.claude/skills/rollout/config.json` | Deploy workflows per repo, Slack channel map, chase thresholds, and `review_gated_checks`: checks that resolve only on approval (`doc-approval`), which status reports as `awaiting_review` and leaves out of a PR's CI state |
 
 Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name> [--json]`, `mark <name> <node> [--undo]`, `record-request --rollout --pr --channel [--permalink] [--sent-at]`, `chase`, `list`.
 

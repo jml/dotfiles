@@ -1,4 +1,8 @@
 {
+  "review_gated_checks": [
+    "doc-approval",
+    "cg-codeowners-check"
+  ],
   "deploys": {
     "chainguard-dev/mono": {
       "staging": "provision-chainops.dev.yaml",
