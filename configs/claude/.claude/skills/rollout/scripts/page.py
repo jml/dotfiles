@@ -231,7 +231,7 @@ def others_items(nodes: list[dict], requests: list[dict], now: datetime) -> list
     return out
 
 
-def render(manifest: dict, report: dict, requests: list[dict], now: datetime) -> str:
+def render(manifest: dict, report: dict, requests: list[dict], now: datetime, refresh_seconds: int | None = None) -> str:
     nodes = report["nodes"]
     done = [n for n in nodes if n["phase"] == "done"]
     yours = [(n, a) for n in nodes for a in n["actions"] if core.whose_move(a) == "jml"]
@@ -263,7 +263,14 @@ def render(manifest: dict, report: dict, requests: list[dict], now: datetime) ->
         if f.get("url") else f'<li>{escape(f.get("title", ""))}</li>'
         for f in manifest.get("follow_ups", [])
     )
-    return f"""<title>{escape(manifest['name'])} rollout</title>
+    # A local copy opened from disk reloads itself; a published Artifact is
+    # republished instead, and its viewer picks up new versions on its own.
+    refresh = (
+        '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        f'<meta http-equiv="refresh" content="{refresh_seconds}">\n'
+    ) if refresh_seconds else ""
+    return f"""{refresh}<title>{escape(manifest['name'])} rollout</title>
+
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
@@ -384,4 +391,28 @@ details ul {{ margin: 8px 0 0; padding-left: 18px; color: var(--muted); }}
 {f'<section aria-labelledby="fu"><h2 id="fu">Follow-ups filed</h2><ul class="plain">{follow_html}</ul></section>' if follow_html else ''}
 {f'<section><details><summary>{len(done)} done</summary><ul>{done_list}</ul></details></section>' if done else ''}
 </main>
+"""
+
+
+def render_index(rows: list[dict], now: datetime) -> str:
+    """One local page linking every rollout's local page, with its counts."""
+    items = "".join(
+        f'<tr><td><a href="{escape(r["name"])}.html">{escape(r["name"])}</a></td><td>{escape(r["title"])}</td>'
+        f'<td class="num">{r["done"]}/{r["total"]}</td><td class="num">{r["yours"]}</td></tr>'
+        for r in rows
+    )
+    return f"""<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="120"><title>Rollouts</title>
+<style>
+:root {{ --bg: #f6f7f9; --surface: #fff; --ink: #17202b; --muted: #5b6776; --line: #d5dbe3; --accent: #2f5bd3; color-scheme: light dark; }}
+@media (prefers-color-scheme: dark) {{ :root {{ --bg: #0f141a; --surface: #161d25; --ink: #e4e9ef; --muted: #96a2b0; --line: #2b3541; --accent: #7fa2ff; }} }}
+body {{ background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 28px max(16px, 4vw); }}
+h1 {{ font-size: 1.5rem; margin: 0 0 4px; }} p {{ color: var(--muted); margin: 0 0 16px; }} a {{ color: var(--accent); }}
+table {{ border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); min-width: min(100%, 640px); }}
+th, td {{ text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); }}
+th {{ font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }}
+.num {{ font-variant-numeric: tabular-nums; text-align: right; }}
+</style>
+<h1>Rollouts</h1><p>Updated {now.strftime('%d %b %H:%M')} UTC. Each page reloads itself.</p>
+<table><thead><tr><th>Rollout</th><th>What</th><th class="num">Done</th><th class="num">Need you</th></tr></thead><tbody>{items}</tbody></table>
 """

@@ -68,7 +68,7 @@ Usually the session that built the PRs hands off here once the first PR is pushe
 1. Read `<name>.decisions.md`.
 2. Run `rollout.py status <name> --json --page <scratchpad>/<name>.html`. Its `nodes[].actions` say what each node needs; `auto: true` means this session does it without asking. `--page` also writes the status page.
 3. Do the `auto` actions, then put every non-auto action to jml (below), in one `AskUserQuestion` call with up to four questions. Group them, most blocking first; don't ask one per tick.
-4. Publish the status page if anything changed since the last tick (see Status page below).
+4. If anything changed since the last tick and the Artifact is on, publish the status page (see Status page below). The local copy updates on its own.
 5. Schedule the next tick with `ScheduleWakeup`, `delaySeconds` = `next_tick_seconds` (60–3600), passing the same `/rollout <name>` prompt. When `complete` is true, stop the loop, tell jml, and offer to archive the session.
 
 ### Review bots before people
@@ -108,6 +108,10 @@ Following a rollout turns up work nobody planned: a ruleset change, a missing gr
 ## Status page
 
 Each rollout has a page jml opens to see the whole thing: **Needs you** (only jml's own moves: approvals and decisions), **With other people** (steps someone else does, other people's PRs, review requests out and unanswered), the dependency graph with every node's state, what the session is on, and what's in flight. `core.whose_move` decides which list an action goes in. `--page` renders it; publish it with the Artifact tool.
+
+Every `status` run also writes a local copy that reloads itself every two minutes, `~/.local/state/rollouts/<name>.html`, and an index of all rollouts, `~/.local/state/rollouts/index.html`. Neither needs an approval, so they are the default view: give jml the `file://` link to the index when the rollout starts.
+
+Publish the Artifact only when `config.json` has `"publish_artifact": true`. jml's organization's managed settings ask before every Artifact read and publish, so each publish costs jml an approval.
 
 - First publish (no `<name>.artifact` yet): publish the rendered file with `icon: "flowchart"` and a one-sentence `description`, then write the URL it returns to `<name>.artifact`, and give jml the link.
 - Later publishes: pass the URL from `<name>.artifact` as `url`. In a session that hasn't yet read or published it, read it first (`action: "read"`), then publish the new render with that `url`; the page is generated, so there is nothing on it to merge.

@@ -210,8 +210,21 @@ def cmd_status(args) -> int:
     marks = load_json(STATE / f"{args.name}.marks.json", {})
     requests = load_requests()
     report = core.evaluate(manifest, facts, marks, requests, config)
+    now = datetime.now(timezone.utc)
+    summary = {
+        "name": manifest["name"],
+        "title": manifest.get("title") or manifest["name"],
+        "done": sum(n["phase"] == "done" for n in report["nodes"]),
+        "total": len(report["nodes"]),
+        "yours": sum(core.whose_move(a) == "jml" for n in report["nodes"] for a in n["actions"]),
+    }
+    (STATE / f"{args.name}.summary.json").write_text(json.dumps(summary) + "\n")
+    # Every run refreshes the local copy, which jml can keep open in a browser
+    # without the approval each Artifact read or publish needs.
+    (STATE / f"{args.name}.html").write_text(page.render(manifest, report, requests, now, refresh_seconds=120))
+    write_index(now)
     if args.page:
-        Path(args.page).write_text(page.render(manifest, report, requests, datetime.now(timezone.utc)))
+        Path(args.page).write_text(page.render(manifest, report, requests, now))
     print(json.dumps(report, indent=2) if args.json else render(report))
     return 0
 
@@ -228,6 +241,14 @@ def render(report: dict) -> str:
         for a in n["actions"]:
             lines.append(f"      → {a['kind']}{' (auto)' if a['auto'] else ''}: {json.dumps(a['detail'])}")
     return "\n".join(lines)
+
+
+def write_index(now: datetime) -> None:
+    """Rewrite index.html from the summary each rollout's last status run saved."""
+    rows = []
+    for p in sorted(STATE.glob("*.summary.json")):
+        rows.append(json.loads(p.read_text()))
+    (STATE / "index.html").write_text(page.render_index(rows, now))
 
 
 def cmd_mark(args) -> int:
@@ -269,7 +290,7 @@ def cmd_chase(args) -> int:
 
 def cmd_list(_args) -> int:
     for p in sorted(STATE.glob("*.json")):
-        if not p.name.endswith(".marks.json"):
+        if not p.name.endswith((".marks.json", ".summary.json")):
             print(p.stem)
     return 0
 
