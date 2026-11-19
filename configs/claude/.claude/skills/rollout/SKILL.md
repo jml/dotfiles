@@ -21,7 +21,7 @@ The goal is that jml makes decisions and approves outward messages; the session 
 | `~/.local/state/rollouts/<name>.artifact` | URL of the rollout's status page (an Artifact) |
 | `~/.claude/skills/rollout/config.json` | Deploy workflows per repo, Slack channel map, chase thresholds, and `review_gated_checks`: checks that resolve only on approval (`doc-approval`), which status reports as `awaiting_review` and leaves out of a PR's CI state; `me`, jml's GitHub login: a PR someone else wrote gets no actions, only `author` and a waiting phase, because its author rebases, answers, requests review and merges it |
 
-Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name> [--json]`, `mark <name> <node> [--undo]`, `record-request --rollout --pr --channel [--permalink] [--sent-at]`, `chase`, `list`.
+Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name> [--json]`, `wait-checks <owner/repo#N>`, `mark <name> <node> [--undo]`, `record-request --rollout --pr --channel [--permalink] [--sent-at]`, `chase`, `list`.
 
 ## Manifest
 
@@ -70,6 +70,14 @@ Usually the session that built the PRs hands off here once the first PR is pushe
 3. Do the `auto` actions, then put every non-auto action to jml (below), in one `AskUserQuestion` call with up to four questions. Group them, most blocking first; don't ask one per tick.
 4. If anything changed since the last tick and the Artifact is on, publish the status page (see Status page below). The local copy updates on its own.
 5. Schedule the next tick with `ScheduleWakeup`, `delaySeconds` = `next_tick_seconds` (60–3600), passing the same `/rollout <name>` prompt. When `complete` is true, stop the loop, tell jml, and offer to archive the session.
+
+### Waiting on CI you started
+
+Whenever this session opens a PR or pushes to one (a fix, a rebase, an answer to review), start
+
+    python3 ~/.claude/skills/rollout/scripts/rollout.py wait-checks <owner/repo#N>
+
+with the Bash tool's `run_in_background: true`. It exits once the PR's CI and its review bots have finished, ignoring checks that clear only on approval, or after an hour. You're woken when it exits: run a tick then, without waiting for the scheduled wakeup, so a green PR is marked ready and its review requested within about a minute. Start at most one per PR; keep the scheduled wakeup as the fallback.
 
 ### Review bots before people
 

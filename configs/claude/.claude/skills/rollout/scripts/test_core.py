@@ -226,5 +226,23 @@ class BotReviewGateTest(unittest.TestCase):
         self.assertEqual([o["pr"] for o in core.chase(requests, prs, now, CONFIG)], ["o/r#1"])
 
 
+class CiSettledTest(unittest.TestCase):
+    def test_settled(self):
+        config = CONFIG | {"review_gated_checks": ["doc-approval"]}
+        done = {"name": "ci", "conclusion": "SUCCESS", "status": "COMPLETED"}
+        running = {"name": "ci", "conclusion": None, "status": "IN_PROGRESS"}
+        gated = {"name": "doc-approval", "conclusion": None, "status": "IN_PROGRESS"}
+        bot = {"name": "reviewer/developer-platform", "conclusion": None, "status": "IN_PROGRESS"}
+        cases = {
+            "ci running": (pr(checks=[running]), False),
+            "ci done, approval-gated check open": (pr(checks=[done, gated]), True),
+            "ci done, bot reviewing": (pr(checks=[done, bot]), False),
+            "ci failed": (pr(checks=[{"name": "ci", "conclusion": "FAILURE", "status": "COMPLETED"}]), True),
+            "merged while running": (pr(state="MERGED", checks=[running]), True),
+        }
+        self.assertEqual({k: core.ci_settled(p, config) for k, (p, _) in cases.items()},
+                         {k: want for k, (_, want) in cases.items()})
+
+
 if __name__ == "__main__":
     unittest.main()

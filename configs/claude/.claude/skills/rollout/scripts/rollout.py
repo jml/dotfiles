@@ -16,6 +16,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -288,6 +289,27 @@ def cmd_chase(args) -> int:
     return 0
 
 
+def cmd_wait_checks(args) -> int:
+    """Block until the PR's CI and review bots have finished, then exit.
+
+    Run in the background after opening or pushing to a PR: the session is
+    woken when this exits and runs a tick at once, rather than at its next
+    scheduled wakeup.
+    """
+    config = load_json(CONFIG, {})
+    deadline = time.monotonic() + args.timeout
+    while True:
+        pr = fetch_prs([args.pr])[args.pr]
+        if core.ci_settled(pr, config):
+            checks, failing, _ = core._checks(pr, set(config.get("review_gated_checks", [])))
+            print(f"{args.pr}: settled (checks {checks}{', failing ' + ', '.join(failing) if failing else ''})")
+            return 0
+        if time.monotonic() >= deadline:
+            print(f"{args.pr}: still running after {args.timeout}s")
+            return 1
+        time.sleep(args.interval)
+
+
 def cmd_list(_args) -> int:
     for p in sorted(STATE.glob("*.json")):
         if not p.name.endswith((".marks.json", ".summary.json")):
@@ -317,6 +339,11 @@ def main() -> int:
     c = sub.add_parser("chase")
     c.add_argument("--json", action="store_true")
     c.set_defaults(fn=cmd_chase)
+    w = sub.add_parser("wait-checks")
+    w.add_argument("pr", help="owner/repo#N")
+    w.add_argument("--interval", type=int, default=60)
+    w.add_argument("--timeout", type=int, default=3600)
+    w.set_defaults(fn=cmd_wait_checks)
     sub.add_parser("list").set_defaults(fn=cmd_list)
     args = ap.parse_args()
     return args.fn(args)

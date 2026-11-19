@@ -338,6 +338,14 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
     }
 
 
+def ci_settled(pr: dict, config: dict) -> bool:
+    """True once nothing on the PR's head is still running that a tick would act
+    on: CI has finished (checks that clear only on approval don't count), and so
+    have the review bots."""
+    checks, _, _ = _checks(pr, set(config.get("review_gated_checks", [])))
+    return pr["state"] != "OPEN" or (checks != "pending" and bot_review(pr, config)["state"] != "pending")
+
+
 def whose_move(action: dict) -> str:
     """Who acts next on an action: the session, jml, or someone else jml may chase."""
     if action["auto"]:
