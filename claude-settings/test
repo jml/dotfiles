@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Tests for apply, run against temporary files. Usage: claude-settings/test
+set -euo pipefail
+
+here="$(cd "$(dirname "$0")" && pwd)"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+export CLAUDE_SETTINGS="$tmp/settings.json"
+export CLAUDE_SETTINGS_BASE="$tmp/base.json"
+export CLAUDE_SETTINGS_PRIVATE="$tmp/private.json"
+
+failures=0
+check() { # name, expected, actual
+  if [[ "$2" == "$3" ]]; then echo "ok   $1"; else echo "FAIL $1: expected $2, got $3"; failures=$((failures + 1)); fi
+}
+reset() { rm -f "$tmp"/*.json "$tmp"/*.bak; }
+apply() { "$here/apply" "$@" >/dev/null; }
+live() { jq -c "$1" "$CLAUDE_SETTINGS"; }
+
+reset
+echo '{"model":"sonnet","localOnly":1,"permissions":{"allow":["a","b"]},"hooks":{"Stop":[{"cmd":"old"}]}}' >"$CLAUDE_SETTINGS"
+echo '{"model":"opus","permissions":{"allow":["b","c"],"deny":["d"]},"hooks":{"Stop":[{"cmd":"new"}]}}' >"$CLAUDE_SETTINGS_BASE"
+apply
+check "base wins on a scalar" '"opus"' "$(live .model)"
+check "keys only the live file has survive" '1' "$(live .localOnly)"
+check "permission lists combine without duplicates" '["a","b","c"]' "$(live .permissions.allow)"
+check "a permission list only the base has arrives" '["d"]' "$(live .permissions.deny)"
+check "other arrays take the base value" '[{"cmd":"new"}]' "$(live .hooks.Stop)"
+check "applying keeps a backup" '"sonnet"' "$(jq -c .model "$CLAUDE_SETTINGS.bak")"
+check "key order follows the live file" '["model","localOnly","permissions","hooks"]' "$(live 'keys_unsorted')"
+
+echo '{"model":"opus[1m]","autoMode":{"environment":["secret"]}}' >"$CLAUDE_SETTINGS_PRIVATE"
+apply
+check "the overlay wins over the base" '"opus[1m]"' "$(live .model)"
+check "the overlay adds its own keys" '["secret"]' "$(live .autoMode.environment)"
+
+set +e
+"$here/apply" --check >/dev/null; status=$?
+set -e
+check "--check passes once applied" 0 "$status"
+
+reset
+echo '{"model":"opus"}' >"$CLAUDE_SETTINGS_BASE"
+apply
+check "a missing live file and overlay are empty layers" '{"model":"opus"}' "$(live .)"
+
+reset
+echo '{"model":"opus"}' >"$CLAUDE_SETTINGS_BASE"
+echo '{"model":"sonnet"}' >"$tmp/target.json"
+ln -s "$tmp/target.json" "$CLAUDE_SETTINGS"
+set +e
+"$here/apply" --check >/dev/null; status=$?
+set -e
+check "--check fails when applying would change something" 1 "$status"
+check "--check writes nothing" '"sonnet"' "$(jq -c .model "$tmp/target.json")"
+apply
+check "applying replaces a symlink with a file" 'file' "$([[ -L "$CLAUDE_SETTINGS" ]] && echo link || echo file)"
+check "applying leaves the symlink target alone" '"sonnet"' "$(jq -c .model "$tmp/target.json")"
+
+reset
+echo '{"model":"sonnet","theme":"dark","permissions":{"allow":["a","b"]},"autoMode":{"x":1}}' >"$CLAUDE_SETTINGS"
+echo '{"model":"opus","permissions":{"allow":["a"]}}' >"$CLAUDE_SETTINGS_BASE"
+echo '{"autoMode":{"x":1}}' >"$CLAUDE_SETTINGS_PRIVATE"
+check "--drift reports changed, local-only and added entries" \
+  '[{"kind":"changed","path":["model"],"live":"sonnet","layered":"opus"},{"kind":"local-only","path":["theme"],"live":"dark"},{"kind":"added","path":["permissions","allow"],"live":"b"}]' \
+  "$("$here/apply" --drift | jq -c .)"
+
+exit $((failures > 0))

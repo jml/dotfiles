@@ -24,8 +24,22 @@ emacs-apps:
     ditto "$prefix/Emacs Client.app" "/Applications/Emacs Client.app"
     duti -s org.gnu.EmacsClient .md all
 
-claude:
+claude: && claude-settings
     stow -t {{target}} -d configs --no-folding claude
+
+# ~/.claude/settings.json is a real file, not a symlink, so Claude Code's own edits stay
+# out of this public repo until the export-settings skill sorts them.
+# Merge claude-settings/base.json and ~/.claude/settings.private.json into ~/.claude/settings.json
+claude-settings:
+    CLAUDE_SETTINGS="{{target}}/.claude/settings.json" CLAUDE_SETTINGS_PRIVATE="{{target}}/.claude/settings.private.json" claude-settings/apply
+
+# Show what `just claude-settings` would change; exits non-zero if it would change anything
+claude-settings-check:
+    CLAUDE_SETTINGS="{{target}}/.claude/settings.json" CLAUDE_SETTINGS_PRIVATE="{{target}}/.claude/settings.private.json" claude-settings/apply --check
+
+# Run the claude-settings tests
+test:
+    claude-settings/test
 
 # Today the only agent is the weekday 11:00 screen lock. Unloading first makes the recipe
 # safe to rerun and picks up edits to the plists.

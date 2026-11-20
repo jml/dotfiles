@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Merge the tracked base settings and the untracked private overlay into the
+# live Claude Code settings file.
+#
+# Usage: apply [--check | --drift]
+#
+#   (no flag)  Write the merged settings to the live file, keeping a backup at
+#              <live>.bak. A symlink at the live path is replaced by a file.
+#   --check    Print what applying would change; exit 1 if it would change
+#              anything.
+#   --drift    Print, as JSON, what the live file holds that the base and
+#              overlay don't. The export-settings skill reads this.
+#
+# Layers, later winning (see lib.jq for how arrays combine):
+#   1. live     $CLAUDE_SETTINGS          (~/.claude/settings.json)
+#   2. base     $CLAUDE_SETTINGS_BASE     (base.json next to this script)
+#   3. overlay  $CLAUDE_SETTINGS_PRIVATE  (~/.claude/settings.private.json)
+#
+# The overlay holds settings that must stay out of the public dotfiles repo,
+# such as the autoMode block. Claude Code reads autoMode only from the user
+# settings file, so it can't live in a separate file Claude Code reads itself.
+set -euo pipefail
+
+here="$(cd "$(dirname "$0")" && pwd)"
+live="${CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
+base="${CLAUDE_SETTINGS_BASE:-$here/base.json}"
+private="${CLAUDE_SETTINGS_PRIVATE:-$HOME/.claude/settings.private.json}"
+
+mode="${1:-apply}"
+case "$mode" in
+  apply | --check | --drift) ;;
+  *) echo "usage: $0 [--check | --drift]" >&2; exit 2 ;;
+esac
+
+# A missing file (or a symlink whose target is gone) is an empty layer.
+existing() { if [[ -e "$1" ]]; then echo "$1"; else echo /dev/null; fi; }
+
+layers=(
+  -L "$here"
+  --slurpfile live "$(existing "$live")"
+  --slurpfile base "$base"
+  --slurpfile private "$(existing "$private")"
+)
+
+if [[ "$mode" == --drift ]]; then
+  exec jq -n "${layers[@]}" \
+    'include "lib"; drift($live[0] // {}; deepmerge($base[0]; $private[0] // {}))'
+fi
+
+merged="$(mktemp "${live}.XXXXXX")"
+trap 'rm -f "$merged"' EXIT
+jq -n "${layers[@]}" \
+  'include "lib"; deepmerge(deepmerge($live[0] // {}; $base[0]); $private[0] // {})' >"$merged"
+
+sorted() { jq -S . "$1"; }
+current="$(existing "$live")"
+if [[ "$current" == /dev/null ]]; then current_sorted='{}'; else current_sorted="$(sorted "$current")"; fi
+
+if [[ "$current_sorted" == "$(sorted "$merged")" && ! -L "$live" ]]; then
+  echo "$live is up to date"
+  exit 0
+fi
+
+diff -u --label "$live" --label merged <(echo "$current_sorted") <(sorted "$merged") || true
+[[ -L "$live" ]] && echo "$live is a symlink; applying replaces it with a file"
+
+if [[ "$mode" == --check ]]; then
+  exit 1
+fi
+
+[[ "$current" != /dev/null ]] && cp "$live" "$live.bak"
+chmod 644 "$merged"
+# mv replaces a symlink at $live rather than writing through it.
+mv "$merged" "$live"
+trap - EXIT
+echo "wrote $live"

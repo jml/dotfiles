@@ -12,7 +12,7 @@ The repository contains configuration files for various development tools and ap
 - `configs/` - Contains all configuration files organized by application
   - `aerospace/` - AeroSpace window manager configuration
   - `chrome/` - Google Chrome helpers (`chrome-close-merged-prs` closes tabs for merged GitHub PRs)
-  - `claude/` - Claude Code CLI configuration
+  - `claude/` - Claude Code CLI configuration (settings live in `claude-settings/`, see below)
   - `emacs/` - Emacs configuration with modular config.d structure
   - `git/` - Git configuration files
   - `ghc/` - GHC Haskell compiler configuration
@@ -78,7 +78,14 @@ Zsh configuration includes:
 ### Claude Code Configuration
 The `configs/claude/.claude/` directory contains:
 - `CLAUDE.md` - Global instructions that apply to all projects (tone, coding style, workflow rules)
-- `settings.json` - User preferences: model choice, enabled plugins, and command permissions
+- `skills/` - Personal skills, including `export-settings`
+
+`~/.claude/settings.json` is not stowed. `just claude-settings` (run by `just claude`) builds it as a real file by merging three layers, later ones winning; lists under `permissions` combine:
+1. the live file, which Claude Code edits itself
+2. `claude-settings/base.json` - tracked user preferences: model choice, enabled plugins, hooks, and command permissions
+3. `~/.claude/settings.private.json` - untracked, for settings that must stay out of this public repo, such as `autoMode`
+
+Claude Code reads `autoMode` only from `~/.claude/settings.json`, so the private overlay has to be merged in rather than kept as a file Claude Code reads. To move Claude Code's own edits back into a layer, use the `export-settings` skill. Never edit `~/.claude/settings.json` expecting the change to reach this repo. Run `just test` after changing `claude-settings/`.
 
 **Permission philosophy:** The settings pre-approve read-only operations for common tools (gcloud, gh, gsutil, bq, terraform) while explicitly denying dangerous operations like `terraform apply -auto-approve`.
 
