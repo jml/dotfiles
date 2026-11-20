@@ -81,3 +81,5 @@ unmerged = "!sh -c 'git branch --no-merged ${1:-master}"
 	repo = /Users/jml/src/stereo/src
 [maintenance]
 	repo = /Users/jml/src/stereo/src
+[gitsign]
+	credentialCacheMode = system
