@@ -140,7 +140,7 @@
       "Bash(terraform destroy -auto-approve *)"
     ]
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "hooks": {
     "Notification": [
       {
@@ -290,5 +290,6 @@
   },
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
-  "theme": "dark"
+  "theme": "dark",
+  "outputStyle": "Concise"
 }
