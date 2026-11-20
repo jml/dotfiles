@@ -11,6 +11,7 @@ The repository contains configuration files for various development tools and ap
 
 - `configs/` - Contains all configuration files organized by application
   - `aerospace/` - AeroSpace window manager configuration
+  - `chrome/` - Google Chrome helpers (`chrome-close-merged-prs` closes tabs for merged GitHub PRs)
   - `claude/` - Claude Code CLI configuration
   - `emacs/` - Emacs configuration with modular config.d structure
   - `git/` - Git configuration files

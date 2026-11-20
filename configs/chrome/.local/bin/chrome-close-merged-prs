@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+"""Close Google Chrome tabs that show GitHub pull requests that have been merged.
+
+Usage:
+
+    chrome-close-merged-prs [--dry-run] [--closed]
+
+--dry-run prints the tabs that would be closed without closing them.
+--closed also closes tabs for pull requests that were closed without merging.
+
+Reads tabs from every Chrome window over Apple Events, and asks GitHub for the
+state of every pull request in one GraphQL query through `gh`, so `gh` must be
+authenticated. Tabs for pull requests that `gh` can't see are left open.
+"""
+
+import argparse
+import json
+import re
+import subprocess
+import sys
+from dataclasses import dataclass
+
+PR_URL = re.compile(r"^https://github\.com/([^/]+)/([^/]+)/pull/(\d+)(?:[/?#]|$)")
+
+
+@dataclass(frozen=True)
+class Tab:
+    window_id: str
+    tab_id: str
+    url: str
+    title: str
+
+
+@dataclass(frozen=True)
+class PR:
+    owner: str
+    repo: str
+    number: int
+
+
+def parse_pr_url(url):
+    """Return the PR a GitHub pull request URL points at, or None."""
+    m = PR_URL.match(url)
+    if not m:
+        return None
+    return PR(m.group(1), m.group(2), int(m.group(3)))
+
+
+def build_query(prs):
+    """Return a GraphQL query for the state of each PR, and the alias for each."""
+    aliases = {pr: f"pr{i}" for i, pr in enumerate(sorted(prs, key=lambda p: (p.owner, p.repo, p.number)))}
+    fields = "\n".join(
+        f"  {alias}: repository(owner: {json.dumps(pr.owner)}, name: {json.dumps(pr.repo)}) "
+        f"{{ pullRequest(number: {pr.number}) {{ state }} }}"
+        for pr, alias in aliases.items()
+    )
+    return "query {\n" + fields + "\n}", aliases
+
+
+def parse_states(response, aliases):
+    """Map each PR to its state (MERGED, CLOSED or OPEN), omitting PRs GitHub didn't return."""
+    data = response.get("data") or {}
+    states = {}
+    for pr, alias in aliases.items():
+        pull = (data.get(alias) or {}).get("pullRequest")
+        if pull:
+            states[pr] = pull["state"]
+    return states
+
+
+def tabs_to_close(tabs, states, close_states):
+    return [t for t in tabs if states.get(parse_pr_url(t.url)) in close_states]
+
+
+# I/O below here.
+
+LIST_TABS_JXA = """
+const chrome = Application("Google Chrome");
+const out = [];
+if (chrome.running()) {
+  for (const w of chrome.windows()) {
+    const ids = w.tabs.id(), urls = w.tabs.url(), titles = w.tabs.title();
+    for (let i = 0; i < ids.length; i++) {
+      out.push({window_id: String(w.id()), tab_id: String(ids[i]), url: urls[i], title: titles[i]});
+    }
+  }
+}
+JSON.stringify(out);
+"""
+
+CLOSE_TABS_JXA = """
+function run(argv) {
+  const chrome = Application("Google Chrome");
+  for (const pair of JSON.parse(argv[0])) {
+    chrome.windows.byId(Number(pair[0])).tabs.byId(Number(pair[1])).close();
+  }
+}
+"""
+
+
+def osascript(script, *args):
+    result = subprocess.run(
+        ["osascript", "-l", "JavaScript", "-e", script, *args],
+        check=True, capture_output=True, text=True,
+    )
+    return result.stdout
+
+
+def list_tabs():
+    return [Tab(**t) for t in json.loads(osascript(LIST_TABS_JXA))]
+
+
+def fetch_states(prs):
+    query, aliases = build_query(prs)
+    # gh exits non-zero when any repository is inaccessible, but still prints
+    # the data it could fetch, so read stdout regardless of the exit status.
+    result = subprocess.run(
+        ["gh", "api", "graphql", "-f", f"query={query}"],
+        capture_output=True, text=True,
+    )
+    try:
+        response = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        sys.exit(f"gh api graphql failed:\n{result.stderr}")
+    for error in response.get("errors", []):
+        print(f"warning: {error.get('message')}", file=sys.stderr)
+    return parse_states(response, aliases)
+
+
+def close_tabs(tabs):
+    osascript(CLOSE_TABS_JXA, json.dumps([[t.window_id, t.tab_id] for t in tabs]))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument("--dry-run", action="store_true", help="print the tabs without closing them")
+    parser.add_argument("--closed", action="store_true", help="also close PRs closed without merging")
+    args = parser.parse_args()
+
+    tabs = list_tabs()
+    prs = {pr for pr in map(parse_pr_url, (t.url for t in tabs)) if pr}
+    if not prs:
+        return
+    close_states = {"MERGED", "CLOSED"} if args.closed else {"MERGED"}
+    doomed = tabs_to_close(tabs, fetch_states(prs), close_states)
+
+    for t in doomed:
+        print(f"{'would close' if args.dry_run else 'closing'}: {t.title}\n    {t.url}")
+    if doomed and not args.dry_run:
+        close_tabs(doomed)
+
+
+if __name__ == "__main__":
+    main()

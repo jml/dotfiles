@@ -4,7 +4,7 @@ target := env_var_or_default('STOW_TARGET', env_var('HOME'))
 
 # macOS workstation setup (includes aerospace window manager)
 all: emacs claude
-    stow -t {{target}} -d configs aerospace git zsh ghc
+    stow -t {{target}} -d configs aerospace chrome git zsh ghc
 
 # Linux/Pi setup (no macOS-specific configs)
 linux: emacs claude
@@ -50,4 +50,4 @@ launchd-unload:
 
 # Remove all symlinks
 clean: launchd-unload
-    stow -t {{target}} -d configs -D aerospace claude emacs git zsh ghc launchd
+    stow -t {{target}} -d configs -D aerospace chrome claude emacs git zsh ghc launchd
