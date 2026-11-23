@@ -292,7 +292,7 @@ class EodTest(unittest.TestCase):
                 row(8, "overdue", overdue),
                 row(9, "running"),
             ],
-            "counts": {"held": 1, "reply": 1, "fix": 1, "merge": 0, "owned": 0, "ask": 1, "blocked": 0, "ready": 2, "bots": 0,
+            "counts": {"held": 1, "reply": 1, "fix": 1, "stacked": 0, "merge": 0, "owned": 0, "ask": 1, "blocked": 0, "ready": 2, "bots": 0,
                        "overdue": 1, "waiting": 1, "running": 1, "parked": 0},
             "oldest_ask_hours": 10.0,
         })
@@ -345,6 +345,48 @@ class EodTest(unittest.TestCase):
         self.assertEqual([e["actions"] for e in got["prs"] if e["bucket"] == "blocked"], [[]] * 5)
 
 
+class DesignDocStackTest(unittest.TestCase):
+    def test_pr_hygiene_waits_on_its_design_doc(self):
+        now = datetime(2026, 11, 23, 18, tzinfo=timezone.utc)
+        hygiene = {"name": "pr-hygiene", "conclusion": "FAILURE", "status": "COMPLETED"}
+        dbt = {"name": "dbt", "conclusion": "FAILURE", "status": "COMPLETED"}
+        body = "Adds the models.\n\nDesign-Doc: docs/designs/x.md\n"
+
+        def c(oid, headline):
+            return {"oid": oid, "headline": headline}
+
+        def p(n, **kw):
+            return pr(**({"number": n, "url": f"u{n}", "title": f"t{n}", "created_at": "2026-11-23T09:00:00Z",
+                          "last_commit_at": "2026-11-23T09:00:00Z"} | kw))
+
+        prs = {
+            # Its doc commit kept a headline from #2's history, and both merged main.
+            "chainguard-dev/mono#1": p(1, files=["docs/designs/x.md"],
+                                       commits=[c("m1", "Merge branch 'main'"), c("d1", "more")]),
+            "chainguard-dev/mono#2": p(2, body=body, checks=[hygiene], commits=[c("a", "models"), c("b", "more"), c("m2", "Merge branch 'main'")]),
+            # Merged in part of #2, so it carries the doc too, but isn't #2's design doc.
+            "chainguard-dev/mono#6": p(6, files=["docs/designs/x.md"], commits=[c("a", "models"), c("z", "ladder")]),
+            # Built on its design doc #8's branch: #8 still counts.
+            "chainguard-dev/mono#7": p(7, body="Design-Doc: docs/designs/y.md", checks=[hygiene], base="b8",
+                                       commits=[c("d", "doc"), c("e", "impl")]),
+            "chainguard-dev/mono#8": p(8, head="b8", files=["docs/designs/y.md"], commits=[c("d", "doc")]),
+            # Another check fails too: that one is jml's to fix.
+            "chainguard-dev/mono#3": p(3, body=body, checks=[hygiene, dbt]),
+            # No open PR adds its design doc, so pr-hygiene is jml's to fix.
+            "chainguard-dev/mono#4": p(4, body="Design-Doc: docs/designs/missing.md", checks=[hygiene]),
+            # The same path in another repo isn't its design doc.
+            "chainguard-dev/other#5": p(5, repo="chainguard-dev/other", url="o5", body=body, checks=[hygiene]),
+        }
+        got = core.eod(prs, [], {}, now, now, CONFIG)
+        self.assertEqual({e["ref"]: (e["bucket"], e["detail"]) for e in got["prs"] if e["ref"] not in ("chainguard-dev/mono#1", "chainguard-dev/mono#6", "chainguard-dev/mono#8")}, {
+            "chainguard-dev/mono#2": ("stacked", {"design_doc": ["chainguard-dev/mono#1"], "failing": ["pr-hygiene"]}),
+            "chainguard-dev/mono#3": ("fix", {"failing": ["dbt"], "conflicting": False, "bot_findings": 0}),
+            "chainguard-dev/mono#4": ("fix", {"failing": ["pr-hygiene"], "conflicting": False, "bot_findings": 0}),
+            "chainguard-dev/mono#7": ("stacked", {"design_doc": ["chainguard-dev/mono#8"], "failing": ["pr-hygiene"]}),
+            "chainguard-dev/other#5": ("fix", {"failing": ["pr-hygiene"], "conflicting": False, "bot_findings": 0}),
+        })
+
+
 STANDUP_CONFIG = CONFIG | {
     "channels": CONFIG["channels"] | {"teams": {"chainguard-dev/data-analytics-admins": "#chan-data-eng",
                                                 "chainguard-dev/developer-platform-team-write": "#chan-home"}},
@@ -382,10 +424,19 @@ def standup_inputs():
                                         checks=[{"name": "ci", "conclusion": "FAILURE", "status": "COMPLETED"}]),
         # In a rollout: its session owns the request.
         "chainguard-dev/mono#4": ref_pr(4),
+        # In a rollout and waiting on review: still a blocker.
+        "chainguard-dev/mono#5": ref_pr(5),
+        # Stacked on mono#1, which adds its design doc.
+        "chainguard-dev/mono#6": ref_pr(6, body="Design-Doc: docs/d.md",
+                                        checks=[{"name": "pr-hygiene", "conclusion": "FAILURE", "status": "COMPLETED"}]),
+        # A green draft: jml's move, offered for mark-ready.
+        "chainguard-dev/mono#7": ref_pr(7, draft=True),
     }
+    prs["chainguard-dev/mono#1"]["files"] = ["docs/d.md"]
     requests = [
         {"rollout": "eod", "pr": "chainguard-dev/mono#1", "channel": "#chan-data-eng", "sent_at": "2026-11-24T12:00:00+00:00"},
         {"rollout": "eod", "pr": "chainguard-dev/mono#2", "channel": "#chan-home", "sent_at": "2026-11-24T12:00:00+00:00"},
+        {"rollout": "big-change", "pr": "chainguard-dev/mono#5", "channel": "#chan-home", "sent_at": "2026-11-24T12:00:00+00:00"},
     ]
     sweep = core.eod(prs, requests, {}, now, now, STANDUP_CONFIG)
     linear = {"issues": [
@@ -414,26 +465,30 @@ def standup_inputs():
         {"ref": "chainguard-dev/infra#7", "title": "i7", "url": "i7", "author": "outsider"},
         {"ref": "chainguard-dev/infra#6", "title": "i6", "url": "i6", "author": "ada"},
     ]
-    return sweep, prs, {"chainguard-dev/mono#4": "big-change"}, linear, merged, inbound
+    return sweep, prs, {"chainguard-dev/mono#4": "big-change", "chainguard-dev/mono#5": "big-change"}, linear, merged, inbound
 
 
 class StandupTest(unittest.TestCase):
     def test_first_run_is_a_baseline(self):
         got = core.standup(*standup_inputs(), None, STANDUP_CONFIG)
         self.assertTrue(got["baseline"])
-        self.assertEqual(got["counts"], {"blockers": {"new": 0, "standing": 6, "cleared": 0},
+        self.assertEqual(got["counts"], {"blockers": {"new": 0, "standing": 5, "cleared": 0},
                                          "dependencies": {"new": 0, "changed": 0, "standing": 5, "resolved": 0}})
-        self.assertEqual([(b["key"], b.get("whose_move"), b.get("rollout")) for b in got["blockers"]["standing"]], [
-            ("issue:DEV-10", None, None),
-            ("issue:DEVFNDN-12", None, None),
-            ("pr:chainguard-dev/mono#1", "reviewers", None),
-            ("pr:chainguard-dev/mono#2", "reviewers", None),
-            ("pr:chainguard-dev/mono#3", "jml", None),
-            ("pr:chainguard-dev/mono#4", "rollout", "big-change"),
+        self.assertEqual([(b["key"], b.get("whose_move"), b.get("rollout"), b.get("holds_back"))
+                          for b in got["blockers"]["standing"]], [
+            ("issue:DEV-10", None, None, None),
+            ("issue:DEVFNDN-12", None, None, None),
+            ("pr:chainguard-dev/mono#1", "reviewers", None, ["chainguard-dev/mono#6"]),
+            ("pr:chainguard-dev/mono#2", "reviewers", None, []),
+            ("pr:chainguard-dev/mono#5", "reviewers", "big-change", []),
+            # mono#3 fails CI and mono#4 is a rollout's to ask for: both are someone's
+            # move on this side, so neither is a blocker. mono#6 rides on mono#1.
             # DEVFNDN-15 waits only on an unassigned issue in the subteam's team, and
             # DEVFNDN-13's blocker is done: neither is a standup blocker.
         ])
-        self.assertEqual(got["blockers"]["standing"][-1]["actions"], [])
+        # Offers leave out the rollout's PRs: their sessions send them.
+        self.assertEqual([(o["ref"], [a["kind"] for a in o["actions"]]) for o in got["offers"]],
+                         [("chainguard-dev/mono#7", ["mark-ready"])])
         self.assertEqual([(d["key"], d["counterpart"]["kind"], d["state"]) for d in got["dependencies"]["standing"]], [
             ("waited_on_by|DEV-10|CON-5", "pod", "Todo"),
             ("waited_on_by|chainguard-dev/infra#7|outsider", "other", "review requested"),
@@ -453,15 +508,15 @@ class StandupTest(unittest.TestCase):
         inputs = standup_inputs()
         first = core.standup(*inputs, None, STANDUP_CONFIG)["snapshot"]
         previous = {"at": "2026-11-23T14:00:00+00:00",
-                    "blockers": {k: v for k, v in first["blockers"].items() if k != "pr:chainguard-dev/mono#3"}
+                    "blockers": {k: v for k, v in first["blockers"].items() if k != "pr:chainguard-dev/mono#2"}
                     | {"pr:chainguard-dev/mono#99": {"key": "pr:chainguard-dev/mono#99", "title": "gone", "url": "u99"}},
                     "dependencies": {k: (v | {"state": "Todo"} if k == "waits_on|DEV-10|DATA-1" else v)
                                      for k, v in first["dependencies"].items() if not k.startswith("waited_on_by|chainguard-dev/infra#7")}}
         got = core.standup(*inputs, previous, STANDUP_CONFIG)
         self.assertEqual((got["baseline"], got["since"]), (False, "2026-11-23T14:00:00+00:00"))
-        self.assertEqual(got["counts"], {"blockers": {"new": 1, "standing": 5, "cleared": 1},
+        self.assertEqual(got["counts"], {"blockers": {"new": 1, "standing": 4, "cleared": 1},
                                          "dependencies": {"new": 1, "changed": 1, "standing": 3, "resolved": 0}})
-        self.assertEqual([b["key"] for b in got["blockers"]["new"]], ["pr:chainguard-dev/mono#3"])
+        self.assertEqual([b["key"] for b in got["blockers"]["new"]], ["pr:chainguard-dev/mono#2"])
         self.assertEqual(got["blockers"]["cleared"], [{"key": "pr:chainguard-dev/mono#99", "title": "gone", "url": "u99"}])
         self.assertEqual([(d["key"], d["was"], d["state"]) for d in got["dependencies"]["changed"]],
                          [("waits_on|DEV-10|DATA-1", "Todo", "In Progress")])

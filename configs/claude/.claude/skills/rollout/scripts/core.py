@@ -427,7 +427,7 @@ def chase(requests: list[dict], prs: dict, now: datetime, config: dict) -> list[
 
 # End-of-day sweep buckets, in the order a PR is tested against them: a PR
 # lands in the first that fits.
-EOD_BUCKETS = ("held", "reply", "fix", "merge", "owned", "ask", "blocked", "ready", "bots", "overdue", "waiting", "running", "parked")
+EOD_BUCKETS = ("held", "reply", "fix", "stacked", "merge", "owned", "ask", "blocked", "ready", "bots", "overdue", "waiting", "running", "parked")
 
 
 def _parse(ts: str | None) -> datetime | None:
@@ -480,6 +480,35 @@ def builds_on(ref: str, prs: dict) -> list[str]:
     return out
 
 
+_DESIGN_DOC = re.compile(r"^Design-Doc:\s*(\S+)\s*$", re.MULTILINE)
+
+
+def design_doc_prs(ref: str, prs: dict) -> list[str]:
+    """Other open PRs in the same repo that add this PR's `Design-Doc:` path.
+
+    The PR is stacked on its design doc: a check that wants the doc on the
+    default branch fails until that PR merges, and fixing it isn't jml's move.
+    A PR that merged in some of this one's commits carries the doc too, but
+    merging it isn't the way to land the doc, so a PR sharing commits with
+    this one counts only when this one builds on it. Commits match by oid
+    alone: headlines such as "Merge branch 'main'" repeat across unrelated
+    PRs, and a doc moved to its own PR keeps the headline it had here.
+    """
+    me = prs[ref]
+    paths = set(_DESIGN_DOC.findall(me.get("body", "")))
+    if not paths:
+        return []
+    mine = {c["oid"] for c in me.get("commits", [])}
+    under = set(builds_on(ref, prs))
+
+    def shares(other: dict) -> bool:
+        return any(c["oid"] in mine for c in other.get("commits", []))
+
+    return sorted(r for r, other in prs.items()
+                  if r != ref and other["repo"] == me["repo"] and other["state"] == "OPEN"
+                  and paths & set(other.get("files", [])) and (r in under or not shares(other)))
+
+
 def session_on(ref: str, prs: dict, sessions: list[dict]) -> str | None:
     """The live session working on this PR: one whose folder has the PR's branch
     checked out, or whose title names "#N" when no other open PR has number N."""
@@ -514,6 +543,10 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
     while its base isn't the default branch, or while its description has an
     unticked "To-do before merge" item: jml wants only drafts that could merge
     now.
+
+    A PR whose `Design-Doc:` path another open PR adds is `stacked` on it
+    while only the checks in `design_doc_checks` fail: they pass once the doc
+    merges.
     """
     manifest = {"name": "eod", "nodes": [{"id": ref, "pr": ref} for ref in sorted(prs)]}
     report = evaluate(manifest, {"prs": prs, "deploys": {}, "checks": {}}, {}, requests, config)
@@ -528,6 +561,9 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
         actions = {a["kind"]: a for a in entry["actions"]}
         threads = _awaiting_author(pr)
         checks, failing, _ = _checks(pr, gated)
+        docs = design_doc_prs(ref, prs)
+        doc_failing = sorted(set(failing) & set(config.get("design_doc_checks", ["pr-hygiene"]))) if docs else []
+        failing = [f for f in failing if f not in doc_failing]
         hold = holds.get(ref)
         active = last_activity(pr)
         created = _parse(pr.get("created_at"))
@@ -541,6 +577,8 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
         elif failing or pr.get("mergeable") == "CONFLICTING" or entry.get("bot_review") == "findings":
             bucket, detail = "fix", {"failing": sorted(set(failing)), "conflicting": pr.get("mergeable") == "CONFLICTING",
                                      "bot_findings": threads["bot_threads"]}
+        elif doc_failing:
+            bucket, detail = "stacked", {"design_doc": docs, "failing": doc_failing}
         elif "merge" in actions:
             bucket, detail = "merge", None
         elif "request-review" in actions and (owner := session_on(ref, prs, sessions or [])):
@@ -655,10 +693,11 @@ def _review_counterparts(entry: dict, pr: dict, config: dict) -> list[dict]:
 
 
 WHOSE_MOVE = {
-    "held": "jml", "reply": "jml", "fix": "jml", "merge": "jml", "owned": "session", "ask": "jml",
+    "held": "jml", "reply": "jml", "fix": "jml", "stacked": "design doc", "merge": "jml", "owned": "session", "ask": "jml",
     "blocked": "jml", "ready": "jml", "bots": "bots", "overdue": "reviewers", "waiting": "reviewers",
     "running": "ci", "parked": "jml",
 }
+BLOCKER_BUCKETS = ("waiting", "overdue")
 OPEN_STATUS_TYPES = ("unstarted", "started")
 CLOSED_STATUS_TYPES = ("completed", "canceled")
 
@@ -693,6 +732,9 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
     for review. `previous` is the last standup's snapshot, or None for the
     first run, which is a baseline: nothing in it counts as new.
 
+    `offers` lists the review requests and mark-readies the sweep would make
+    for PRs outside rollouts; they are jml's move, so none is a blocker.
+
     A dependency is anything between jml and someone outside the subteam:
     the pod's other members, or another team.
     """
@@ -715,15 +757,28 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
         for i in sorted(pr_issue_ids(pr) & set(mine)):
             links.setdefault(i, []).append(ref)
 
+    # A PR is a blocker only while it waits on reviewers. jml's own move, a
+    # live session's or a rollout's work in progress isn't one. A PR stacked
+    # on its design doc rides on the doc's entry as `holds_back`.
     blockers: dict[str, dict] = {}
+    offers = []
+    holds_back: dict[str, list[str]] = {}
+    for e in sweep["prs"]:
+        if e["bucket"] == "stacked":
+            for d in e["detail"]["design_doc"]:
+                holds_back.setdefault(d, []).append(e["ref"])
     for e in sweep["prs"]:
         pr = prs[e["ref"]]
+        if e["actions"] and e["ref"] not in rollouts:
+            offers.append({"ref": e["ref"], "title": e["title"], "url": e["url"], "bucket": e["bucket"],
+                           "detail": e["detail"], "actions": e["actions"]})
+        if e["bucket"] not in BLOCKER_BUCKETS:
+            continue
         blockers[f"pr:{e['ref']}"] = {
             "key": f"pr:{e['ref']}", "kind": "pr", "ref": e["ref"], "title": e["title"], "url": e["url"],
             "draft": e["draft"], "bucket": e["bucket"], "detail": e["detail"], "stale": e["stale"],
-            "whose_move": "rollout" if e["ref"] in rollouts else WHOSE_MOVE[e["bucket"]],
-            "rollout": rollouts.get(e["ref"]), "issues": sorted(pr_issue_ids(pr) & set(mine)),
-            "actions": [] if e["ref"] in rollouts else e["actions"],
+            "whose_move": WHOSE_MOVE[e["bucket"]], "rollout": rollouts.get(e["ref"]),
+            "issues": sorted(pr_issue_ids(pr) & set(mine)), "holds_back": holds_back.get(e["ref"], []),
         }
     for k, i in sorted(mine.items()):
         outside = [other(b) for b in i.get("blocked_by", []) if is_open(b)]
@@ -805,6 +860,7 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
             "dependencies": {"new": len(d["new"]), "changed": len(d["changed"]), "standing": len(d["standing"]),
                              "resolved": len(d["gone"])},
         },
+        "offers": offers,
         "drift": drift,
         "fixed_in_passing": fixed,
         "snapshot": snapshot,

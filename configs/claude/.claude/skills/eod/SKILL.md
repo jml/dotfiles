@@ -18,6 +18,7 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with the r
    | `held` | jml held it until `detail.until` | nothing |
    | `reply` | a person's thread waits on jml, or changes were requested | lists it |
    | `fix` | failing CI (`detail.failing`), a conflict, or a review bot's open finding | lists it |
+   | `stacked` | only `design_doc_checks` fail (`pr-hygiene`), and another open PR in the repo adds its `Design-Doc:` path (`detail.design_doc`) | lists it; the checks pass once the doc merges |
    | `merge` | approved and green | lists it |
    | `owned` | would be `ask`, but a live session works on it (`detail.session`) | lists it; that session sends the request |
    | `ask` | green and ready, review bots done, no request sent | sends the request (step 3) |
@@ -45,7 +46,7 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with the r
 
 5. **Write the note** to `~/.local/state/rollouts/eod/<YYYY-MM-DD>.md`, creating the directory if needed. Then give it in the closing message, after a line for each thing step 3 or 4 sent, marked ready, closed or held, with where it went. One line per PR, `[<repo>#<N> — <title>](<url>)` followed by the specific thing, never a generic "needs attention":
    - **Your move:** `reply` (who is waiting and on what), `fix` (the failing check, the conflict or the bot finding), `merge`, and any `ask` or `ready` left unsent or unmarked.
-   - **Waiting on others:** `waiting` (the channel and how long ago), `overdue` that jml chose not to chase, `bots`, and `owned` (which session will send the request).
+   - **Waiting on others:** `waiting` (the channel and how long ago), `overdue` that jml chose not to chase, `bots`, `owned` (which session will send the request), and `stacked` (which design-doc PR it waits on).
    - **Parked:** `held` (until when, and why), `blocked` (which session, which PR it builds on, or which to-do is open), `running` and `parked`.
    - One closing line: how many PRs were left to rollouts, by rollout (`in_rollouts`), and any PRs in archived repos (`archived`), which can't be closed and need the repo unarchived or deleted.
 
