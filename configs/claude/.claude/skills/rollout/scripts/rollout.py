@@ -28,7 +28,9 @@ STATE = Path(os.environ.get("ROLLOUT_STATE_DIR", Path.home() / ".local/state/rol
 CONFIG = Path(__file__).resolve().parent.parent / "config.json"
 
 PR_FIELDS = """
-number title url state isDraft mergeable reviewDecision additions deletions createdAt
+number title url state isDraft mergeable reviewDecision additions deletions createdAt body
+baseRefName headRefName baseRepository { defaultBranchRef { name } }
+allCommits: commits(first: 100) { nodes { commit { oid messageHeadline } } }
 author { login }
 mergeCommit { oid }
 files(first: 100) { nodes { path } }
@@ -108,6 +110,12 @@ def normalise(ref: str, raw: dict) -> dict:
         "additions": raw["additions"],
         "deletions": raw["deletions"],
         "created_at": raw.get("createdAt"),
+        "body": raw.get("body") or "",
+        "base": raw.get("baseRefName"),
+        "head": raw.get("headRefName"),
+        "default_branch": ((raw.get("baseRepository") or {}).get("defaultBranchRef") or {}).get("name"),
+        "commits": [{"oid": n["commit"]["oid"], "headline": n["commit"]["messageHeadline"]}
+                    for n in (raw.get("allCommits") or {}).get("nodes", [])],
         "last_commit_at": head.get("committedDate"),
         "files": [f["path"] for f in raw["files"]["nodes"]],
         "requested_teams": teams,
@@ -338,6 +346,32 @@ def rollout_members() -> dict[str, str]:
     return out
 
 
+SESSIONS_SCRIPT = Path.home() / ".claude/skills/wip/scripts/sessions.sh"
+
+
+def live_sessions() -> list[dict]:
+    """Claude sessions with a running process, each with the branch checked out in its folder.
+
+    Reads the `== LIVE ==` section of the wip skill's sessions script. Without
+    that script there are no sessions to report, and /eod asks as before.
+    """
+    if not SESSIONS_SCRIPT.exists():
+        return []
+    out = subprocess.run(["bash", str(SESSIONS_SCRIPT), "1"], capture_output=True, text=True).stdout
+    sessions, live = [], False
+    for line in out.splitlines():
+        if line.startswith("== "):
+            live = line.strip() == "== LIVE =="
+            continue
+        if not live or "|" not in line:
+            continue
+        fields = line.split("|")
+        name, cwd = fields[3], fields[4]
+        branch = subprocess.run(["git", "-C", cwd, "branch", "--show-current"], capture_output=True, text=True).stdout.strip()
+        sessions.append({"name": name, "cwd": cwd, "branch": branch or None})
+    return sessions
+
+
 def cmd_sweep(args) -> int:
     config = load_json(CONFIG, {})
     now = datetime.now(timezone.utc)
@@ -347,7 +381,8 @@ def cmd_sweep(args) -> int:
     live, archived = open_prs(config["me"])
     members = rollout_members()
     refs = [r for r in live if r not in members]
-    report = core.eod(fetch_prs(refs), load_requests(), load_json(STATE / "eod.holds.json", {}), now, first_run, config)
+    report = core.eod(fetch_prs(refs), load_requests(), load_json(STATE / "eod.holds.json", {}), now, first_run, config,
+                      sessions=live_sessions())
     report["in_rollouts"] = {r: members[r] for r in live if r in members}
     report["archived"] = archived
     if args.log:

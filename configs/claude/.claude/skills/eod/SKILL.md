@@ -20,7 +20,8 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with the r
    | `fix` | failing CI (`detail.failing`), a conflict, or a review bot's open finding | lists it |
    | `merge` | approved and green | lists it |
    | `ask` | green and ready, review bots done, no request sent | sends the request (step 3) |
-   | `ready` | a green draft | marks it ready (step 3) or asks (step 4) |
+   | `blocked` | a green draft that can't merge yet: a live session works on it (`detail.session`), it builds on another open PR (`detail.builds_on`), its base isn't the default branch (`detail.base`), or its description has unticked "To-do before merge" items (`detail.todos`) | lists it, and never offers to mark it ready |
+   | `ready` | a green draft that could merge now | marks it ready (step 3) or asks (step 4) |
    | `bots` | review bots running, or Checks' approval on its way | lists it |
    | `overdue` | a request has waited past its chase threshold | offers a chase (step 4) |
    | `waiting` | a request was sent and isn't overdue | lists it |
@@ -44,7 +45,7 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with the r
 5. **Write the note** to `~/.local/state/rollouts/eod/<YYYY-MM-DD>.md`, creating the directory if needed. Then give it in the closing message, after a line for each thing step 3 or 4 sent, marked ready, closed or held, with where it went. One line per PR, `[<repo>#<N> — <title>](<url>)` followed by the specific thing, never a generic "needs attention":
    - **Your move:** `reply` (who is waiting and on what), `fix` (the failing check, the conflict or the bot finding), `merge`, and any `ask` or `ready` left unsent or unmarked.
    - **Waiting on others:** `waiting` (the channel and how long ago), `overdue` that jml chose not to chase, and `bots`.
-   - **Parked:** `held` (until when, and why), `running` and `parked`.
+   - **Parked:** `held` (until when, and why), `blocked` (which session, which PR it builds on, or which to-do is open), `running` and `parked`.
    - One closing line: how many PRs were left to rollouts, by rollout (`in_rollouts`), and any PRs in archived repos (`archived`), which can't be closed and need the repo unarchived or deleted.
 
 ## Whether it's working

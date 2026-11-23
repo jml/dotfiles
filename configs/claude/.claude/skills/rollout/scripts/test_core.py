@@ -292,11 +292,54 @@ class EodTest(unittest.TestCase):
                 row(8, "overdue", overdue),
                 row(9, "running"),
             ],
-            "counts": {"held": 1, "reply": 1, "fix": 1, "merge": 0, "ask": 1, "ready": 2, "bots": 0,
+            "counts": {"held": 1, "reply": 1, "fix": 1, "merge": 0, "ask": 1, "blocked": 0, "ready": 2, "bots": 0,
                        "overdue": 1, "waiting": 1, "running": 1, "parked": 0},
             "oldest_ask_hours": 10.0,
         })
         self.assertEqual(overdue["pr"], "chainguard-dev/mono#8")
+
+
+    def test_drafts_that_cannot_merge_now_are_not_offered(self):
+        now = datetime(2026, 11, 23, 18, tzinfo=timezone.utc)
+
+        def c(oid, headline):
+            return {"oid": oid, "headline": headline}
+
+        def draft(n, **kw):
+            return pr(**({"number": n, "url": f"u{n}", "title": f"t{n}", "draft": True, "created_at": "2026-11-23T09:00:00Z",
+                          "last_commit_at": "2026-11-23T09:00:00Z", "base": "main", "head": f"b{n}",
+                          "default_branch": "main", "commits": [c(f"o{n}", f"h{n}")]} | kw))
+
+        prs = {
+            "chainguard-dev/mono#10": draft(10, commits=[c("a", "parent one"), c("b", "parent two")]),
+            # Rebased on main after #10 changed: #10's commits survive by headline only.
+            "chainguard-dev/mono#11": draft(11, commits=[c("a2", "parent one"), c("b2", "parent two"), c("x", "child")]),
+            # A sibling off #10's first commit: it lacks "parent two", so it doesn't build on #10.
+            "chainguard-dev/mono#12": draft(12, commits=[c("a", "parent one"), c("y", "sibling")]),
+            "chainguard-dev/mono#13": draft(13, base="b10"),
+            "chainguard-dev/mono#14": draft(14, body="## To-do before merge\n\n- [x] done\n- [ ] Merge #10 first\n\n## Notes\n- [ ] not a to-do"),
+            "chainguard-dev/mono#15": draft(15),
+            "chainguard-dev/mono#16": draft(16),
+            "chainguard-dev/other#10": draft(10, repo="chainguard-dev/other", url="o10"),
+        }
+        sessions = [
+            {"name": "Dataplane guide", "cwd": "/w/a", "branch": "b15"},
+            {"name": "Iterate on #16", "cwd": "/w/b", "branch": "main"},
+            # mono#10 and other#10 are both open, so "#10" names neither.
+            {"name": "Look at #10", "cwd": "/w/c", "branch": "main"},
+        ]
+        got = core.eod(prs, [], {}, now, now, CONFIG, sessions=sessions)
+        self.assertEqual({e["ref"]: (e["bucket"], e["detail"]) for e in got["prs"]}, {
+            "chainguard-dev/mono#10": ("ready", None),
+            "chainguard-dev/mono#11": ("blocked", {"builds_on": ["chainguard-dev/mono#10"]}),
+            "chainguard-dev/mono#12": ("ready", None),
+            "chainguard-dev/mono#13": ("blocked", {"builds_on": ["chainguard-dev/mono#10"], "base": "b10"}),
+            "chainguard-dev/mono#14": ("blocked", {"todos": ["Merge #10 first"]}),
+            "chainguard-dev/mono#15": ("blocked", {"session": "Dataplane guide"}),
+            "chainguard-dev/mono#16": ("blocked", {"session": "Iterate on #16"}),
+            "chainguard-dev/other#10": ("ready", None),
+        })
+        self.assertEqual([e["actions"] for e in got["prs"] if e["bucket"] == "blocked"], [[]] * 5)
 
 
 if __name__ == "__main__":

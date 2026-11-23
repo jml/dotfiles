@@ -426,7 +426,7 @@ def chase(requests: list[dict], prs: dict, now: datetime, config: dict) -> list[
 
 # End-of-day sweep buckets, in the order a PR is tested against them: a PR
 # lands in the first that fits.
-EOD_BUCKETS = ("held", "reply", "fix", "merge", "ask", "ready", "bots", "overdue", "waiting", "running", "parked")
+EOD_BUCKETS = ("held", "reply", "fix", "merge", "ask", "blocked", "ready", "bots", "overdue", "waiting", "running", "parked")
 
 
 def _parse(ts: str | None) -> datetime | None:
@@ -441,7 +441,60 @@ def last_activity(pr: dict) -> datetime | None:
     return max(times) if times else None
 
 
-def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: datetime, config: dict) -> dict:
+def unchecked_todos(body: str) -> list[str]:
+    """Unticked boxes under a "To-do before merge" heading in a PR description."""
+    out, inside = [], False
+    for line in body.splitlines():
+        if line.lstrip().startswith("#"):
+            inside = "to-do before merg" in line.lower() or "todo before merg" in line.lower()
+            continue
+        item = line.strip()
+        if inside and item.startswith(("- [ ]", "* [ ]")):
+            out.append(item[5:].strip())
+    return out
+
+
+def builds_on(ref: str, prs: dict) -> list[str]:
+    """Other open PRs this one builds on: its base is their branch, or it carries all their commits.
+
+    Commits match by oid, or by headline once a rebase has rewritten the oid. A
+    PR carrying every commit of another, plus more, sits on top of it; two
+    siblings off one parent each have a commit the other lacks, so neither
+    counts as building on the other.
+    """
+    me = prs[ref]
+    oids = {c["oid"] for c in me.get("commits", [])}
+    lines = {c["headline"] for c in me.get("commits", [])}
+    out = []
+    for other_ref, other in sorted(prs.items()):
+        if other_ref == ref or other["repo"] != me["repo"] or other["state"] != "OPEN":
+            continue
+        theirs = other.get("commits", [])
+        if me.get("base") and me.get("base") == other.get("head"):
+            out.append(other_ref)
+        elif theirs and len(theirs) < len(me.get("commits", [])) and all(
+            c["oid"] in oids or c["headline"] in lines for c in theirs
+        ):
+            out.append(other_ref)
+    return out
+
+
+def session_on(ref: str, prs: dict, sessions: list[dict]) -> str | None:
+    """The live session working on this PR: one whose folder has the PR's branch
+    checked out, or whose title names "#N" when no other open PR has number N."""
+    pr = prs[ref]
+    for s in sessions:
+        if s.get("branch") and s["branch"] == pr.get("head"):
+            return s["name"]
+    if sum(p["number"] == pr["number"] for p in prs.values()) == 1:
+        for s in sessions:
+            if f"#{pr['number']}" in s["name"]:
+                return s["name"]
+    return None
+
+
+def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: datetime, config: dict,
+        sessions: list[dict] | None = None) -> dict:
     """Sort open PRs that belong to no rollout into end-of-day buckets.
 
     `prs` is keyed by "owner/repo#N". Each PR is evaluated as its own one-node
@@ -451,6 +504,12 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
     mark-ready is automatic only for drafts opened since `first_run`, the first
     /eod: a draft older than that may be a draft on purpose, so jml is asked
     once, and holding it records the answer.
+
+    A green draft is never offered for mark-ready (bucket `blocked`) while a
+    live session in `sessions` works on it, while it builds on another open PR,
+    while its base isn't the default branch, or while its description has an
+    unticked "To-do before merge" item: jml wants only drafts that could merge
+    now.
     """
     manifest = {"name": "eod", "nodes": [{"id": ref, "pr": ref} for ref in sorted(prs)]}
     report = evaluate(manifest, {"prs": prs, "deploys": {}, "checks": {}}, {}, requests, config)
@@ -482,6 +541,13 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
             bucket, detail = "merge", None
         elif "request-review" in actions:
             bucket, detail = "ask", actions["request-review"]["detail"]
+        elif "mark-ready" in actions and (blockers := {k: v for k, v in {
+            "session": session_on(ref, prs, sessions or []),
+            "builds_on": builds_on(ref, prs),
+            "base": pr.get("base") if pr.get("base") and pr.get("default_branch") and pr["base"] != pr["default_branch"] else None,
+            "todos": unchecked_todos(pr.get("body", "")),
+        }.items() if v}):
+            bucket, detail = "blocked", blockers
         elif "mark-ready" in actions:
             bucket, detail = "ready", None
         elif checks == "green" and entry.get("bot_review") in ("pending", "approved"):
