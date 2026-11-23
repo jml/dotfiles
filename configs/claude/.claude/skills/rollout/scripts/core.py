@@ -422,3 +422,96 @@ def chase(requests: list[dict], prs: dict, now: datetime, config: dict) -> list[
                 "requested_users": pr.get("requested_users", []),
             })
     return sorted(overdue, key=lambda o: -o["weekday_hours_waited"])
+
+
+# End-of-day sweep buckets, in the order a PR is tested against them: a PR
+# lands in the first that fits.
+EOD_BUCKETS = ("held", "reply", "fix", "merge", "ask", "ready", "bots", "overdue", "waiting", "running", "parked")
+
+
+def _parse(ts: str | None) -> datetime | None:
+    return datetime.fromisoformat(ts.replace("Z", "+00:00")) if ts else None
+
+
+def last_activity(pr: dict) -> datetime | None:
+    """The latest commit, or comment or review by a person, on the PR."""
+    times = [_parse(pr.get("last_commit_at"))]
+    times += [_parse(a["at"]) for a in pr.get("activity", []) if not a.get("bot") and not a["author"].endswith("[bot]")]
+    times = [t for t in times if t]
+    return max(times) if times else None
+
+
+def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: datetime, config: dict) -> dict:
+    """Sort open PRs that belong to no rollout into end-of-day buckets.
+
+    `prs` is keyed by "owner/repo#N". Each PR is evaluated as its own one-node
+    rollout, so the rules that decide mark-ready and request-review are the
+    ones /rollout uses. `holds` maps a ref to {"until": ISO date, "reason"}.
+
+    mark-ready is automatic only for drafts opened since `first_run`, the first
+    /eod: a draft older than that may be a draft on purpose, so jml is asked
+    once, and holding it records the answer.
+    """
+    manifest = {"name": "eod", "nodes": [{"id": ref, "pr": ref} for ref in sorted(prs)]}
+    report = evaluate(manifest, {"prs": prs, "deploys": {}, "checks": {}}, {}, requests, config)
+    overdue = {o["pr"]: o for o in chase(requests, prs, now, config)}
+    stale_after = timedelta(days=config.get("eod", {}).get("stale_draft_days", 7))
+    gated = set(config.get("review_gated_checks", []))
+
+    out = []
+    for entry in report["nodes"]:
+        ref = entry["ref"]
+        pr = prs[ref]
+        actions = {a["kind"]: a for a in entry["actions"]}
+        threads = _awaiting_author(pr)
+        checks, failing, _ = _checks(pr, gated)
+        hold = holds.get(ref)
+        active = last_activity(pr)
+        created = _parse(pr.get("created_at"))
+        if "mark-ready" in actions:
+            actions["mark-ready"] = actions["mark-ready"] | {"auto": bool(created and created >= first_run)}
+
+        if hold and hold["until"] >= now.date().isoformat():
+            bucket, detail = "held", hold
+        elif threads["person_threads"] or pr.get("review_decision") == "CHANGES_REQUESTED":
+            bucket, detail = "reply", {"person_threads": threads["person_threads"], "review": pr.get("review_decision")}
+        elif failing or pr.get("mergeable") == "CONFLICTING" or entry.get("bot_review") == "findings":
+            bucket, detail = "fix", {"failing": sorted(set(failing)), "conflicting": pr.get("mergeable") == "CONFLICTING",
+                                     "bot_findings": threads["bot_threads"]}
+        elif "merge" in actions:
+            bucket, detail = "merge", None
+        elif "request-review" in actions:
+            bucket, detail = "ask", actions["request-review"]["detail"]
+        elif "mark-ready" in actions:
+            bucket, detail = "ready", None
+        elif checks == "green" and entry.get("bot_review") in ("pending", "approved"):
+            bucket, detail = "bots", entry["bot_review"]
+        elif ref in overdue:
+            bucket, detail = "overdue", overdue[ref]
+        elif not pr["draft"] and _latest_request(requests, ref):
+            r = _latest_request(requests, ref)
+            bucket, detail = "waiting", {"channel": r["channel"], "sent_at": r["sent_at"], "teams": pr.get("requested_teams", [])}
+        elif checks == "pending":
+            bucket, detail = "running", None
+        else:
+            bucket, detail = "parked", None
+
+        keep = {"held": [], "reply": [], "fix": [], "merge": ["merge"], "ask": ["request-review"], "ready": ["mark-ready"]}
+        out.append({
+            "ref": ref,
+            "title": pr["title"],
+            "url": pr["url"],
+            "draft": pr["draft"],
+            "bucket": bucket,
+            "detail": detail,
+            "stale": bool(pr["draft"] and bucket != "held" and active and now - active > stale_after),
+            "last_activity": active.isoformat() if active else None,
+            "actions": [actions[k] for k in keep.get(bucket, []) if k in actions],
+        })
+
+    ask_ages = [now - t for t in (_parse(prs[e["ref"]].get("last_commit_at")) for e in out if e["bucket"] == "ask") if t]
+    return {
+        "prs": out,
+        "counts": {b: sum(e["bucket"] == b for e in out) for b in EOD_BUCKETS},
+        "oldest_ask_hours": round(max(ask_ages).total_seconds() / 3600, 1) if ask_ages else None,
+    }

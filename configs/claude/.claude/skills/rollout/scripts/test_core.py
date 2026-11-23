@@ -244,5 +244,60 @@ class CiSettledTest(unittest.TestCase):
                          {k: want for k, (_, want) in cases.items()})
 
 
+class EodTest(unittest.TestCase):
+    def test_buckets(self):
+        now = datetime(2026, 11, 23, 18, tzinfo=timezone.utc)  # a Monday
+        first_run = datetime(2026, 11, 20, tzinfo=timezone.utc)
+        green, running = pr()["checks"], [{"name": "ci", "conclusion": None, "status": "IN_PROGRESS"}]
+
+        def ref_pr(n, **kw):
+            return pr(**({"number": n, "url": f"u{n}", "title": f"t{n}", "created_at": "2026-11-23T09:00:00Z",
+                          "last_commit_at": "2026-11-23T09:00:00Z"} | kw))
+
+        prs = {
+            "chainguard-dev/mono#1": ref_pr(1, draft=True),
+            "chainguard-dev/mono#2": ref_pr(2, threads=[{"resolved": False, "last_author": "reviewer", "started_by_bot": False}]),
+            "chainguard-dev/mono#3": ref_pr(3, checks=[{"name": "ci", "conclusion": "FAILURE", "status": "COMPLETED"}] * 2),
+            "chainguard-dev/mono#4": ref_pr(4, files=["public/go-driftlessaf/x.go"], last_commit_at="2026-11-23T08:00:00Z"),
+            "chainguard-dev/mono#5": ref_pr(5, draft=True, created_at="2026-11-01T00:00:00Z", last_commit_at="2026-11-02T00:00:00Z"),
+            "chainguard-dev/mono#6": ref_pr(6, draft=True),
+            "chainguard-dev/mono#7": ref_pr(7),
+            "chainguard-dev/mono#8": ref_pr(8, additions=4000),
+            "chainguard-dev/mono#9": ref_pr(9, checks=running),
+        }
+        holds = {"chainguard-dev/mono#1": {"until": "2026-11-30", "reason": "on purpose"}}
+        requests = [
+            {"rollout": "eod", "pr": "chainguard-dev/mono#7", "channel": "#c", "sent_at": "2026-11-23T15:00:00+00:00"},
+            {"rollout": "eod", "pr": "chainguard-dev/mono#8", "channel": "#c", "sent_at": "2026-11-20T09:00:00+00:00"},
+        ]
+        got = core.eod(prs, requests, holds, now, first_run, CONFIG)
+        overdue = core.chase(requests, prs, now, CONFIG)[0]
+
+        def row(n, bucket, detail=None, actions=(), draft=False, stale=False, active="2026-11-23T09:00:00+00:00"):
+            return {"ref": f"chainguard-dev/mono#{n}", "title": f"t{n}", "url": f"u{n}", "draft": draft,
+                    "bucket": bucket, "detail": detail, "stale": stale, "last_activity": active, "actions": list(actions)}
+
+        ask = {"channels": [{"channel": "#chan-lib", "why": "path public/go-driftlessaf/"}], "message": ":pr: [t4](u4)"}
+        self.assertEqual(got, {
+            "prs": [
+                row(1, "held", holds["chainguard-dev/mono#1"], draft=True),
+                row(2, "reply", {"person_threads": 1, "review": "REVIEW_REQUIRED"}),
+                row(3, "fix", {"failing": ["ci"], "conflicting": False, "bot_findings": 0}),
+                row(4, "ask", ask, [{"kind": "request-review", "auto": True, "detail": ask}], active="2026-11-23T08:00:00+00:00"),
+                # Opened before the first /eod: may be a draft on purpose, so jml is asked.
+                row(5, "ready", None, [{"kind": "mark-ready", "auto": False, "detail": "draft is green"}],
+                    draft=True, stale=True, active="2026-11-02T00:00:00+00:00"),
+                row(6, "ready", None, [{"kind": "mark-ready", "auto": True, "detail": "draft is green"}], draft=True),
+                row(7, "waiting", {"channel": "#c", "sent_at": "2026-11-23T15:00:00+00:00", "teams": []}),
+                row(8, "overdue", overdue),
+                row(9, "running"),
+            ],
+            "counts": {"held": 1, "reply": 1, "fix": 1, "merge": 0, "ask": 1, "ready": 2, "bots": 0,
+                       "overdue": 1, "waiting": 1, "running": 1, "parked": 0},
+            "oldest_ask_hours": 10.0,
+        })
+        self.assertEqual(overdue["pr"], "chainguard-dev/mono#8")
+
+
 if __name__ == "__main__":
     unittest.main()

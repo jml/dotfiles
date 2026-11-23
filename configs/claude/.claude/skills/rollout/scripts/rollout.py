@@ -17,7 +17,7 @@ import os
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -28,7 +28,7 @@ STATE = Path(os.environ.get("ROLLOUT_STATE_DIR", Path.home() / ".local/state/rol
 CONFIG = Path(__file__).resolve().parent.parent / "config.json"
 
 PR_FIELDS = """
-number title url state isDraft mergeable reviewDecision additions deletions
+number title url state isDraft mergeable reviewDecision additions deletions createdAt
 author { login }
 mergeCommit { oid }
 files(first: 100) { nodes { path } }
@@ -39,7 +39,7 @@ comments(last: 50) { nodes { author { __typename login } createdAt } }
 reviewThreads(first: 100) { nodes { isResolved
   first: comments(first: 1) { nodes { author { __typename login } } }
   last: comments(last: 1) { nodes { author { __typename login } createdAt } } } }
-commits(last: 1) { nodes { commit { statusCheckRollup { contexts(first: 100) { nodes {
+commits(last: 1) { nodes { commit { committedDate statusCheckRollup { contexts(first: 100) { nodes {
   __typename ... on CheckRun { name conclusion status } ... on StatusContext { context state } } } } } } }
 """
 
@@ -63,7 +63,8 @@ def is_bot(a) -> bool:
 
 
 def normalise(ref: str, raw: dict) -> dict:
-    rollup = (raw["commits"]["nodes"] or [{}])[0].get("commit", {}).get("statusCheckRollup") or {}
+    head = (raw["commits"]["nodes"] or [{}])[0].get("commit", {})
+    rollup = head.get("statusCheckRollup") or {}
     checks = []
     for c in (rollup.get("contexts") or {}).get("nodes", []):
         if c["__typename"] == "CheckRun":
@@ -106,6 +107,8 @@ def normalise(ref: str, raw: dict) -> dict:
         "review_decision": raw["reviewDecision"],
         "additions": raw["additions"],
         "deletions": raw["deletions"],
+        "created_at": raw.get("createdAt"),
+        "last_commit_at": head.get("committedDate"),
         "files": [f["path"] for f in raw["files"]["nodes"]],
         "requested_teams": teams,
         "requested_users": users,
@@ -310,9 +313,75 @@ def cmd_wait_checks(args) -> int:
         time.sleep(args.interval)
 
 
+def open_prs(me: str) -> tuple[list[str], list[str]]:
+    """jml's open PRs as (refs, refs in archived repos), from one search call."""
+    q = """query($q: String!) { search(query: $q, type: ISSUE, first: 100) { nodes {
+      ... on PullRequest { number repository { nameWithOwner isArchived } } } } }"""
+    nodes = json.loads(gh("api", "graphql", "-f", f"query={q}", "-f", f"q=is:pr is:open author:{me}"))["data"]["search"]["nodes"]
+    live, archived = [], []
+    for n in nodes:
+        ref = f"{n['repository']['nameWithOwner']}#{n['number']}"
+        (archived if n["repository"]["isArchived"] else live).append(ref)
+    return sorted(live), sorted(archived)
+
+
+def rollout_members() -> dict[str, str]:
+    """Every PR in a rollout manifest, mapped to its rollout."""
+    out = {}
+    for p in sorted(STATE.glob("*.json")):
+        if p.name.endswith((".marks.json", ".summary.json")) or p.name.startswith("eod."):
+            continue
+        m = load_json(p, {})
+        for n in m.get("nodes", []):
+            if "pr" in n:
+                out[n["pr"]] = m.get("name", p.stem)
+    return out
+
+
+def cmd_sweep(args) -> int:
+    config = load_json(CONFIG, {})
+    now = datetime.now(timezone.utc)
+    log = STATE / "eod.jsonl"
+    runs = [json.loads(line) for line in log.read_text().splitlines() if line.strip()] if log.exists() else []
+    first_run = datetime.fromisoformat(runs[0]["at"]) if runs else now
+    live, archived = open_prs(config["me"])
+    members = rollout_members()
+    refs = [r for r in live if r not in members]
+    report = core.eod(fetch_prs(refs), load_requests(), load_json(STATE / "eod.holds.json", {}), now, first_run, config)
+    report["in_rollouts"] = {r: members[r] for r in live if r in members}
+    report["archived"] = archived
+    if args.log:
+        STATE.mkdir(parents=True, exist_ok=True)
+        with open(log, "a") as f:
+            f.write(json.dumps({"at": now.isoformat(timespec="seconds"), "counts": report["counts"],
+                                "oldest_ask_hours": report["oldest_ask_hours"],
+                                "in_rollouts": len(report["in_rollouts"])}) + "\n")
+    if args.json:
+        print(json.dumps(report, indent=2))
+    else:
+        for e in report["prs"]:
+            print(f"{e['bucket']:8} {e['ref']}{' (stale draft)' if e['stale'] else ''} — {e['title']}")
+        print(f"{len(report['in_rollouts'])} in rollouts, {len(archived)} in archived repos")
+    return 0
+
+
+def cmd_hold(args) -> int:
+    p = STATE / "eod.holds.json"
+    holds = load_json(p, {})
+    if args.undo:
+        holds.pop(args.pr, None)
+    else:
+        days = args.days or load_json(CONFIG, {}).get("eod", {}).get("hold_days", 7)
+        today = datetime.now(timezone.utc).date()
+        holds[args.pr] = {"until": (today + timedelta(days=days)).isoformat(), "reason": args.reason, "set": today.isoformat()}
+    STATE.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(holds, indent=2, sort_keys=True) + "\n")
+    return 0
+
+
 def cmd_list(_args) -> int:
     for p in sorted(STATE.glob("*.json")):
-        if not p.name.endswith((".marks.json", ".summary.json")):
+        if not p.name.endswith((".marks.json", ".summary.json")) and not p.name.startswith("eod."):
             print(p.stem)
     return 0
 
@@ -345,6 +414,16 @@ def main() -> int:
     w.add_argument("--timeout", type=int, default=3600)
     w.set_defaults(fn=cmd_wait_checks)
     sub.add_parser("list").set_defaults(fn=cmd_list)
+    e = sub.add_parser("sweep", help="end-of-day buckets for open PRs in no rollout")
+    e.add_argument("--json", action="store_true")
+    e.add_argument("--log", action="store_true", help="append this run's counts to eod.jsonl")
+    e.set_defaults(fn=cmd_sweep)
+    h = sub.add_parser("hold", help="stop /eod asking about a PR for a while")
+    h.add_argument("pr", help="owner/repo#N")
+    h.add_argument("--reason", default="")
+    h.add_argument("--days", type=int)
+    h.add_argument("--undo", action="store_true")
+    h.set_defaults(fn=cmd_hold)
     args = ap.parse_args()
     return args.fn(args)
 
