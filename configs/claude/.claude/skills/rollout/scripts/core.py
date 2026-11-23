@@ -20,6 +20,7 @@ keyed by node id then env (True, False or None when it can't tell), and
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta
 
 # Seconds until the next tick, by the cheapest thing still in motion.
@@ -586,4 +587,225 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
         "prs": out,
         "counts": {b: sum(e["bucket"] == b for e in out) for b in EOD_BUCKETS},
         "oldest_ask_hours": round(max(ask_ages).total_seconds() / 3600, 1) if ask_ages else None,
+    }
+
+
+# Standup: blockers and cross-team dependencies, compared with the last standup.
+
+# Words shaped like a Linear identifier that aren't one.
+NOT_ISSUE_PREFIXES = {"UTF", "SHA", "ISO", "RFC", "CVE", "GHSA", "PEP", "TLS", "HTTP", "AES"}
+_ISSUE_ID = re.compile(r"\b([A-Z][A-Z0-9]{1,9}-\d+)\b")
+
+
+def issue_ids(text: str) -> set[str]:
+    return {m for m in _ISSUE_ID.findall(text or "") if m.split("-")[0] not in NOT_ISSUE_PREFIXES}
+
+
+_TRACKING_LINE = re.compile(r"^\s*(Tracking|Fixes|Closes|Resolves|Part of)\b", re.IGNORECASE)
+
+
+def pr_issue_ids(pr: dict) -> set[str]:
+    """Linear issues a PR works on: named in its title or branch, or on a
+    `Tracking:`-style line of its description. Other mentions in the
+    description are context (jml cites related issues as reference links), so
+    they don't count."""
+    tracking = "\n".join(line for line in (pr.get("body") or "").splitlines() if _TRACKING_LINE.match(line))
+    return issue_ids(pr.get("title", "")) | issue_ids((pr.get("head") or "").upper()) | issue_ids(tracking)
+
+
+def pr_mentions_issue(pr: dict) -> bool:
+    """Whether a PR names any Linear issue anywhere, so belongs to planned work."""
+    return bool(pr_issue_ids(pr) | issue_ids(pr.get("body", "")))
+
+
+def person_kind(who: str | None, sc: dict) -> str:
+    """subteam, pod or other, for a Linear display name or a GitHub login."""
+    def names(group):
+        return {v for p in sc.get(group, []) for v in (p.get("name"), p.get("github")) if v}
+    if who in names("subteam"):
+        return "subteam"
+    if who in names("pod"):
+        return "pod"
+    return "other"
+
+
+def _issue_counterpart(issue: dict, sc: dict) -> dict:
+    team = issue["id"].split("-")[0]
+    if issue.get("assignee"):
+        return {"kind": person_kind(issue["assignee"], sc), "label": f"{issue['assignee']} ({team})"}
+    kind = "subteam" if team in sc.get("subteam_linear_teams", []) else "other"
+    return {"kind": kind, "label": f"{team}, unassigned"}
+
+
+def _review_counterparts(entry: dict, pr: dict, config: dict) -> list[dict]:
+    """Who a waiting review is waiting on: requested teams and people, or the team
+    whose channel the request went to. Home teams count as the subteam."""
+    sc = config.get("standup", {})
+    home = set(sc.get("home_github_teams", []))
+    by_channel = {}
+    for team, channel in config.get("channels", {}).get("teams", {}).items():
+        by_channel.setdefault(channel, team)
+    teams = set(pr.get("requested_teams", []))
+    channel = (entry.get("detail") or {}).get("channel")
+    if not teams and channel:
+        teams.add(by_channel.get(channel, channel))
+    out = [{"kind": "subteam" if t in home else "other", "label": t} for t in sorted(teams)]
+    out += [{"kind": person_kind(u, sc), "label": u} for u in sorted(pr.get("requested_users", []))]
+    return [c for c in out if c["kind"] != "subteam"]
+
+
+WHOSE_MOVE = {
+    "held": "jml", "reply": "jml", "fix": "jml", "merge": "jml", "owned": "session", "ask": "jml",
+    "blocked": "jml", "ready": "jml", "bots": "bots", "overdue": "reviewers", "waiting": "reviewers",
+    "running": "ci", "parked": "jml",
+}
+OPEN_STATUS_TYPES = ("unstarted", "started")
+CLOSED_STATUS_TYPES = ("completed", "canceled")
+
+
+def _diff(now_items: dict, prev_items: dict, track_state: bool) -> dict:
+    out = {"new": [], "standing": [], "gone": []}
+    if track_state:
+        out["changed"] = []
+    for key, item in sorted(now_items.items()):
+        before = prev_items.get(key)
+        if before is None:
+            out["new"].append(item)
+        elif track_state and before.get("state") != item.get("state"):
+            out["changed"].append(item | {"was": before.get("state")})
+        else:
+            out["standing"].append(item)
+    out["gone"] = [prev_items[k] for k in sorted(set(prev_items) - set(now_items))]
+    return out
+
+
+def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[dict], inbound: list[dict],
+            previous: dict | None, config: dict) -> dict:
+    """Blockers, dependencies, Linear drift and unplanned fixes for jml's standup.
+
+    `sweep` is core.eod over every open PR of jml's, `prs` their facts and
+    `rollouts` maps the ones in a rollout to its name: their review requests
+    and mark-ready belong to the rollout's session, so they carry no actions.
+    `linear["issues"]` holds jml's open issues and every issue they block or are
+    blocked by, each with id, title, url, status, status_type, assignee and,
+    for jml's, blocked_by and blocks. `merged` is jml's PRs merged since the
+    last standup and `inbound` the open PRs whose author asked jml directly
+    for review. `previous` is the last standup's snapshot, or None for the
+    first run, which is a baseline: nothing in it counts as new.
+
+    A dependency is anything between jml and someone outside the subteam:
+    the pod's other members, or another team.
+    """
+    sc = config.get("standup", {})
+    me = sc.get("linear_name")
+    issues = {i["id"]: i for i in linear.get("issues", [])}
+    mine = {k: i for k, i in issues.items() if i.get("assignee") == me and i.get("status_type") in OPEN_STATUS_TYPES}
+
+    def is_open(issue_id: str) -> bool:
+        # An issue the facts don't describe is assumed open: better a stale
+        # dependency reported than a live one dropped.
+        return issues.get(issue_id, {}).get("status_type", "started") not in CLOSED_STATUS_TYPES
+
+    def other(issue_id: str) -> dict:
+        i = issues.get(issue_id) or {"id": issue_id}
+        return {"id": issue_id, "title": i.get("title"), "url": i.get("url"), "status": i.get("status")} | _issue_counterpart(i, sc)
+
+    links: dict[str, list[str]] = {}
+    for ref, pr in prs.items():
+        for i in sorted(pr_issue_ids(pr) & set(mine)):
+            links.setdefault(i, []).append(ref)
+
+    blockers: dict[str, dict] = {}
+    for e in sweep["prs"]:
+        pr = prs[e["ref"]]
+        blockers[f"pr:{e['ref']}"] = {
+            "key": f"pr:{e['ref']}", "kind": "pr", "ref": e["ref"], "title": e["title"], "url": e["url"],
+            "draft": e["draft"], "bucket": e["bucket"], "detail": e["detail"], "stale": e["stale"],
+            "whose_move": "rollout" if e["ref"] in rollouts else WHOSE_MOVE[e["bucket"]],
+            "rollout": rollouts.get(e["ref"]), "issues": sorted(pr_issue_ids(pr) & set(mine)),
+            "actions": [] if e["ref"] in rollouts else e["actions"],
+        }
+    for k, i in sorted(mine.items()):
+        outside = [other(b) for b in i.get("blocked_by", []) if is_open(b)]
+        outside = [o for o in outside if o["kind"] != "subteam"]
+        unrecorded = i.get("status") == "Blocked" and not i.get("blocked_by")
+        if outside or unrecorded:
+            blockers[f"issue:{k}"] = {"key": f"issue:{k}", "kind": "issue", "id": k, "title": i["title"], "url": i.get("url"),
+                                      "status": i.get("status"), "waiting_on": outside, "unrecorded": unrecorded}
+
+    deps: dict[str, dict] = {}
+
+    def dep(direction, mine_ref, title, url, counterpart, state, via):
+        key = f"{direction}|{mine_ref}|{counterpart.get('id') or counterpart['label']}"
+        deps[key] = {"key": key, "direction": direction, "mine": mine_ref, "title": title, "url": url,
+                     "counterpart": counterpart, "state": state, "via": via}
+
+    for k, i in sorted(mine.items()):
+        for b in i.get("blocked_by", []):
+            o = other(b)
+            if is_open(b) and o["kind"] != "subteam":
+                dep("waits_on", k, i["title"], i.get("url"), o, o["status"], "linear")
+        for b in i.get("blocks", []):
+            o = other(b)
+            if is_open(b) and o["kind"] != "subteam":
+                dep("waited_on_by", k, i["title"], i.get("url"), o, o["status"], "linear")
+    for e in sweep["prs"]:
+        if e["bucket"] in ("waiting", "overdue"):
+            for c in _review_counterparts(e, prs[e["ref"]], config):
+                dep("waits_on", e["ref"], e["title"], e["url"], c, e["bucket"], "review")
+    for p in inbound:
+        kind = person_kind(p["author"], sc)
+        if kind != "subteam":
+            dep("waited_on_by", p["ref"], p["title"], p["url"], {"kind": kind, "label": p["author"]}, "review requested", "review")
+
+    drift = []
+    merged_links: dict[str, list[str]] = {}
+    for p in merged:
+        for i in sorted(pr_issue_ids(p) & set(mine)):
+            merged_links.setdefault(i, []).append(p["ref"])
+    for k, i in sorted(mine.items()):
+        base = {"id": k, "title": i["title"], "url": i.get("url"), "status": i.get("status")}
+        blocked_by = i.get("blocked_by", [])
+        open_prs = [prs[r] | {"ref": r} for r in links.get(k, [])]
+        if i.get("status") == "Blocked" and not blocked_by:
+            drift.append(base | {"rule": "blocked-without-blocker",
+                                 "propose": "add a blocked-by relation to what it waits on, or move it out of Blocked"})
+        elif i.get("status") == "Blocked" and not any(is_open(b) for b in blocked_by):
+            drift.append(base | {"rule": "blocker-resolved", "blockers": blocked_by, "propose": "move it out of Blocked"})
+        if i.get("status_type") == "unstarted" and open_prs:
+            ready = [p["ref"] for p in open_prs if not p["draft"]]
+            drift.append(base | {"rule": "pr-open-issue-not-started", "prs": ready or [p["ref"] for p in open_prs],
+                                 "propose": "In Review" if ready else "In Progress"})
+        if i.get("status_type") == "started" and i.get("status") != "Blocked" and merged_links.get(k) and not open_prs:
+            drift.append(base | {"rule": "prs-merged", "prs": merged_links[k],
+                                 "propose": "check the outcome, then mark it Done"})
+
+    fixed = [{"ref": p["ref"], "title": p["title"], "url": p["url"]}
+             for p in merged if not pr_mentions_issue(p)]
+
+    prev = previous or {}
+    snapshot = {
+        "blockers": {k: {"key": k, "title": v["title"], "url": v["url"]} for k, v in blockers.items()},
+        "dependencies": {k: {"key": k, "title": v["title"], "url": v["url"], "direction": v["direction"],
+                             "counterpart": v["counterpart"], "state": v["state"]} for k, v in deps.items()},
+    }
+    if previous is None:
+        b = {"new": [], "standing": [v for _, v in sorted(blockers.items())], "gone": []}
+        d = {"new": [], "changed": [], "standing": [v for _, v in sorted(deps.items())], "gone": []}
+    else:
+        b = _diff(blockers, prev.get("blockers", {}), track_state=False)
+        d = _diff(deps, prev.get("dependencies", {}), track_state=True)
+    return {
+        "baseline": previous is None,
+        "since": prev.get("at"),
+        "blockers": {"new": b["new"], "standing": b["standing"], "cleared": b["gone"]},
+        "dependencies": {"new": d["new"], "changed": d["changed"], "standing": d["standing"], "resolved": d["gone"]},
+        "counts": {
+            "blockers": {"new": len(b["new"]), "standing": len(b["standing"]), "cleared": len(b["gone"])},
+            "dependencies": {"new": len(d["new"]), "changed": len(d["changed"]), "standing": len(d["standing"]),
+                             "resolved": len(d["gone"])},
+        },
+        "drift": drift,
+        "fixed_in_passing": fixed,
+        "snapshot": snapshot,
     }

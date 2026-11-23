@@ -5,6 +5,7 @@ State lives in $ROLLOUT_STATE_DIR (default ~/.local/state/rollouts):
   <name>.json        the manifest (nodes and their `after` edges)
   <name>.marks.json  steps a person marked done
   requests.jsonl     every Slack review request sent, across all rollouts
+  standup/<date>.json  each standup's blockers and dependencies, for the next one to compare with
 Config (deploy workflows, Slack channel map, chase thresholds) is config.json
 beside this skill.
 """
@@ -400,6 +401,84 @@ def cmd_sweep(args) -> int:
     return 0
 
 
+def search_prs(query: str, fields: str) -> list[dict]:
+    """Pull requests matching a GitHub search, up to 100."""
+    q = """query($q: String!) { search(query: $q, type: ISSUE, first: 100) { nodes {
+      ... on PullRequest { number url title repository { nameWithOwner } %s } } } }""" % fields
+    nodes = json.loads(gh("api", "graphql", "-f", f"query={q}", "-f", f"q={query}"))["data"]["search"]["nodes"]
+    return [n | {"ref": f"{n['repository']['nameWithOwner']}#{n['number']}"} for n in nodes if n]
+
+
+def inbound_requests(me: str, since: datetime) -> list[dict]:
+    """Open, non-draft PRs whose author asked `me` directly for review since `since`.
+
+    Old PRs stay "updated" through bot comments and rebases, so the cut-off is
+    the request itself: one left for weeks has been abandoned, not waited on.
+    """
+    fields = """isDraft author { __typename login } timelineItems(itemTypes: REVIEW_REQUESTED_EVENT, last: 20) {
+      nodes { ... on ReviewRequestedEvent { createdAt requestedReviewer { ... on User { login } } } } }"""
+    out = []
+    for p in search_prs(f"is:pr is:open user-review-requested:{me} -author:{me} archived:false", fields):
+        asked = [e["createdAt"] for e in p["timelineItems"]["nodes"] if (e.get("requestedReviewer") or {}).get("login") == me]
+        if p["isDraft"] or is_bot(p["author"]) or not asked or core._parse(asked[-1]) < since:
+            continue
+        out.append({"ref": p["ref"], "title": p["title"], "url": p["url"], "author": login(p["author"]), "requested_at": asked[-1]})
+    return out
+
+
+def previous_working_day(now: datetime) -> datetime:
+    back = 3 if now.weekday() == 0 else 1
+    return now - timedelta(days=back)
+
+
+def latest_snapshot(before: str) -> dict | None:
+    """The newest standup snapshot from a day before `before` (YYYY-MM-DD)."""
+    older = sorted(p for p in (STATE / "standup").glob("*.json") if p.stem < before)
+    return load_json(older[-1], None) if older else None
+
+
+def cmd_standup(args) -> int:
+    config = load_json(CONFIG, {})
+    me = config["me"]
+    now = datetime.now(timezone.utc)
+    today = now.date().isoformat()
+    runs = [json.loads(line) for line in (STATE / "eod.jsonl").read_text().splitlines() if line.strip()] \
+        if (STATE / "eod.jsonl").exists() else []
+    first_run = datetime.fromisoformat(runs[0]["at"]) if runs else now
+    live, _ = open_prs(me)
+    members = rollout_members()
+    prs = fetch_prs(live)
+    sweep = core.eod(prs, load_requests(), load_json(STATE / "eod.holds.json", {}), now, first_run, config,
+                     sessions=live_sessions())
+    previous = latest_snapshot(today)
+    since = previous["at"] if previous else previous_working_day(now).isoformat(timespec="seconds")
+    merged = search_prs(f"is:pr is:merged author:{me} merged:>={since[:19]}", "body headRefName")
+    for m in merged:
+        m["head"] = m.pop("headRefName")
+    inbound = inbound_requests(me, now - timedelta(days=config.get("standup", {}).get("inbound_days", 14)))
+    linear = load_json(Path(args.linear), {"issues": []})
+    report = core.standup(sweep, prs, {r: members[r] for r in live if r in members}, linear, merged, inbound, previous, config)
+    report["at"] = now.isoformat(timespec="seconds")
+    if not args.no_save:
+        (STATE / "standup").mkdir(parents=True, exist_ok=True)
+        (STATE / "standup" / f"{today}.json").write_text(
+            json.dumps(report["snapshot"] | {"at": report["at"]}, indent=2, sort_keys=True) + "\n")
+    print(json.dumps(report, indent=2))
+    return 0
+
+
+def cmd_standup_log(args) -> int:
+    """One line per standup, for judging whether /standup is worth keeping."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    snap = load_json(STATE / "standup" / f"{today}.json", {})
+    line = {"at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "blockers": len(snap.get("blockers", {})), "dependencies": len(snap.get("dependencies", {})),
+            "drift_offered": args.offered, "drift_applied": args.applied, "posted": args.posted}
+    with open(STATE / "standup.jsonl", "a") as f:
+        f.write(json.dumps(line) + "\n")
+    return 0
+
+
 def cmd_hold(args) -> int:
     p = STATE / "eod.holds.json"
     holds = load_json(p, {})
@@ -459,6 +538,15 @@ def main() -> int:
     h.add_argument("--days", type=int)
     h.add_argument("--undo", action="store_true")
     h.set_defaults(fn=cmd_hold)
+    st = sub.add_parser("standup", help="blockers and dependencies for standup, compared with the last one")
+    st.add_argument("--linear", required=True, metavar="PATH", help="Linear facts gathered by the skill")
+    st.add_argument("--no-save", action="store_true", help="don't write today's snapshot")
+    st.set_defaults(fn=cmd_standup)
+    sl = sub.add_parser("standup-log", help="append this standup's outcome to standup.jsonl")
+    sl.add_argument("--offered", type=int, required=True)
+    sl.add_argument("--applied", type=int, required=True)
+    sl.add_argument("--posted", action=argparse.BooleanOptionalAction, required=True)
+    sl.set_defaults(fn=cmd_standup_log)
     args = ap.parse_args()
     return args.fn(args)
 

@@ -345,5 +345,128 @@ class EodTest(unittest.TestCase):
         self.assertEqual([e["actions"] for e in got["prs"] if e["bucket"] == "blocked"], [[]] * 5)
 
 
+STANDUP_CONFIG = CONFIG | {
+    "channels": CONFIG["channels"] | {"teams": {"chainguard-dev/data-analytics-admins": "#chan-data-eng",
+                                                "chainguard-dev/developer-platform-team-write": "#chan-home"}},
+    "standup": {
+        "linear_name": "Jonathan Lange",
+        "subteam": [{"name": "Jonathan Lange", "github": "jml"}, {"name": "Ada Example", "github": "ada"}],
+        "pod": [{"name": "Bo Example", "github": "bo"}],
+        "subteam_linear_teams": ["DEVFNDN"],
+        "home_github_teams": ["chainguard-dev/developer-platform-team-write"],
+    },
+}
+
+
+def issue(id_, status="In Progress", status_type="started", assignee="Jonathan Lange", **kw):
+    return {"id": id_, "title": f"title {id_}", "url": f"l/{id_}", "status": status, "status_type": status_type,
+            "assignee": assignee} | kw
+
+
+def standup_inputs():
+    now = datetime(2026, 11, 24, 14, tzinfo=timezone.utc)
+
+    def ref_pr(n, **kw):
+        return pr(**({"number": n, "url": f"u{n}", "title": f"t{n}", "created_at": "2026-11-20T09:00:00Z",
+                      "last_commit_at": "2026-11-23T09:00:00Z", "head": f"b{n}"} | kw))
+
+    prs = {
+        # Waiting on another team's review, asked in its channel.
+        "chainguard-dev/mono#1": ref_pr(1, title="feat: thing (DEV-10)"),
+        # Waiting on the home team: a blocker, not a dependency.
+        # A description citing DEV-18 as context doesn't link the PR to it.
+        "chainguard-dev/mono#2": ref_pr(2, requested_teams=["chainguard-dev/developer-platform-team-write"],
+                                        body="Follows [DEV-18].\n\n[DEV-18]: l/DEV-18"),
+        # Failing CI, and a draft for DEV-11, which is still Todo.
+        "chainguard-dev/mono#3": ref_pr(3, draft=True, head="dev-11-x",
+                                        checks=[{"name": "ci", "conclusion": "FAILURE", "status": "COMPLETED"}]),
+        # In a rollout: its session owns the request.
+        "chainguard-dev/mono#4": ref_pr(4),
+    }
+    requests = [
+        {"rollout": "eod", "pr": "chainguard-dev/mono#1", "channel": "#chan-data-eng", "sent_at": "2026-11-24T12:00:00+00:00"},
+        {"rollout": "eod", "pr": "chainguard-dev/mono#2", "channel": "#chan-home", "sent_at": "2026-11-24T12:00:00+00:00"},
+    ]
+    sweep = core.eod(prs, requests, {}, now, now, STANDUP_CONFIG)
+    linear = {"issues": [
+        issue("DEV-10", status="In Review", blocked_by=["DATA-1", "DATA-2", "DEV-20"], blocks=["CON-5"]),
+        issue("DEV-11", status="Todo", status_type="unstarted"),
+        issue("DEVFNDN-12", status="Blocked"),
+        issue("DEVFNDN-13", status="Blocked", blocked_by=["DEVFNDN-14"]),
+        issue("DEVFNDN-15", blocked_by=["DEVFNDN-16"], blocks=["DEVFNDN-17"]),
+        issue("DEV-18"),
+        issue("DATA-1", assignee="Someone Else"),
+        # Not started is still open.
+        issue("DATA-2", assignee="Someone Else", status="Backlog", status_type="backlog"),
+        issue("DEV-20", assignee="Ada Example"),
+        issue("CON-5", assignee="Bo Example", status="Todo", status_type="unstarted"),
+        issue("DEVFNDN-14", status="Done", status_type="completed"),
+        issue("DEVFNDN-16", assignee=None, status="Backlog", status_type="backlog"),
+        issue("DEVFNDN-17", assignee="Ada Example"),
+    ]}
+    merged = [
+        {"ref": "chainguard-dev/mono#8", "title": "fix: tidy UTF-8 handling", "url": "u8", "body": "no ticket", "head": "fix-utf"},
+        # Cites an issue as context: planned work, not a fix in passing.
+        {"ref": "chainguard-dev/mono#10", "title": "docs: note", "url": "u10", "body": "See [DEV-99].", "head": "b10"},
+        {"ref": "chainguard-dev/mono#9", "title": "feat: last piece", "url": "u9", "body": "Tracking: DEV-18", "head": "b9"},
+    ]
+    inbound = [
+        {"ref": "chainguard-dev/infra#7", "title": "i7", "url": "i7", "author": "outsider"},
+        {"ref": "chainguard-dev/infra#6", "title": "i6", "url": "i6", "author": "ada"},
+    ]
+    return sweep, prs, {"chainguard-dev/mono#4": "big-change"}, linear, merged, inbound
+
+
+class StandupTest(unittest.TestCase):
+    def test_first_run_is_a_baseline(self):
+        got = core.standup(*standup_inputs(), None, STANDUP_CONFIG)
+        self.assertTrue(got["baseline"])
+        self.assertEqual(got["counts"], {"blockers": {"new": 0, "standing": 6, "cleared": 0},
+                                         "dependencies": {"new": 0, "changed": 0, "standing": 5, "resolved": 0}})
+        self.assertEqual([(b["key"], b.get("whose_move"), b.get("rollout")) for b in got["blockers"]["standing"]], [
+            ("issue:DEV-10", None, None),
+            ("issue:DEVFNDN-12", None, None),
+            ("pr:chainguard-dev/mono#1", "reviewers", None),
+            ("pr:chainguard-dev/mono#2", "reviewers", None),
+            ("pr:chainguard-dev/mono#3", "jml", None),
+            ("pr:chainguard-dev/mono#4", "rollout", "big-change"),
+            # DEVFNDN-15 waits only on an unassigned issue in the subteam's team, and
+            # DEVFNDN-13's blocker is done: neither is a standup blocker.
+        ])
+        self.assertEqual(got["blockers"]["standing"][-1]["actions"], [])
+        self.assertEqual([(d["key"], d["counterpart"]["kind"], d["state"]) for d in got["dependencies"]["standing"]], [
+            ("waited_on_by|DEV-10|CON-5", "pod", "Todo"),
+            ("waited_on_by|chainguard-dev/infra#7|outsider", "other", "review requested"),
+            ("waits_on|DEV-10|DATA-1", "other", "In Progress"),
+            ("waits_on|DEV-10|DATA-2", "other", "Backlog"),
+            ("waits_on|chainguard-dev/mono#1|chainguard-dev/data-analytics-admins", "other", "waiting"),
+        ])
+        self.assertEqual([(d["id"], d["rule"], d["propose"]) for d in got["drift"]], [
+            ("DEV-11", "pr-open-issue-not-started", "In Progress"),
+            ("DEV-18", "prs-merged", "check the outcome, then mark it Done"),
+            ("DEVFNDN-12", "blocked-without-blocker", "add a blocked-by relation to what it waits on, or move it out of Blocked"),
+            ("DEVFNDN-13", "blocker-resolved", "move it out of Blocked"),
+        ])
+        self.assertEqual(got["fixed_in_passing"], [{"ref": "chainguard-dev/mono#8", "title": "fix: tidy UTF-8 handling", "url": "u8"}])
+
+    def test_compares_with_the_last_standup(self):
+        inputs = standup_inputs()
+        first = core.standup(*inputs, None, STANDUP_CONFIG)["snapshot"]
+        previous = {"at": "2026-11-23T14:00:00+00:00",
+                    "blockers": {k: v for k, v in first["blockers"].items() if k != "pr:chainguard-dev/mono#3"}
+                    | {"pr:chainguard-dev/mono#99": {"key": "pr:chainguard-dev/mono#99", "title": "gone", "url": "u99"}},
+                    "dependencies": {k: (v | {"state": "Todo"} if k == "waits_on|DEV-10|DATA-1" else v)
+                                     for k, v in first["dependencies"].items() if not k.startswith("waited_on_by|chainguard-dev/infra#7")}}
+        got = core.standup(*inputs, previous, STANDUP_CONFIG)
+        self.assertEqual((got["baseline"], got["since"]), (False, "2026-11-23T14:00:00+00:00"))
+        self.assertEqual(got["counts"], {"blockers": {"new": 1, "standing": 5, "cleared": 1},
+                                         "dependencies": {"new": 1, "changed": 1, "standing": 3, "resolved": 0}})
+        self.assertEqual([b["key"] for b in got["blockers"]["new"]], ["pr:chainguard-dev/mono#3"])
+        self.assertEqual(got["blockers"]["cleared"], [{"key": "pr:chainguard-dev/mono#99", "title": "gone", "url": "u99"}])
+        self.assertEqual([(d["key"], d["was"], d["state"]) for d in got["dependencies"]["changed"]],
+                         [("waits_on|DEV-10|DATA-1", "Todo", "In Progress")])
+        self.assertEqual([d["key"] for d in got["dependencies"]["new"]], ["waited_on_by|chainguard-dev/infra#7|outsider"])
+
+
 if __name__ == "__main__":
     unittest.main()
