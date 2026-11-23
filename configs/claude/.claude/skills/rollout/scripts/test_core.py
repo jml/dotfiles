@@ -292,7 +292,7 @@ class EodTest(unittest.TestCase):
                 row(8, "overdue", overdue),
                 row(9, "running"),
             ],
-            "counts": {"held": 1, "reply": 1, "fix": 1, "merge": 0, "ask": 1, "blocked": 0, "ready": 2, "bots": 0,
+            "counts": {"held": 1, "reply": 1, "fix": 1, "merge": 0, "owned": 0, "ask": 1, "blocked": 0, "ready": 2, "bots": 0,
                        "overdue": 1, "waiting": 1, "running": 1, "parked": 0},
             "oldest_ask_hours": 10.0,
         })
@@ -321,6 +321,7 @@ class EodTest(unittest.TestCase):
             "chainguard-dev/mono#15": draft(15),
             "chainguard-dev/mono#16": draft(16),
             "chainguard-dev/other#10": draft(10, repo="chainguard-dev/other", url="o10"),
+            "chainguard-dev/mono#17": draft(17, draft=False, head="b15"),
         }
         sessions = [
             {"name": "Dataplane guide", "cwd": "/w/a", "branch": "b15"},
@@ -338,6 +339,8 @@ class EodTest(unittest.TestCase):
             "chainguard-dev/mono#15": ("blocked", {"session": "Dataplane guide"}),
             "chainguard-dev/mono#16": ("blocked", {"session": "Iterate on #16"}),
             "chainguard-dev/other#10": ("ready", None),
+            # Ready for review, but its live session sends the request.
+            "chainguard-dev/mono#17": ("owned", {"session": "Dataplane guide"}),
         })
         self.assertEqual([e["actions"] for e in got["prs"] if e["bucket"] == "blocked"], [[]] * 5)
 

@@ -426,7 +426,7 @@ def chase(requests: list[dict], prs: dict, now: datetime, config: dict) -> list[
 
 # End-of-day sweep buckets, in the order a PR is tested against them: a PR
 # lands in the first that fits.
-EOD_BUCKETS = ("held", "reply", "fix", "merge", "ask", "blocked", "ready", "bots", "overdue", "waiting", "running", "parked")
+EOD_BUCKETS = ("held", "reply", "fix", "merge", "owned", "ask", "blocked", "ready", "bots", "overdue", "waiting", "running", "parked")
 
 
 def _parse(ts: str | None) -> datetime | None:
@@ -505,6 +505,9 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
     /eod: a draft older than that may be a draft on purpose, so jml is asked
     once, and holding it records the answer.
 
+    A PR ready for review whose live session is in `sessions` goes to `owned`
+    and gets no request: that session sends it.
+
     A green draft is never offered for mark-ready (bucket `blocked`) while a
     live session in `sessions` works on it, while it builds on another open PR,
     while its base isn't the default branch, or while its description has an
@@ -539,6 +542,9 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
                                      "bot_findings": threads["bot_threads"]}
         elif "merge" in actions:
             bucket, detail = "merge", None
+        elif "request-review" in actions and (owner := session_on(ref, prs, sessions or [])):
+            # The live session working on the PR sends its own review request.
+            bucket, detail = "owned", {"session": owner}
         elif "request-review" in actions:
             bucket, detail = "ask", actions["request-review"]["detail"]
         elif "mark-ready" in actions and (blockers := {k: v for k, v in {
