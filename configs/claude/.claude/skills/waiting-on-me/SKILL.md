@@ -1,6 +1,10 @@
 ---
 name: waiting-on-me
 description: Lists everyone waiting on jml right now, across GitHub, Slack and Linear, so jml can unblock them. Covers PRs that request jml's review by name, PR and issue comments that @-mention jml since jml last replied there, Slack mentions and DMs that ask jml for something, and Linear mentions and assignments. Every item links to the ask. Use when jml asks "who's waiting on me", "anything where anyone is waiting on me", "could I unblock someone", "what do people need from me", or says "/waiting-on-me". Takes "days=N" to widen the 14-day window.
+model: sonnet
+effort: medium
+context: fork
+background: false
 ---
 
 # Waiting on me
@@ -46,7 +50,7 @@ Run steps 1–3 in parallel.
 
 3. **Linear.** Call go-linear `notification_list` with `limit: 50`. The output is large, so read it from the saved file with `jq -r '.stdout' <file> | jq '.nodes[]'`. Keep unread notifications (`readAt` null) whose `type` contains `Mention` or `Assigned`. Status changes, new comments and subscriptions are FYI, so leave them out. Each issue's link is `https://linear.app/chainguard/issue/<identifier>`.
 
-4. **Report** in chat, oldest wait first within each group. Every item starts with a link. Leave out a group that has no items.
+4. **Report** as your final message, which is all jml sees of this run, oldest wait first within each group. Every item starts with a link. Leave out a group that has no items.
 
    ```
    **Blocking someone (GitHub)**
