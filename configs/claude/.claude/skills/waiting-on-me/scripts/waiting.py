@@ -38,6 +38,9 @@ def classify(item, me, now):
     requested = me in item["requested"]
     if not asks and not requested:
         return None
+    # A review request on a draft is usually CODEOWNERS firing early; only a direct ask means the author wants jml yet.
+    if not asks and item["is_draft"]:
+        return None
     if not asks and is_bot(item["author"]):
         kind = "bot-review"
     elif asks:

@@ -46,6 +46,13 @@ class ClassifyTest(unittest.TestCase):
         got = classify(item(requested=["jml"], updated_at="2026-10-01T00:00:00Z"), "jml", NOW)
         self.assertEqual((got["kind"], got["stale"]), ("review", True))
 
+    def test_draft_needs_a_direct_ask(self):
+        self.assertIsNone(classify(item(is_draft=True, requested=["jml"]), "jml", NOW))
+        got = classify(item(is_draft=True, requested=["jml"], events=[
+            ev("alice", "2026-11-11T00:00:00Z", "@jml please review the direction"),
+        ]), "jml", NOW)
+        self.assertEqual(got["kind"], "asked")
+
     def test_bot_pr_request(self):
         for author in ("dependabot[bot]", "app/dependabot"):
             got = classify(item(author=author, requested=["jml"]), "jml", NOW)

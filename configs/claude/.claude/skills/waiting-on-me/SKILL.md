@@ -30,7 +30,7 @@ Run steps 1–3 in parallel.
 
 1. **GitHub.** Run `python3 ~/.claude/skills/waiting-on-me/scripts/waiting.py --days $DAYS`. It prints `items`, oldest wait first, each with a `kind`:
    - `asked`: a person @-mentioned jml after jml last commented or reviewed. `asks[]` holds the last two asks with their comment `url` and an `excerpt`.
-   - `review`: jml is a requested reviewer by name. A team request doesn't count: jml can't tell from the request alone whether jml is the one expected to review.
+   - `review`: jml is a requested reviewer by name on a ready PR. A team request doesn't count: jml can't tell from the request alone whether jml is the one expected to review. A draft PR appears only as `asked`, when someone @-mentioned jml on it.
    - `bot-review`: a bot's PR requests jml by name. Count these but don't list them.
 
    `stale: true` means nobody has touched the PR or issue in 30 days. Read the full JSON. For an `asked` item, use the excerpt to say in a few words what the person needs, such as "re-approve after a rebase" or "approve the tf-plan gate".
