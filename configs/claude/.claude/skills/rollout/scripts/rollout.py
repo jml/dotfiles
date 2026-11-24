@@ -162,7 +162,11 @@ def fetch_deploys(manifest: dict, prs: dict, config: dict) -> dict:
                 wanted.setdefault(dep, set()).add(cond.split(":", 1)[1])
     out: dict[str, dict] = {}
     for dep, envs in wanted.items():
-        pr = prs[dep]
+        pr = prs.get(dep)
+        # A step, or work with no PR yet, has deployed nowhere.
+        if pr is None:
+            out[dep] = dict.fromkeys(envs, False)
+            continue
         out[dep] = {}
         for env in envs:
             wf = config.get("deploys", {}).get(pr["repo"], {}).get(env)
