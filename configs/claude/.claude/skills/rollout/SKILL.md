@@ -19,7 +19,8 @@ The goal is that jml makes decisions and approves outward messages; the session 
 | `~/.local/state/rollouts/<name>.decisions.md` | jml's decisions, read every tick as policy |
 | `~/.local/state/rollouts/requests.jsonl` | Every Slack review request, all rollouts (chase reads it) |
 | `~/.local/state/rollouts/<name>.artifact` | URL of the rollout's status page (an Artifact) |
-| `~/.claude/skills/rollout/config.json` | Deploy workflows per repo (`deploys`, the full deploy, and `stage_deploys`, the single-stage dispatch), Slack channel map, chase thresholds, and `review_gated_checks`: checks that resolve only on approval (`doc-approval`), which status reports as `awaiting_review` and leaves out of a PR's CI state; `me`, jml's GitHub login: a PR someone else wrote gets no actions, only `author` and a waiting phase, because its author rebases, answers, requests review and merges it |
+| `~/.claude/skills/rollout/config.json` | Deploy workflows per repo (`deploys`, the full deploy, and `stage_deploys`, the single-stage dispatch), chase thresholds, and `review_gated_checks`: checks that resolve only on approval (`doc-approval`), which status reports as `awaiting_review` and leaves out of a PR's CI state; `me`, jml's GitHub login: a PR someone else wrote gets no actions, only `author` and a waiting phase, because its author rebases, answers, requests review and merges it |
+| `~/.config/rollout/local.json` | The Slack channel map (`channels`) and the standup's people and channel (`standup`). It lives outside the dotfiles repo, which is public, and its top-level keys replace `config.json`'s; `$ROLLOUT_LOCAL_CONFIG` overrides the path. Never copy its contents into the repo |
 
 Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name> [--json]`, `wait-checks <owner/repo#N>`, `mark <name> <node> [--undo]`, `record-request --rollout --pr --channel [--permalink] [--sent-at]`, `chase`, `list`.
 
@@ -96,7 +97,7 @@ A PR goes to a person only once its review bots are finished with it. `status` r
 
 ### Actions jml decides
 
-- **request-review** with empty `channels` (`auto: false`): ask jml which channel, send the request there, and add the mapping to `config.json` (`channels.teams` keyed by the requested GitHub team, or `channels.paths`) so the next one resolves itself. `#chan-lib` and `proj-` channels go in `paths` or the manifest's `channel`, not `teams`.
+- **request-review** with empty `channels` (`auto: false`): ask jml which channel, send the request there, and add the mapping to `~/.config/rollout/local.json` (`channels.teams` keyed by the requested GitHub team, or `channels.paths`) so the next one resolves itself. Project channels (`proj-`, or one for a single library) go in `paths` or the manifest's `channel`, not `teams`.
 - **merge**: ask, then `gh pr merge --repo <repo> <N>` with that repo's merge method (squash for chainguard-dev repos unless jml says otherwise).
 - **do-step**: `by: jml` or `external`: say what's needed and from whom; when jml says it's done, `rollout.py mark`. `by: session`: ask once, then do it.
 - **check-failures** (failing while dependencies are unlanded): say whether the failures are the expected ones from the PR body; ask only if they aren't.
@@ -115,6 +116,8 @@ It is safe only when all of these hold:
 - **What rides along.** List the commits that touch the stage between what it last deployed and `checkout_ref`: `git log <deployed>..<sha> -- env/<env>/iac/<stage>` plus the modules and Go code it builds. The stage workflow's run title (`<stage> @ <sha>`) or the last full deploy tells you what it last deployed. Each of those commits must already be in staging. Name any that belong to other people in the tick's report.
 - **The gates.** The stage is one `.github/scripts/validate-dispatch-stage.sh` accepts (2xx, 4xx or 998 for enforce.dev), `.github/release-block` doesn't hold it, and its last full-deploy job didn't fail for a reason a dispatch would repeat. Never pass `break_glass`.
 - **Order.** Dispatch one stage at a time, in dependency order (a stage whose outputs another reads goes first), and wait for each run to succeed before the next.
+
+Auto mode's permission classifier can refuse the dispatch even when every check passes, as it did on 2026-11-24. When it does, don't work around it: give jml the command with the evidence for each check, and carry on once the run starts.
 
 Then watch the run in the background (`gh run watch <id> --repo <repo> --exit-status`) and run a tick when it exits. Record each dispatch in `<name>.decisions.md` (stage, commit, run URL). The prod workflow announces itself in #eng-oncall, so say in the tick's report that it went out.
 
