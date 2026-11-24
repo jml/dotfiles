@@ -707,23 +707,6 @@ def _issue_counterpart(issue: dict, sc: dict) -> dict:
     return {"kind": kind, "label": f"{team}, unassigned"}
 
 
-def _review_counterparts(entry: dict, pr: dict, config: dict) -> list[dict]:
-    """Who a waiting review is waiting on: requested teams and people, or the team
-    whose channel the request went to. Home teams count as the subteam."""
-    sc = config.get("standup", {})
-    home = set(sc.get("home_github_teams", []))
-    by_channel = {}
-    for team, channel in config.get("channels", {}).get("teams", {}).items():
-        by_channel.setdefault(channel, team)
-    teams = set(pr.get("requested_teams", []))
-    channel = (entry.get("detail") or {}).get("channel")
-    if not teams and channel:
-        teams.add(by_channel.get(channel, channel))
-    out = [{"kind": "subteam" if t in home else "other", "label": t} for t in sorted(teams)]
-    out += [{"kind": person_kind(u, sc), "label": u} for u in sorted(pr.get("requested_users", []))]
-    return [c for c in out if c["kind"] != "subteam"]
-
-
 WHOSE_MOVE = {
     "held": "jml", "reply": "jml", "fix": "jml", "stacked": "design doc", "merge": "jml", "owned": "session", "ask": "jml",
     "blocked": "jml", "ready": "jml", "bots": "bots", "overdue": "reviewers", "waiting": "reviewers",
@@ -750,7 +733,7 @@ def _diff(now_items: dict, prev_items: dict, track_state: bool) -> dict:
     return out
 
 
-def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[dict], inbound: list[dict],
+def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[dict],
             previous: dict | None, config: dict) -> dict:
     """Blockers, dependencies, Linear drift and unplanned fixes for jml's standup.
 
@@ -760,15 +743,16 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
     `linear["issues"]` holds jml's open issues and every issue they block or are
     blocked by, each with id, title, url, status, status_type, assignee and,
     for jml's, blocked_by and blocks. `merged` is jml's PRs merged since the
-    last standup and `inbound` the open PRs whose author asked jml directly
-    for review. `previous` is the last standup's snapshot, or None for the
+    last standup. `previous` is the last standup's snapshot, or None for the
     first run, which is a baseline: nothing in it counts as new.
 
     `offers` lists the review requests and mark-readies the sweep would make
     for PRs outside rollouts; they are jml's move, so none is a blocker.
 
-    A dependency is anything between jml and someone outside the subteam:
-    the pod's other members, or another team.
+    A dependency is a Linear relation between jml's issue and an open issue of
+    someone outside the subteam: the pod's other members, or another team. A
+    review in either direction is not one: a PR waiting on reviewers is a
+    blocker, and a review someone asked jml for is jml's move.
     """
     sc = config.get("standup", {})
     me = sc.get("linear_name")
@@ -822,28 +806,20 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
 
     deps: dict[str, dict] = {}
 
-    def dep(direction, mine_ref, title, url, counterpart, state, via):
-        key = f"{direction}|{mine_ref}|{counterpart.get('id') or counterpart['label']}"
+    def dep(direction, mine_ref, title, url, counterpart, state):
+        key = f"{direction}|{mine_ref}|{counterpart['id']}"
         deps[key] = {"key": key, "direction": direction, "mine": mine_ref, "title": title, "url": url,
-                     "counterpart": counterpart, "state": state, "via": via}
+                     "counterpart": counterpart, "state": state}
 
     for k, i in sorted(mine.items()):
         for b in i.get("blocked_by", []):
             o = other(b)
             if is_open(b) and o["kind"] != "subteam":
-                dep("waits_on", k, i["title"], i.get("url"), o, o["status"], "linear")
+                dep("waits_on", k, i["title"], i.get("url"), o, o["status"])
         for b in i.get("blocks", []):
             o = other(b)
             if is_open(b) and o["kind"] != "subteam":
-                dep("waited_on_by", k, i["title"], i.get("url"), o, o["status"], "linear")
-    for e in sweep["prs"]:
-        if e["bucket"] in ("waiting", "overdue"):
-            for c in _review_counterparts(e, prs[e["ref"]], config):
-                dep("waits_on", e["ref"], e["title"], e["url"], c, e["bucket"], "review")
-    for p in inbound:
-        kind = person_kind(p["author"], sc)
-        if kind != "subteam":
-            dep("waited_on_by", p["ref"], p["title"], p["url"], {"kind": kind, "label": p["author"]}, "review requested", "review")
+                dep("waited_on_by", k, i["title"], i.get("url"), o, o["status"])
 
     drift = []
     merged_links: dict[str, list[str]] = {}

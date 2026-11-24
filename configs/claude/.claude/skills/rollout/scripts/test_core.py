@@ -499,11 +499,7 @@ def standup_inputs():
         {"ref": "chainguard-dev/mono#10", "title": "docs: note", "url": "u10", "body": "See [DEV-99].", "head": "b10"},
         {"ref": "chainguard-dev/mono#9", "title": "feat: last piece", "url": "u9", "body": "Tracking: DEV-18", "head": "b9"},
     ]
-    inbound = [
-        {"ref": "chainguard-dev/infra#7", "title": "i7", "url": "i7", "author": "outsider"},
-        {"ref": "chainguard-dev/infra#6", "title": "i6", "url": "i6", "author": "ada"},
-    ]
-    return sweep, prs, {"chainguard-dev/mono#4": "big-change", "chainguard-dev/mono#5": "big-change"}, linear, merged, inbound
+    return sweep, prs, {"chainguard-dev/mono#4": "big-change", "chainguard-dev/mono#5": "big-change"}, linear, merged
 
 
 class StandupTest(unittest.TestCase):
@@ -511,7 +507,7 @@ class StandupTest(unittest.TestCase):
         got = core.standup(*standup_inputs(), None, STANDUP_CONFIG)
         self.assertTrue(got["baseline"])
         self.assertEqual(got["counts"], {"blockers": {"new": 0, "standing": 5, "cleared": 0},
-                                         "dependencies": {"new": 0, "changed": 0, "standing": 5, "resolved": 0}})
+                                         "dependencies": {"new": 0, "changed": 0, "standing": 3, "resolved": 0}})
         self.assertEqual([(b["key"], b.get("whose_move"), b.get("rollout"), b.get("holds_back"))
                           for b in got["blockers"]["standing"]], [
             ("issue:DEV-10", None, None, None),
@@ -527,12 +523,12 @@ class StandupTest(unittest.TestCase):
         # Offers leave out the rollout's PRs: their sessions send them.
         self.assertEqual([(o["ref"], [a["kind"] for a in o["actions"]]) for o in got["offers"]],
                          [("chainguard-dev/mono#7", ["mark-ready"])])
+        # Only Linear relations are dependencies. mono#1 waits on another team's
+        # review, which makes it a blocker, and a review asked of jml is jml's move.
         self.assertEqual([(d["key"], d["counterpart"]["kind"], d["state"]) for d in got["dependencies"]["standing"]], [
             ("waited_on_by|DEV-10|CON-5", "pod", "Todo"),
-            ("waited_on_by|chainguard-dev/infra#7|outsider", "other", "review requested"),
             ("waits_on|DEV-10|DATA-1", "other", "In Progress"),
             ("waits_on|DEV-10|DATA-2", "other", "Backlog"),
-            ("waits_on|chainguard-dev/mono#1|chainguard-dev/data-analytics-admins", "other", "waiting"),
         ])
         self.assertEqual([(d["id"], d["rule"], d["propose"]) for d in got["drift"]], [
             ("DEV-11", "pr-open-issue-not-started", "In Progress"),
@@ -549,16 +545,16 @@ class StandupTest(unittest.TestCase):
                     "blockers": {k: v for k, v in first["blockers"].items() if k != "pr:chainguard-dev/mono#2"}
                     | {"pr:chainguard-dev/mono#99": {"key": "pr:chainguard-dev/mono#99", "title": "gone", "url": "u99"}},
                     "dependencies": {k: (v | {"state": "Todo"} if k == "waits_on|DEV-10|DATA-1" else v)
-                                     for k, v in first["dependencies"].items() if not k.startswith("waited_on_by|chainguard-dev/infra#7")}}
+                                     for k, v in first["dependencies"].items() if k != "waited_on_by|DEV-10|CON-5"}}
         got = core.standup(*inputs, previous, STANDUP_CONFIG)
         self.assertEqual((got["baseline"], got["since"]), (False, "2026-11-23T14:00:00+00:00"))
         self.assertEqual(got["counts"], {"blockers": {"new": 1, "standing": 4, "cleared": 1},
-                                         "dependencies": {"new": 1, "changed": 1, "standing": 3, "resolved": 0}})
+                                         "dependencies": {"new": 1, "changed": 1, "standing": 1, "resolved": 0}})
         self.assertEqual([b["key"] for b in got["blockers"]["new"]], ["pr:chainguard-dev/mono#2"])
         self.assertEqual(got["blockers"]["cleared"], [{"key": "pr:chainguard-dev/mono#99", "title": "gone", "url": "u99"}])
         self.assertEqual([(d["key"], d["was"], d["state"]) for d in got["dependencies"]["changed"]],
                          [("waits_on|DEV-10|DATA-1", "Todo", "In Progress")])
-        self.assertEqual([d["key"] for d in got["dependencies"]["new"]], ["waited_on_by|chainguard-dev/infra#7|outsider"])
+        self.assertEqual([d["key"] for d in got["dependencies"]["new"]], ["waited_on_by|DEV-10|CON-5"])
 
 
 if __name__ == "__main__":

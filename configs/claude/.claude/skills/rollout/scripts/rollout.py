@@ -413,23 +413,6 @@ def search_prs(query: str, fields: str) -> list[dict]:
     return [n | {"ref": f"{n['repository']['nameWithOwner']}#{n['number']}"} for n in nodes if n]
 
 
-def inbound_requests(me: str, since: datetime) -> list[dict]:
-    """Open, non-draft PRs whose author asked `me` directly for review since `since`.
-
-    Old PRs stay "updated" through bot comments and rebases, so the cut-off is
-    the request itself: one left for weeks has been abandoned, not waited on.
-    """
-    fields = """isDraft author { __typename login } timelineItems(itemTypes: REVIEW_REQUESTED_EVENT, last: 20) {
-      nodes { ... on ReviewRequestedEvent { createdAt requestedReviewer { ... on User { login } } } } }"""
-    out = []
-    for p in search_prs(f"is:pr is:open user-review-requested:{me} -author:{me} archived:false", fields):
-        asked = [e["createdAt"] for e in p["timelineItems"]["nodes"] if (e.get("requestedReviewer") or {}).get("login") == me]
-        if p["isDraft"] or is_bot(p["author"]) or not asked or core._parse(asked[-1]) < since:
-            continue
-        out.append({"ref": p["ref"], "title": p["title"], "url": p["url"], "author": login(p["author"]), "requested_at": asked[-1]})
-    return out
-
-
 def previous_working_day(now: datetime) -> datetime:
     back = 3 if now.weekday() == 0 else 1
     return now - timedelta(days=back)
@@ -459,9 +442,8 @@ def cmd_standup(args) -> int:
     merged = search_prs(f"is:pr is:merged author:{me} merged:>={since[:19]}", "body headRefName")
     for m in merged:
         m["head"] = m.pop("headRefName")
-    inbound = inbound_requests(me, now - timedelta(days=config.get("standup", {}).get("inbound_days", 14)))
     linear = load_json(Path(args.linear), {"issues": []})
-    report = core.standup(sweep, prs, {r: members[r] for r in live if r in members}, linear, merged, inbound, previous, config)
+    report = core.standup(sweep, prs, {r: members[r] for r in live if r in members}, linear, merged, previous, config)
     report["at"] = now.isoformat(timespec="seconds")
     if not args.no_save:
         (STATE / "standup").mkdir(parents=True, exist_ok=True)
