@@ -301,13 +301,24 @@ def classify(model):
             out[r] = {"owner": "other", "why": b or "no status"}
     # A PR stacked on, or waiting for the deploy of, an unlanded PR is rebased
     # once that lands, so reviewing it now is wasted: it belongs in draft.
+    # A stack edge is satisfied once its upstream merges; a deploy edge only
+    # once the upstream has finished deploying (owner "done").
     hard = {}
     for e in model["cfg"]["edges"]:
         if e["kind"] in ("stack", "deploy"):
-            hard.setdefault(e["to"], []).append(e["from"])
+            hard.setdefault(e["to"], []).append((e["from"], e["kind"]))
+
+    def unlanded(f, kind):
+        o = out.get(f, {})
+        if o.get("owner") == "done":
+            return False
+        return not (kind == "stack" and o.get("why", "").startswith("Merged"))
+
     for p in model["prs"]:
         r = ref(p)
-        live = [f for f in hard.get(r, []) if out.get(f, {}).get("owner") != "done"]
+        if r in over:
+            continue
+        live = [f for f, kind in hard.get(r, []) if unlanded(f, kind)]
         if not live or out.get(r, {}).get("why", "").startswith("held until"):
             continue
         if not p["isDraft"]:
