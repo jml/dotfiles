@@ -16,6 +16,12 @@
       "prod": "deploy.yaml"
     }
   },
+  "stage_deploys": {
+    "chainguard-dev/mono": {
+      "staging": "provision-chainops.dev-stages.yaml",
+      "prod": "provision-enforce.dev-stages.yaml"
+    }
+  },
   "channels": {
     "teams": {
       "chainguard-dev/data-analytics-admins": "#chan-data-eng",

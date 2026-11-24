@@ -152,6 +152,45 @@ def includes(repo: str, commit: str, deployed: str) -> bool:
     return status in ("ahead", "identical")
 
 
+def run_jobs(repo: str, run_id: int) -> list[dict]:
+    out = gh("api", "--paginate", f"repos/{repo}/actions/runs/{run_id}/jobs?per_page=100",
+             "--jq", ".jobs[] | {name, conclusion}")
+    return [json.loads(line) for line in out.splitlines() if line]
+
+
+def stage_deployed(repo: str, deploy_wf: str, stage_wf: str | None, stage: str, commit: str) -> bool:
+    """Whether stage is deployed at a commit that includes commit: by the
+    newest single-stage dispatch of it, or by a full deploy whose job for it
+    succeeded even if other stages failed."""
+    if stage_wf:
+        runs = json.loads(gh("api", f"repos/{repo}/actions/workflows/{stage_wf}/runs?status=success&per_page=50"))
+        for run in runs["workflow_runs"]:
+            got = core.dispatched_stage(run["display_title"], run["head_sha"])
+            if got and got[0] == stage:
+                if includes(repo, commit, got[1]):
+                    return True
+                break
+    # A busy main cancels most queued deploys before they start, so list only
+    # the runs that got to apply something.
+    runs = []
+    for status in ("success", "failure", "in_progress"):
+        runs += json.loads(gh("api", f"repos/{repo}/actions/workflows/{deploy_wf}/runs?status={status}&per_page=5"))["workflow_runs"]
+    runs.sort(key=lambda r: r["created_at"], reverse=True)
+    for run in runs:
+        # Newest first, so once a run predates the commit, all the rest do.
+        if not includes(repo, commit, run["head_sha"]):
+            break
+        if run["conclusion"] == "success":
+            return True
+        try:
+            jobs = run_jobs(repo, run["id"])
+        except subprocess.CalledProcessError:
+            continue
+        if core.job_deployed_stage(jobs, stage):
+            return True
+    return False
+
+
 def fetch_deploys(manifest: dict, prs: dict, config: dict) -> dict:
     nodes = {n["id"]: n for n in manifest["nodes"]}
     wanted: dict[str, set[str]] = {}
@@ -172,6 +211,11 @@ def fetch_deploys(manifest: dict, prs: dict, config: dict) -> dict:
             wf = config.get("deploys", {}).get(pr["repo"], {}).get(env)
             if pr["state"] != "MERGED" or not wf:
                 out[dep][env] = False if pr["state"] != "MERGED" else None
+                continue
+            stages = nodes[dep].get("stages")
+            if stages:
+                stage_wf = config.get("stage_deploys", {}).get(pr["repo"], {}).get(env)
+                out[dep][env] = all(stage_deployed(pr["repo"], wf, stage_wf, s, pr["merge_commit"]) for s in stages)
                 continue
             run = latest_success(pr["repo"], wf)
             out[dep][env] = bool(run) and includes(pr["repo"], pr["merge_commit"], run["head_sha"])

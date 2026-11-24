@@ -19,7 +19,7 @@ The goal is that jml makes decisions and approves outward messages; the session 
 | `~/.local/state/rollouts/<name>.decisions.md` | jml's decisions, read every tick as policy |
 | `~/.local/state/rollouts/requests.jsonl` | Every Slack review request, all rollouts (chase reads it) |
 | `~/.local/state/rollouts/<name>.artifact` | URL of the rollout's status page (an Artifact) |
-| `~/.claude/skills/rollout/config.json` | Deploy workflows per repo, Slack channel map, chase thresholds, and `review_gated_checks`: checks that resolve only on approval (`doc-approval`), which status reports as `awaiting_review` and leaves out of a PR's CI state; `me`, jml's GitHub login: a PR someone else wrote gets no actions, only `author` and a waiting phase, because its author rebases, answers, requests review and merges it |
+| `~/.claude/skills/rollout/config.json` | Deploy workflows per repo (`deploys`, the full deploy, and `stage_deploys`, the single-stage dispatch), Slack channel map, chase thresholds, and `review_gated_checks`: checks that resolve only on approval (`doc-approval`), which status reports as `awaiting_review` and leaves out of a PR's CI state; `me`, jml's GitHub login: a PR someone else wrote gets no actions, only `author` and a waiting phase, because its author rebases, answers, requests review and merges it |
 
 Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name> [--json]`, `wait-checks <owner/repo#N>`, `mark <name> <node> [--undo]`, `record-request --rollout --pr --channel [--permalink] [--sent-at]`, `chase`, `list`.
 
@@ -44,6 +44,7 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py` with `status <name
 ```
 
 - `after` entries are `<node>` or `<node>@<condition>`. PR conditions: `merged` (default), `deployed:<env>`, where `<env>` must have a workflow in `config.json` `deploys` for that repo (else the edge reads as unknown). Step condition: `done`.
+- PR `stages`: the Terraform stages the PR deploys through, as `cimatrix provision` lists them (`["400-merge-bot", "400-vpa-bot"]`). With it, `deployed:<env>` holds once every stage is deployed at a commit that includes the PR, by a full deploy whose job for that stage succeeded or by a single-stage dispatch; without it, only a fully successful deploy counts. Set it on every mono PR node that a `deployed:` edge names, because a full deploy often fails on stages the PR never touched.
 - Step `by`: `jml` (default), `external` (someone else; jml may need to ask them), `session` (this session may do it), `automatic` (a schedule or bot does it; only its `check` can complete it).
 - Step `check`: `{"workflow": {repo, file, event?, since?}}` passes on a successful run; `{"variable": {repo, name}}` passes once the Actions variable exists. Without a check, a step is done only when marked.
 - `channel`: a Slack channel for every review request in this rollout (a `proj-` channel, say). It beats the config map.
@@ -101,6 +102,22 @@ A PR goes to a person only once its review bots are finished with it. `status` r
 - **check-failures** (failing while dependencies are unlanded): say whether the failures are the expected ones from the PR body; ask only if they aren't.
 - **decide** (a PR closed unmerged): ask whether to drop or replace the node.
 
+### Deploying a stage by dispatch
+
+**dispatch-stage** (jml's standing yes, 2026-11-24, when every check below passes; when one fails or can't be answered, put the evidence to jml and ask). A `deployed:<env>` edge can wait for hours on a full deploy that won't carry the PR soon: enforce.dev deploys in full only when someone pushes a `v*` release tag, a busy main cancels queued chainops.dev deploys before they start, and a full deploy can fail on stages the PR never touched. When a PR node with `stages` has merged and some stage hasn't reached `<env>`, deploy that stage with the env's `stage_deploys` workflow:
+
+    gh workflow run <stage_deploys[env]> --repo <repo> -f stage=<stage> -f checkout_ref=<full sha> -f reason="<rollout name>: <PR URL>"
+
+It is safe only when all of these hold:
+
+- **The commit.** `checkout_ref` is the full SHA of a commit on main that includes the PR's merge commit; the enforce.dev workflow refuses anything else. For prod, use the commit staging last applied the stage at, so prod runs what staging already ran.
+- **Staging first.** For prod, the stage applied successfully in staging at that commit or later, and the service it deploys shows no new errors in staging since then (its error logs, and its alerts if it has any).
+- **What rides along.** List the commits that touch the stage between what it last deployed and `checkout_ref`: `git log <deployed>..<sha> -- env/<env>/iac/<stage>` plus the modules and Go code it builds. The stage workflow's run title (`<stage> @ <sha>`) or the last full deploy tells you what it last deployed. Each of those commits must already be in staging. Name any that belong to other people in the tick's report.
+- **The gates.** The stage is one `.github/scripts/validate-dispatch-stage.sh` accepts (2xx, 4xx or 998 for enforce.dev), `.github/release-block` doesn't hold it, and its last full-deploy job didn't fail for a reason a dispatch would repeat. Never pass `break_glass`.
+- **Order.** Dispatch one stage at a time, in dependency order (a stage whose outputs another reads goes first), and wait for each run to succeed before the next.
+
+Then watch the run in the background (`gh run watch <id> --repo <repo> --exit-status`) and run a tick when it exits. Record each dispatch in `<name>.decisions.md` (stage, commit, run URL). The prod workflow announces itself in #eng-oncall, so say in the tick's report that it went out.
+
 Record every answer in `<name>.decisions.md` as a dated line: the question, the answer, and the rule it implies if jml states one ("bot style nits are follow-ups"). Apply those rules on later ticks without asking again.
 
 ## New work
@@ -131,6 +148,6 @@ Publish the Artifact only when `config.json` has `"publish_artifact": true` (jml
 ## Rules
 
 - Never post to Slack or GitHub on jml's behalf without their yes for that message, except the templated review request above, which jml gave a standing yes.
-- Never merge or dispatch a workflow without asking, unless `<name>.decisions.md` records a standing yes for that kind of action in this rollout.
+- Never merge or dispatch a workflow without asking, unless this skill (stage dispatch, above) or `<name>.decisions.md` records a standing yes for that kind of action.
 - Don't edit the manifest's edges silently; propose the change and say why.
 - Report in short lines: what changed since the last tick, then what needs jml. Say nothing on a tick where nothing changed.

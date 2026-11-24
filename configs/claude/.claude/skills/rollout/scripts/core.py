@@ -13,6 +13,12 @@ session (`session`) or by someone; it gains `pr` once the PR exists. A node
 with `proposed` is new work found during the rollout that jml hasn't yet
 accepted into it: it blocks whatever waits on it until jml decides.
 
+A PR node may list `stages`, the Terraform stages its change deploys through
+(`cimatrix provision` names them). Then `deployed:<env>` holds once every
+stage is deployed at a commit that includes the PR, by a full deploy or by a
+single-stage dispatch, rather than once a full deploy succeeds: a full deploy
+can fail on stages the PR never touched.
+
 `facts` holds what the I/O layer fetched: `prs` keyed by node id, `deploys`
 keyed by node id then env (True, False or None when it can't tell), and
 `checks` keyed by step node id (True when the step's check passed).
@@ -76,6 +82,26 @@ def _has_cycle(nodes: dict) -> bool:
         return False
 
     return any(visit(i) for i in nodes)
+
+
+def dispatched_stage(title: str, head_sha: str) -> tuple[str, str] | None:
+    """The stage a single-stage provision run deployed, and the commit it
+    deployed, read from the run's title: "Provision <env>: <stage> @ <sha>".
+    A title with no "@ <sha>" comes from a run that deployed the workflow's own
+    commit, which is head_sha."""
+    _, sep, rest = title.partition(": ")
+    stage, _, sha = rest.partition(" @ ")
+    stage = stage.strip()
+    if not sep or not stage:
+        return None
+    return stage, sha.strip() or head_sha
+
+
+def job_deployed_stage(jobs: list[dict], stage: str) -> bool:
+    """Whether a full deploy's jobs include a successful Terraform job for
+    stage. Deploy workflows name each stage's job with "(<stage>)", however
+    deeply the job is nested."""
+    return any(f"({stage})" in j.get("name", "") and j.get("conclusion") == "success" for j in jobs)
 
 
 def satisfied(node_id: str, cond: str, nodes: dict, facts: dict, marks: dict):

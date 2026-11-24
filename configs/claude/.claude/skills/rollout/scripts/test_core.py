@@ -173,6 +173,28 @@ class EvaluateTest(unittest.TestCase):
         self.assertEqual(core.validate(cyc), ["after edges form a cycle"])
 
 
+class StageDeployTest(unittest.TestCase):
+    def test_dispatched_stage(self):
+        for title, want in [
+            ("Provision enforce.dev: 400-merge-bot @ abc123", ("400-merge-bot", "abc123")),
+            ("Provision chainops.dev: 400-vpa-bot", ("400-vpa-bot", "head")),
+            ("Provision enforce.dev:  @ abc123", None),
+            ("something else", None),
+        ]:
+            with self.subTest(title=title):
+                self.assertEqual(core.dispatched_stage(title, "head"), want)
+
+    def test_job_deployed_stage(self):
+        jobs = [
+            {"name": "sharded-stages (400-merge-bot) / Terraform", "conclusion": "success"},
+            {"name": "sharded-stages (400-merge-bot-extra) / Terraform", "conclusion": "failure"},
+            {"name": "sharded-stages (400-vpa-bot) / Terraform", "conclusion": "failure"},
+        ]
+        self.assertTrue(core.job_deployed_stage(jobs, "400-merge-bot"))
+        self.assertFalse(core.job_deployed_stage(jobs, "400-vpa-bot"))
+        self.assertFalse(core.job_deployed_stage(jobs, "400-merge"))
+
+
 class ChaseTest(unittest.TestCase):
     def test_overdue_skips_answered_and_closed(self):
         requests = [
