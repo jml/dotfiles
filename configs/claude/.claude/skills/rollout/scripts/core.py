@@ -300,11 +300,18 @@ def evaluate(manifest: dict, facts: dict, marks: dict, requests: list[dict], con
             bots = bot_review(pr, config)
             if bots["state"] != "none":
                 entry["bot_review"] = bots["state"]
+            # A PR that waits for another PR to merge or deploy is rebased once
+            # that lands, which changes its code and voids approvals of the old
+            # head, so it stays a draft and nobody is asked to review it yet.
+            held_by = [f"{w['node']} {w['condition']}" for w in waiting if "pr" in nodes.get(w["node"], {})]
             if pr["draft"]:
-                if checks == "green" and not n.get("hold_draft"):
+                if checks == "green" and not n.get("hold_draft") and not held_by:
                     # jml's standing yes: a green draft goes ready without asking;
                     # `hold_draft` keeps one that is a draft on purpose.
                     actions.append({"kind": "mark-ready", "auto": True, "detail": "draft is green"})
+            elif held_by:
+                # jml's standing yes (2026-11-24): a PR blocked on another goes back to draft.
+                actions.append({"kind": "mark-draft", "auto": True, "detail": held_by})
             elif pr.get("review_decision") == "APPROVED":
                 if awaiting:
                     # Approval has landed; the review-gated checks re-run on it.
@@ -480,6 +487,18 @@ def builds_on(ref: str, prs: dict) -> list[str]:
     return out
 
 
+def stacked_on(ref: str, prs: dict) -> list[str]:
+    """Open PRs this one certainly builds on: its base is their branch, or it
+    carries all of their commits by oid. Stricter than builds_on, which also
+    matches headlines and so can mistake a shared "Merge branch 'main'" for a
+    stack; this one decides whether a PR in review goes back to draft."""
+    me = prs[ref]
+    mine = {c["oid"] for c in me.get("commits", [])}
+    return [r for r in builds_on(ref, prs)
+            if (me.get("base") and me["base"] == prs[r].get("head"))
+            or (prs[r].get("commits") and all(c["oid"] in mine for c in prs[r]["commits"]))]
+
+
 _DESIGN_DOC = re.compile(r"^Design-Doc:\s*(\S+)\s*$", re.MULTILINE)
 
 
@@ -544,6 +563,10 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
     unticked "To-do before merge" item: jml wants only drafts that could merge
     now.
 
+    A PR in review that is stacked on another open PR (`stacked_on`) or whose
+    base isn't the default branch is `blocked` with a `mark-draft` action: it
+    is rebased once its base lands, so reviewing it now would be wasted.
+
     A PR whose `Design-Doc:` path another open PR adds is `stacked` on it
     while only the checks in `design_doc_checks` fail: they pass once the doc
     merges.
@@ -574,6 +597,14 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
             bucket, detail = "held", hold
         elif threads["person_threads"] or pr.get("review_decision") == "CHANGES_REQUESTED":
             bucket, detail = "reply", {"person_threads": threads["person_threads"], "review": pr.get("review_decision")}
+        elif not pr["draft"] and (stack := {k: v for k, v in {
+            "builds_on": stacked_on(ref, prs),
+            "base": pr.get("base") if pr.get("base") and pr.get("default_branch") and pr["base"] != pr["default_branch"] else None,
+        }.items() if v}):
+            # Stacked on another open PR: it is rebased once that merges, so a
+            # review now would be wasted. jml's standing yes (2026-11-24): back to draft.
+            bucket, detail = "blocked", stack
+            actions["mark-draft"] = {"kind": "mark-draft", "auto": True, "detail": stack}
         elif failing or pr.get("mergeable") == "CONFLICTING" or entry.get("bot_review") == "findings":
             bucket, detail = "fix", {"failing": sorted(set(failing)), "conflicting": pr.get("mergeable") == "CONFLICTING",
                                      "bot_findings": threads["bot_threads"]}
@@ -607,7 +638,8 @@ def eod(prs: dict, requests: list[dict], holds: dict, now: datetime, first_run: 
         else:
             bucket, detail = "parked", None
 
-        keep = {"held": [], "reply": [], "fix": [], "merge": ["merge"], "ask": ["request-review"], "ready": ["mark-ready"]}
+        keep = {"held": [], "reply": [], "fix": [], "merge": ["merge"], "ask": ["request-review"], "ready": ["mark-ready"],
+                "blocked": ["mark-draft"]}
         out.append({
             "ref": ref,
             "title": pr["title"],

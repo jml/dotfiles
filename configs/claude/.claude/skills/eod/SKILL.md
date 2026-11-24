@@ -17,6 +17,7 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with the r
    |---|---|---|
    | `held` | jml held it until `detail.until` | nothing |
    | `reply` | a person's thread waits on jml, or changes were requested | lists it |
+   | `blocked` (in review) | a PR in review stacked on another open PR (`detail.builds_on`) or whose base isn't the default branch (`detail.base`) | puts it back to draft (step 3) |
    | `fix` | failing CI (`detail.failing`), a conflict, or a review bot's open finding | lists it |
    | `stacked` | only `design_doc_checks` fail (`pr-hygiene`), and another open PR in the repo adds its `Design-Doc:` path (`detail.design_doc`) | lists it; the checks pass once the doc merges |
    | `merge` | approved and green | lists it |
@@ -36,6 +37,7 @@ Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with the r
 
 3. **Under jml's standing yes** (given 2026-11-18 for `/rollout`, extended to `/eod` 2026-11-23), do these without asking:
    - **`request-review` with `auto: true`:** send `detail.message` exactly, `:pr: [<title>](<url>)` with no attribution line (Slack labels messages sent through Claude), to the first channel in `detail.channels`. Use `slack_send_message` with the channel's ID from `config.json` `channels.ids`, or from `slack_search_channels`. Then run `rollout.py record-request --rollout eod --pr <owner/repo#N> --channel <channel> --permalink <link the tool returns>`.
+   - **`mark-draft`** (standing yes, 2026-11-24): run `gh pr ready --undo --repo <owner/repo> <N>`. The PR is rebased once what it builds on merges, so a review now would be wasted; the `blocked` draft rules keep it a draft until then.
    - **`mark-ready` with `auto: true`** (drafts opened since the first `/eod`), unless the draft is stale: run `gh pr ready --repo <owner/repo> <N>`. Its review request must wait for the review bots' pass on the now-ready PR, so start `rollout.py wait-checks <owner/repo#N>` with `run_in_background: true`. When it exits, run the sweep again and handle that PR's `ask` the same way. If the wait outlasts the session, the next `/eod` picks it up.
 
 4. **Ask jml the rest** in one `AskUserQuestion` call with at most four questions, leaving out any with nothing to ask. Each question has at most four options, so take the oldest four. The rest come up on the next run.

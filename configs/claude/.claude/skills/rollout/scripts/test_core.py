@@ -147,6 +147,25 @@ class EvaluateTest(unittest.TestCase):
         got = core.evaluate(manifest, facts, {}, [], CONFIG)
         self.assertEqual(got["nodes"][1]["actions"], [{"kind": "rebase", "auto": True, "detail": "push now"}])
 
+    def test_waiting_on_another_pr_holds_a_draft_and_drafts_a_ready_pr(self):
+        manifest = {"name": "m", "nodes": [
+            {"id": "a", "pr": "o/r#1"},
+            {"id": "b", "pr": "o/r#2", "after": ["a"]},
+            {"id": "c", "pr": "o/r#3", "after": ["a@deployed:prod"]},
+            {"id": "d", "pr": "o/r#4", "after": ["a"]},
+        ]}
+        facts = {"prs": {"a": pr(number=1), "b": pr(number=2), "c": pr(number=3), "d": pr(number=4, draft=True)},
+                 "deploys": {"a": {"prod": False}}, "checks": {}}
+        requests = [{"rollout": "m", "pr": f"o/r#{n}", "channel": "#x", "sent_at": "2026-11-18T10:00:00+00:00"} for n in (1, 2, 3)]
+        got = core.evaluate(manifest, facts, {}, requests, CONFIG)
+        self.assertEqual({n["id"]: (n["phase"], n["actions"]) for n in got["nodes"]}, {
+            "a": ("waiting", []),
+            "b": ("actionable", [{"kind": "mark-draft", "auto": True, "detail": ["a merged"]}]),
+            "c": ("actionable", [{"kind": "mark-draft", "auto": True, "detail": ["a deployed:prod"]}]),
+            # A green draft is not marked ready while what it builds on is unlanded.
+            "d": ("blocked", []),
+        })
+
     def test_validate(self):
         bad = {"name": "x", "nodes": [{"id": "a", "pr": "o/r#1", "after": ["b"]}, {"id": "b", "step": "s", "after": ["a@landed"]}]}
         self.assertEqual(core.validate(bad), ["b: unknown condition 'landed'"])
@@ -344,6 +363,24 @@ class EodTest(unittest.TestCase):
         })
         self.assertEqual([e["actions"] for e in got["prs"] if e["bucket"] == "blocked"], [[]] * 5)
 
+    def test_a_ready_pr_stacked_on_another_goes_back_to_draft(self):
+        now = datetime(2026, 11, 23, 18, tzinfo=timezone.utc)
+
+        def ready(n, **kw):
+            return pr(**({"number": n, "url": f"u{n}", "title": f"t{n}", "created_at": "2026-11-23T09:00:00Z",
+                          "last_commit_at": "2026-11-23T09:00:00Z", "base": "main", "head": f"b{n}",
+                          "default_branch": "main", "commits": [{"oid": f"o{n}", "headline": f"h{n}"}]} | kw))
+
+        prs = {"chainguard-dev/mono#20": ready(20), "chainguard-dev/mono#21": ready(21, base="b20")}
+        requests = [{"rollout": "eod", "pr": "chainguard-dev/mono#21", "channel": "#c", "sent_at": "2026-11-23T15:00:00+00:00"}]
+        got = core.eod(prs, requests, {}, now, now, CONFIG)
+        stack = {"builds_on": ["chainguard-dev/mono#20"], "base": "b20"}
+        self.assertEqual({e["ref"]: (e["bucket"], e["detail"], e["actions"]) for e in got["prs"]}, {
+            "chainguard-dev/mono#20": ("ask", {"channels": [], "message": ":pr: [t20](u20)"},
+                                      [{"kind": "request-review", "auto": False, "detail": {"channels": [], "message": ":pr: [t20](u20)"}}]),
+            "chainguard-dev/mono#21": ("blocked", stack, [{"kind": "mark-draft", "auto": True, "detail": stack}]),
+        })
+
 
 class DesignDocStackTest(unittest.TestCase):
     def test_pr_hygiene_waits_on_its_design_doc(self):
@@ -382,7 +419,8 @@ class DesignDocStackTest(unittest.TestCase):
             "chainguard-dev/mono#2": ("stacked", {"design_doc": ["chainguard-dev/mono#1"], "failing": ["pr-hygiene"]}),
             "chainguard-dev/mono#3": ("fix", {"failing": ["dbt"], "conflicting": False, "bot_findings": 0}),
             "chainguard-dev/mono#4": ("fix", {"failing": ["pr-hygiene"], "conflicting": False, "bot_findings": 0}),
-            "chainguard-dev/mono#7": ("stacked", {"design_doc": ["chainguard-dev/mono#8"], "failing": ["pr-hygiene"]}),
+            # Its branch is #8's, so it is rebased when #8 merges: back to draft.
+            "chainguard-dev/mono#7": ("blocked", {"builds_on": ["chainguard-dev/mono#8"]}),
             "chainguard-dev/other#5": ("fix", {"failing": ["pr-hygiene"], "conflicting": False, "bot_findings": 0}),
         })
 
