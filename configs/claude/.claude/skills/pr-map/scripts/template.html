@@ -1,0 +1,118 @@
+<title>Open PR Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one column; status strip, the dependency graph full width, then the two queues side by side, the rest below. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #1b1f27;
+  --muted: #5b6270;
+  --line: #dde0e6;
+  --me: #b7740f;
+  --me-soft: #fbecd0;
+  --review: #2f5f9e;
+  --review-soft: #dde9f8;
+  --other: #6d7381;
+  --other-soft: #eceef2;
+  --ok: #2f7a43;
+  --bad: #b3362c;
+  --font-display: "Space Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #12151b; --surface: #1a1e26; --ink: #e6e8ee; --muted: #9aa1ae; --line: #2c323d;
+    --me: #f0b14a; --me-soft: #3a2c12; --review: #8db6ec; --review-soft: #1c2b40;
+    --other: #a3a9b5; --other-soft: #242933; --ok: #6cc884; --bad: #f0857a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #12151b; --surface: #1a1e26; --ink: #e6e8ee; --muted: #9aa1ae; --line: #2c323d;
+  --me: #f0b14a; --me-soft: #3a2c12; --review: #8db6ec; --review-soft: #1c2b40;
+  --other: #a3a9b5; --other-soft: #242933; --ok: #6cc884; --bad: #f0857a;
+}
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+}
+.wrap {
+  max-width: 1280px; margin: 0 auto; padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px;
+}
+header { display: grid; gap: 10px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.stamp { color: var(--muted); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.strip { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { display: flex; align-items: baseline; gap: 8px; padding: 6px 12px; border-radius: 6px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.chip b { font-family: var(--font-display); font-size: 1.25rem; }
+.chip.me { background: var(--me-soft); color: var(--me); }
+.chip.review { background: var(--review-soft); color: var(--review); }
+.chip.other { background: var(--other-soft); color: var(--other); }
+.graph { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
+.graph h2, .list h2 { font-family: var(--font-display); font-weight: 500; font-size: 1.1rem; margin: 0; display: flex; align-items: baseline; gap: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 0.85rem; }
+.legend code { font-family: var(--font-mono); font-size: 0.8rem; }
+.scroll { overflow-x: auto; }
+pre.mermaid { margin: 0; background: transparent; }
+.queues { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 24px; align-items: start; }
+.list { display: grid; gap: 10px; }
+.list .count { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); }
+.list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.list li { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; }
+.list.me li { border-left-color: var(--me); }
+.list.review li { border-left-color: var(--review); }
+.list.other li { border-left-color: var(--other); }
+.list li.empty { color: var(--muted); border-left-color: var(--line); }
+.row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.row a { font-family: var(--font-mono); font-weight: 600; font-size: 0.88rem; color: var(--ink); text-decoration-color: var(--line); text-underline-offset: 3px; white-space: nowrap; }
+.row a:hover, .row a:focus-visible { text-decoration-color: currentColor; }
+a:focus-visible { outline: 2px solid var(--review); outline-offset: 2px; border-radius: 2px; }
+.title { font-weight: 500; overflow-wrap: anywhere; }
+.why { color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag, .ci { font-family: var(--font-mono); font-size: 0.74rem; padding: 1px 6px; border-radius: 4px; background: var(--other-soft); color: var(--muted); }
+.tag.roll { background: var(--review-soft); color: var(--review); }
+.ci-success { color: var(--ok); }
+.ci-failure, .ci-error { color: var(--bad); }
+.other-list ul { grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Open PR Map</h1>
+    <div class="stamp">{{N_TOTAL}} open PRs by jml · regenerated {{NOW}} whenever a PR's state, review, CI or deploy changes</div>
+    <div class="strip">
+      <span class="chip me"><b>{{N_ME}}</b> waiting on me</span>
+      <span class="chip review"><b>{{N_REVIEW}}</b> waiting on review</span>
+      <span class="chip other"><b>{{N_OTHER}}</b> waiting on something else</span>
+    </div>
+  </header>
+
+  <section class="graph">
+    <h2>Dependencies</h2>
+    <div class="legend">
+      <span><code>──▶</code> stacked or design doc first</span>
+      <span><code>══▶</code> after the upstream deploys</span>
+      <span><code>┄┄▶</code> soft: cites or would conflict</span>
+      <span>Amber: me · blue: review · grey: something else · green dashed: merged</span>
+    </div>
+    <div class="scroll">
+<pre class="mermaid">
+{{MERMAID}}
+</pre>
+    </div>
+  </section>
+
+  <div class="queues">
+    {{ME}}
+    {{REVIEW}}
+  </div>
+
+  <div class="other-list">{{OTHER}}</div>
+</div>
