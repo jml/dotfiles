@@ -11,7 +11,7 @@ It asks before every outward action: sending a review request, marking a draft r
 
 Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with `/rollout`, `/chase` and `/eod`. Config: the `standup` section of `~/.config/rollout/local.json` (subteam and pod members, the channel, the subteam's Linear team and the home GitHub team). State: `~/.local/state/rollouts/standup/<date>.json` (each standup's blockers and dependencies), `standup/<date>.md` (the notes) and `standup.jsonl` (one line per run).
 
-People are **subteam** (jml, Ada Example, Cy Example), **pod** (the subteam plus Bo Example and Di Example) or **other**. A dependency is a Linear relation between one of jml's issues and an open issue of someone outside the subteam. A review is never a dependency, in either direction: a PR waiting on its reviewers is a blocker, and a review someone asked jml for is jml's move (`/waiting-on-me` lists those).
+People are **subteam** (`standup.subteam`), **pod** (the subteam plus `standup.pod`) or **other**. A dependency is a Linear relation between one of jml's issues and an open issue of someone outside the subteam. A review is never a dependency, in either direction: a PR waiting on its reviewers is a blocker, and a review someone asked jml for is jml's move (`/waiting-on-me` lists those).
 
 ## Steps
 
