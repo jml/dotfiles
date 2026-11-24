@@ -9,7 +9,7 @@ The pod's standup is for unblocking. A blocker is something that waits on someon
 
 It asks before every outward action: sending a review request, marking a draft ready, changing Linear, and posting. It never reads Slack for dependencies.
 
-Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with `/rollout`, `/chase` and `/eod`. Config: the `standup` section of `~/.claude/skills/rollout/config.json` (subteam and pod members, the channel, the subteam's Linear team and the home GitHub team). State: `~/.local/state/rollouts/standup/<date>.json` (each standup's blockers and dependencies), `standup/<date>.md` (the notes) and `standup.jsonl` (one line per run).
+Script: `python3 ~/.claude/skills/rollout/scripts/rollout.py`, shared with `/rollout`, `/chase` and `/eod`. Config: the `standup` section of `~/.config/rollout/local.json` (subteam and pod members, the channel, the subteam's Linear team and the home GitHub team). State: `~/.local/state/rollouts/standup/<date>.json` (each standup's blockers and dependencies), `standup/<date>.md` (the notes) and `standup.jsonl` (one line per run).
 
 People are **subteam** (jml, Ada Example, Cy Example), **pod** (the subteam plus Bo Example and Di Example) or **other**. A dependency is a Linear relation between one of jml's issues and an open issue of someone outside the subteam. A review is never a dependency, in either direction: a PR waiting on its reviewers is a blocker, and a review someone asked jml for is jml's move (`/waiting-on-me` lists those).
 
@@ -32,10 +32,10 @@ People are **subteam** (jml, Ada Example, Cy Example), **pod** (the subteam plus
    ```
    **Blockers** (2 new, 9 standing, 1 cleared)
    New
-   • [repo#N — title](url): waiting on guarded-os in #chan-home since 23 Nov; holds back repo#M
+   • [repo#N — title](url): waiting on team-x in #team-x-reviews since 23 Nov; holds back repo#M
    • [TEAM-N — title](url): Blocked, and the blocker isn't recorded
    Standing
-   • [repo#N — title](url): waiting on data-analytics-admins in #chan-data-eng since 22 Nov, overdue
+   • [repo#N — title](url): waiting on team-y in #team-y since 22 Nov, overdue
    Cleared
    • repo#N — title
 

@@ -22,28 +22,6 @@
       "prod": "provision-enforce.dev-stages.yaml"
     }
   },
-  "channels": {
-    "teams": {
-      "chainguard-dev/data-analytics-admins": "#chan-data-eng",
-      "chainguard-dev/data-analytics-write": "#chan-data-eng",
-      "chainguard-dev/developer-platform-team-write": "#chan-home"
-    },
-    "paths": [
-      {
-        "repo": "chainguard-dev/mono",
-        "prefix": "public/go-driftlessaf/",
-        "channel": "#chan-lib"
-      }
-    ],
-    "repos": {
-      "chainguard-dev/chainguard-devops": "#chan-home"
-    },
-    "ids": {
-      "#chan-data-eng": "C000000000A",
-      "#chan-home": "C000000000B",
-      "#chan-pod-private": "C000000000C"
-    }
-  },
   "chase": {
     "base_hours": 4,
     "lines_per_hour": 250,
@@ -57,40 +35,5 @@
   "eod": {
     "stale_draft_days": 7,
     "hold_days": 7
-  },
-  "standup": {
-    "channel": "#chan-pod-private",
-    "channel_id": "C000000000C",
-    "linear_name": "Jonathan Lange",
-    "subteam": [
-      {
-        "name": "Jonathan Lange",
-        "github": "jml"
-      },
-      {
-        "name": "Ada Example",
-        "github": "ada"
-      },
-      {
-        "name": "Cy Example",
-        "github": "cy"
-      }
-    ],
-    "pod": [
-      {
-        "name": "Bo Example",
-        "github": "bo"
-      },
-      {
-        "name": "Di Example",
-        "github": "di"
-      }
-    ],
-    "subteam_linear_teams": [
-      "DEVFNDN"
-    ],
-    "home_github_teams": [
-      "chainguard-dev/developer-platform-team-write"
-    ]
   }
 }

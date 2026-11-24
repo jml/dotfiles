@@ -6,8 +6,10 @@ State lives in $ROLLOUT_STATE_DIR (default ~/.local/state/rollouts):
   <name>.marks.json  steps a person marked done
   requests.jsonl     every Slack review request sent, across all rollouts
   standup/<date>.json  each standup's blockers and dependencies, for the next one to compare with
-Config (deploy workflows, Slack channel map, chase thresholds) is config.json
-beside this skill.
+Config (deploy workflows, chase thresholds) is config.json beside this skill.
+Slack channels and the standup's people live in $ROLLOUT_LOCAL_CONFIG (default
+~/.config/rollout/local.json), outside the public dotfiles repo; its top-level
+keys replace config.json's.
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ import page  # noqa: E402
 
 STATE = Path(os.environ.get("ROLLOUT_STATE_DIR", Path.home() / ".local/state/rollouts"))
 CONFIG = Path(__file__).resolve().parent.parent / "config.json"
+LOCAL_CONFIG = Path(os.environ.get("ROLLOUT_LOCAL_CONFIG", Path.home() / ".config/rollout/local.json"))
 
 PR_FIELDS = """
 number title url state isDraft mergeable reviewDecision additions deletions createdAt body
@@ -251,6 +254,10 @@ def load_json(p: Path, default):
     return json.loads(p.read_text()) if p.exists() else default
 
 
+def load_config() -> dict:
+    return load_json(CONFIG, {}) | load_json(LOCAL_CONFIG, {})
+
+
 def load_requests() -> list[dict]:
     p = STATE / "requests.jsonl"
     return [json.loads(line) for line in p.read_text().splitlines() if line.strip()] if p.exists() else []
@@ -263,7 +270,7 @@ def cmd_status(args) -> int:
     errors = core.validate(manifest)
     if errors:
         sys.exit("invalid manifest:\n  " + "\n  ".join(errors))
-    config = load_json(CONFIG, {})
+    config = load_config()
     pr_nodes = {n["id"]: n["pr"] for n in manifest["nodes"] if "pr" in n}
     by_ref = fetch_prs(list(pr_nodes.values()))
     prs = {i: by_ref[ref] for i, ref in pr_nodes.items()}
@@ -340,7 +347,7 @@ def cmd_record_request(args) -> int:
 def cmd_chase(args) -> int:
     requests = load_requests()
     prs = fetch_prs(sorted({r["pr"] for r in requests}))
-    overdue = core.chase(requests, prs, datetime.now(timezone.utc), load_json(CONFIG, {}))
+    overdue = core.chase(requests, prs, datetime.now(timezone.utc), load_config())
     if args.json:
         print(json.dumps(overdue, indent=2))
     else:
@@ -356,7 +363,7 @@ def cmd_wait_checks(args) -> int:
     woken when this exits and runs a tick at once, rather than at its next
     scheduled wakeup.
     """
-    config = load_json(CONFIG, {})
+    config = load_config()
     deadline = time.monotonic() + args.timeout
     while True:
         pr = fetch_prs([args.pr])[args.pr]
@@ -422,7 +429,7 @@ def live_sessions() -> list[dict]:
 
 
 def cmd_sweep(args) -> int:
-    config = load_json(CONFIG, {})
+    config = load_config()
     now = datetime.now(timezone.utc)
     log = STATE / "eod.jsonl"
     runs = [json.loads(line) for line in log.read_text().splitlines() if line.strip()] if log.exists() else []
@@ -469,7 +476,7 @@ def latest_snapshot(before: str) -> dict | None:
 
 
 def cmd_standup(args) -> int:
-    config = load_json(CONFIG, {})
+    config = load_config()
     me = config["me"]
     now = datetime.now(timezone.utc)
     today = now.date().isoformat()
@@ -515,7 +522,7 @@ def cmd_hold(args) -> int:
     if args.undo:
         holds.pop(args.pr, None)
     else:
-        days = args.days or load_json(CONFIG, {}).get("eod", {}).get("hold_days", 7)
+        days = args.days or load_config().get("eod", {}).get("hold_days", 7)
         today = datetime.now(timezone.utc).date()
         holds[args.pr] = {"until": (today + timedelta(days=days)).isoformat(), "reason": args.reason, "set": today.isoformat()}
     STATE.mkdir(parents=True, exist_ok=True)

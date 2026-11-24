@@ -18,4 +18,4 @@ Every review request a rollout session sends is logged in `~/.local/state/rollou
 4. Draft each nudge in jml's voice (jml-voice skill): short, a list of `:pr: [<title>](<url>)` lines when it covers several PRs, and no "Written by Claude" line (Slack labels messages sent through Claude). Show all drafts in one message and ask which to send.
 5. Send each approved nudge with `slack_send_message` (thread replies take `thread_ts`), then log it: `rollout.py record-request --rollout <rollout> --pr <pr> --channel "<channel or DM login>" --permalink <link>`. This restarts that PR's clock.
 
-When a channel or bot account in the output is wrong (a bot's comment counted as an answer, a team mapped to the wrong channel), fix `config.json`: bot logins go in `chase.ignore_authors`, channel mappings in `channels`.
+When a channel or bot account in the output is wrong (a bot's comment counted as an answer, a team mapped to the wrong channel), fix it: bot logins go in `chase.ignore_authors` in `~/.claude/skills/rollout/config.json`, channel mappings in `channels` in `~/.config/rollout/local.json`.
