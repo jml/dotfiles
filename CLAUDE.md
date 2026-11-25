@@ -80,6 +80,8 @@ The `configs/claude/.claude/` directory contains:
 - `CLAUDE.md` - Global instructions that apply to all projects (tone, coding style, workflow rules)
 - `skills/` - Personal skills, including `export-settings`
 
+Skills for work at Chainguard, and `jml-voice`, live in `jml/claude` in chainguard-sandbox/sandbox-of-power. That directory is a Stow package too: its `just claude` links them into `~/.claude/skills` beside the ones from this repo.
+
 `~/.claude/settings.json` is not stowed. `just claude-settings` (run by `just claude`) builds it as a real file by merging three layers, later ones winning; lists under `permissions` combine:
 1. the live file, which Claude Code edits itself
 2. `claude-settings/base.json` - tracked user preferences: model choice, enabled plugins, hooks, and command permissions
