@@ -489,8 +489,9 @@ def standup_inputs():
         # Stacked on mono#1, which adds its design doc.
         "chainguard-dev/mono#6": ref_pr(6, body="Design-Doc: docs/d.md",
                                         checks=[{"name": "pr-hygiene", "conclusion": "FAILURE", "status": "COMPLETED"}]),
-        # A green draft: jml's move, offered for mark-ready.
-        "chainguard-dev/mono#7": ref_pr(7, draft=True),
+        # A green draft: jml's move, offered for mark-ready. DEV-03 is already
+        # in Merged, from an earlier PR.
+        "chainguard-dev/mono#7": ref_pr(7, draft=True, head="dev-03-second-part"),
     }
     prs["chainguard-dev/mono#1"]["files"] = ["docs/d.md"]
     requests = [
@@ -506,6 +507,10 @@ def standup_inputs():
         issue("DEVFNDN-13", status="Blocked", blocked_by=["DEVFNDN-14"]),
         issue("DEVFNDN-15", blocked_by=["DEVFNDN-16"], blocks=["DEVFNDN-17"]),
         issue("DEV-18"),
+        # In Merged with no PR merged since the last standup: still unverified.
+        issue("DEV-02", status="Merged"),
+        # In Merged with a PR still open: not yet time to check the outcome.
+        issue("DEV-03", status="Merged"),
         issue("DATA-1", assignee="Someone Else"),
         # Not started is still open.
         issue("DATA-2", assignee="Someone Else", status="Backlog", status_type="backlog"),
@@ -554,9 +559,11 @@ class StandupTest(unittest.TestCase):
         ])
         self.assertEqual([(d["id"], d["rule"], d["propose"]) for d in got["drift"]], [
             ("DEV-11", "pr-open-issue-not-started", "In Progress"),
-            ("DEV-18", "prs-merged", "check the outcome, then mark it Done"),
+            ("DEV-18", "prs-merged", "Merged"),
             ("DEVFNDN-12", "blocked-without-blocker", "add a blocked-by relation to what it waits on, or move it out of Blocked"),
             ("DEVFNDN-13", "blocker-resolved", "move it out of Blocked"),
+            # Issues in Merged come last.
+            ("DEV-02", "merged-unverified", "check the outcome, then mark it Done"),
         ])
         self.assertEqual(got["fixed_in_passing"], [{"ref": "chainguard-dev/mono#8", "title": "fix: tidy UTF-8 handling", "url": "u8"}])
 

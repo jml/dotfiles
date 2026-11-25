@@ -847,7 +847,12 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
             if is_open(b) and o["kind"] != "subteam":
                 dep("waited_on_by", k, i["title"], i.get("url"), o, o["status"])
 
+    # Linear moves an issue to Merged when its PR merges. Merged is a started
+    # status: the code landed and nobody has yet seen the outcome. An issue
+    # stays in `unverified` at every standup until it leaves Merged, and those
+    # entries go last so they never crowd out a correction.
     drift = []
+    unverified = []
     merged_links: dict[str, list[str]] = {}
     for p in merged:
         for i in sorted(pr_issue_ids(p) & set(mine)):
@@ -865,9 +870,13 @@ def standup(sweep: dict, prs: dict, rollouts: dict, linear: dict, merged: list[d
             ready = [p["ref"] for p in open_prs if not p["draft"]]
             drift.append(base | {"rule": "pr-open-issue-not-started", "prs": ready or [p["ref"] for p in open_prs],
                                  "propose": "In Review" if ready else "In Progress"})
-        if i.get("status_type") == "started" and i.get("status") != "Blocked" and merged_links.get(k) and not open_prs:
-            drift.append(base | {"rule": "prs-merged", "prs": merged_links[k],
-                                 "propose": "check the outcome, then mark it Done"})
+        if i.get("status") == "Merged":
+            if not open_prs:
+                unverified.append(base | {"rule": "merged-unverified", "prs": merged_links.get(k, []),
+                                          "propose": "check the outcome, then mark it Done"})
+        elif i.get("status_type") == "started" and i.get("status") != "Blocked" and merged_links.get(k) and not open_prs:
+            drift.append(base | {"rule": "prs-merged", "prs": merged_links[k], "propose": "Merged"})
+    drift += unverified
 
     fixed = [{"ref": p["ref"], "title": p["title"], "url": p["url"]}
              for p in merged if not pr_mentions_issue(p)]

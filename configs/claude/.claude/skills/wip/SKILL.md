@@ -31,8 +31,11 @@ decide whose move it is.
 ## Collector 3 — Linear
 
 `go-linear issue_list --assignee=me` with fields `identifier,title,url,state.name,priority,updatedAt`,
-then filter locally: In Progress / In Review are active WIP; Todo is queue; ignore
-Done/Canceled/Duplicate/Backlog. (Don't pass `--state` — the name is ambiguous across teams.)
+then filter locally: In Progress / In Review are active WIP; Merged is WIP whose code
+has landed and whose outcome nobody has checked yet (Linear moves an issue there when
+its PR merges), so the only work left is to verify it and mark it Done, which ranks it
+near the top for ease of finishing; Todo is queue; ignore Done/Canceled/Duplicate/Backlog.
+(Don't pass `--state` — the name is ambiguous across teams.)
 Cross-link issues to branches/PRs when names or topics align; an issue with a matching
 dirty worktree is one work item, not two.
 
